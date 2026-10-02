@@ -5,26 +5,41 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Avatar, Button, ListRow, Text } from '@/components';
 import { defaultAddress } from '@/data/catalog';
 import { useApp } from '@/state/app';
+import { useAuth } from '@/state/auth';
 import { colors, radius, spacing } from '@/theme/tokens';
-import { notify } from '@/utils/dialog';
+import { confirm, notify } from '@/utils/dialog';
 
-// TODO: dados do usuário logado (precisa de back-end e login).
+const ROLE_LABEL = { cliente: 'Cliente', profissional: 'Profissional' } as const;
+
 export default function Perfil() {
   const insets = useSafeAreaInsets();
   const { favorites, orders } = useApp();
+  const { session, profile, signOut } = useAuth();
   const done = orders.filter((o) => o.status === 'concluido').length;
+  const email = session?.user.email;
+  const name = profile?.full_name.trim() || (session ? 'Sua conta' : 'Visitante');
 
   return (
     <ScrollView style={{ flex: 1, backgroundColor: colors.surface }} contentContainerStyle={{ paddingBottom: spacing[8] }}>
       <View style={[styles.hero, { paddingTop: insets.top + spacing[5] }]}>
-        <Avatar size={72} />
-        <Text variant="titleLg">Visitante</Text>
-        <Text variant="body" color={colors.onBrand}>
-          Entre para salvar seus pedidos e conversas.
+        <Avatar size={72} uri={profile?.avatar_url ?? undefined} />
+        <Text variant="titleLg" numberOfLines={1}>
+          {name}
         </Text>
-        <Button variant="dark" size="md" onPress={() => router.replace('/')}>
-          Entrar ou criar conta
-        </Button>
+        {session ? (
+          <Text variant="body" color={colors.onBrand} numberOfLines={1}>
+            {[email, profile ? ROLE_LABEL[profile.role] : null].filter(Boolean).join(' · ')}
+          </Text>
+        ) : (
+          <>
+            <Text variant="body" color={colors.onBrand}>
+              Entre para salvar seus pedidos e conversas.
+            </Text>
+            <Button variant="dark" size="md" onPress={() => router.push('/entrar')}>
+              Entrar ou criar conta
+            </Button>
+          </>
+        )}
       </View>
 
       <View style={styles.stats}>
@@ -51,6 +66,11 @@ export default function Perfil() {
         <View style={styles.pro}>
           <ListRow icon="briefcase" label="Para profissionais" value="Ofereça seus serviços no Resolve" onPress={() => notify('Cadastro de profissionais em breve.')} />
         </View>
+        {session ? (
+          <View style={{ marginTop: spacing[3] }}>
+            <ListRow icon="log-out" value="Sair" danger onPress={() => confirm('Sair da sua conta neste aparelho?', () => signOut())} />
+          </View>
+        ) : null}
       </View>
     </ScrollView>
   );

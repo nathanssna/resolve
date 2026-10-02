@@ -1,3 +1,4 @@
+export { AuthLayout } from './AuthLayout';
 export { Button } from './Button';
 export { Card } from './Card';
 export { Bubble, Composer, ConversationRow, ProposalCard, RequestCard, SystemNote, TypingBubble } from './Chat';

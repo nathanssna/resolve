@@ -1,8 +1,9 @@
-import { router } from 'expo-router';
+import { Redirect, router } from 'expo-router';
 import { StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button, Icon, Logo, Text, type IconName } from '@/components';
+import { useAuth } from '@/state/auth';
 import { colors, shadows, spacing } from '@/theme/tokens';
 
 /** Composição de blocos de serviço flutuando — a "ilustração" da boas-vindas. */
@@ -16,7 +17,13 @@ const floating: { icon: IconName; x: number; y: number; r: number; size: number;
 ];
 
 export default function Welcome() {
+  const { ready, session } = useAuth();
   const enter = () => router.replace('/inicio');
+  const login = () => router.push('/entrar');
+
+  // Quem já está logado pula a boas-vindas (inclusive ao voltar do login).
+  if (session) return <Redirect href="/inicio" />;
+  if (!ready) return <View style={styles.root} />;
 
   return (
     <View style={styles.root}>
@@ -71,8 +78,7 @@ export default function Welcome() {
             <Text variant="bodySm" color={colors.onBrand} style={{ fontSize: 14 }}>
               Já tem uma conta?
             </Text>
-            {/* TODO: levar para a tela de login quando ela existir */}
-            <Button variant="link" onPress={enter}>
+            <Button variant="link" onPress={login}>
               Entrar
             </Button>
           </View>

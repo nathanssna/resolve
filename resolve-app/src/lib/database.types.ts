@@ -729,6 +729,27 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      complete_onboarding: {
+        Args: {
+          p_full_name: string
+          p_role: Database["public"]["Enums"]["user_role"]
+        }
+        Returns: {
+          avatar_url: string | null
+          created_at: string
+          full_name: string
+          id: string
+          phone: string | null
+          role: Database["public"]["Enums"]["user_role"]
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "profiles"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       complete_order: {
         Args: { p_order_id: string }
         Returns: {
