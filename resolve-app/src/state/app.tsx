@@ -1,40 +1,69 @@
 /**
- * Estado do app em memória: conversas (a negociação acontece no chat),
- * serviços combinados e favoritos.
+ * Conversas, propostas e pedidos do usuário logado, no Supabase.
  *
- * As respostas do profissional são SIMULADAS para o protótipo
- * (veja `simulateReply`). Com back-end, troque por mensagens em tempo real
- * (ex.: Supabase Realtime ou Firebase) mantendo os mesmos tipos.
+ * Carrega tudo do cliente de uma vez (conversas com mensagens, propostas,
+ * pedido e avaliação) e se mantém atualizado pelo Realtime. As mudanças de
+ * estado passam pelas RPCs do banco (accept_proposal, complete_order…).
+ *
+ * Cada usuário vê o próprio lado: o cliente, as conversas que abriu; o
+ * profissional, os pedidos que recebeu (pelo papel do perfil). Favoritos
+ * ainda ficam só na memória.
  */
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { AppState } from 'react-native';
 
-import { getProfessional, getService } from '@/data/catalog';
-import { firstName, formatBRL, parseAmount } from '@/utils/format';
+import type { Database, Json } from '@/lib/database.types';
+import { photoName, uploadPhoto, type LocalPhoto } from '@/lib/photos';
+import { supabase, type UserRole } from '@/lib/supabase';
+import { useAuth } from '@/state/auth';
+import { useCatalog } from '@/state/catalog';
 
 export type Address = { label: string; line: string; area: string };
 
-type Base = { id: string; at: number; from: 'me' | 'pro' | 'system' };
-export type RequestMsg = Base & { kind: 'request'; serviceTitle: string; description: string; when: string; address: Address };
-export type TextMsg = Base & { kind: 'text'; text: string };
-export type ProposalMsg = Base & { kind: 'proposal'; amount: number; when: string; note?: string; status: 'pending' | 'accepted' | 'declined' };
+/** `them`: o outro participante (o profissional para o cliente, o cliente para o profissional). */
+type Base = { id: string; at: number; from: 'me' | 'them' | 'system' };
+export type RequestMsg = Base & {
+  kind: 'request';
+  serviceTitle: string;
+  description: string;
+  when: string;
+  address: Address;
+  /** Caminhos no bucket request-photos (use useSignedUrls para mostrar). */
+  photos: string[];
+};
+export type TextMsg = Base & { kind: 'text'; text: string; pending?: boolean };
+export type ProposalMsg = Base & {
+  kind: 'proposal';
+  proposalId: string;
+  amount: number;
+  when: string;
+  note?: string;
+  status: 'pending' | 'accepted' | 'declined';
+};
 export type SystemMsg = Base & { kind: 'system'; text: string };
 export type Message = RequestMsg | TextMsg | ProposalMsg | SystemMsg;
+
+/** O outro participante, para mostrar nome e foto. */
+export type Party = { id: string; name: string; avatarUrl?: string };
 
 export type Conversation = {
   id: string;
   proId: string;
+  clientId: string;
+  other: Party;
   serviceId: string;
   messages: Message[];
   unread: number;
-  typing: boolean;
   orderId?: string;
 };
 
-export type OrderStatus = 'combinado' | 'concluido' | 'cancelado';
+export type OrderStatus = Database['public']['Enums']['order_status'];
 export type Order = {
   id: string;
   conversationId: string;
   proId: string;
+  clientId: string;
+  other: Party;
   serviceId: string;
   amount: number;
   when: string;
@@ -44,241 +73,493 @@ export type Order = {
   createdAt: number;
 };
 
-/** Valores de EXEMPLO usados na proposta simulada. */
-const exampleQuote: Record<string, number> = {
-  informatica: 150,
-  encanador: 120,
-  eletricista: 130,
-  'montagem-moveis': 180,
-  pintor: 450,
-  limpeza: 220,
-  'ar-condicionado': 350,
-  chaveiro: 90,
+type Tables = Database['public']['Tables'];
+type ConvRow = Pick<
+  Tables['conversations']['Row'],
+  'id' | 'professional_id' | 'client_id' | 'service_id' | 'client_last_read_at' | 'professional_last_read_at'
+> & { client: { full_name: string; avatar_url: string | null } | null };
+type MessageRow = Pick<
+  Tables['messages']['Row'],
+  'id' | 'conversation_id' | 'sender_id' | 'kind' | 'body' | 'proposal_id' | 'request_when' | 'request_address' | 'photos' | 'created_at'
+>;
+type ProposalRow = Pick<Tables['proposals']['Row'], 'id' | 'conversation_id' | 'amount' | 'scheduled_label' | 'note' | 'status'>;
+type OrderRow = Pick<
+  Tables['orders']['Row'],
+  'id' | 'conversation_id' | 'professional_id' | 'service_id' | 'amount' | 'scheduled_label' | 'address' | 'status' | 'created_at'
+> & { rating?: number };
+
+type Store = {
+  convs: Record<string, ConvRow>;
+  messages: Record<string, MessageRow>;
+  proposals: Record<string, ProposalRow>;
+  orders: Record<string, OrderRow>;
 };
+const EMPTY: Store = { convs: {}, messages: {}, proposals: {}, orders: {} };
 
-let seq = 0;
-const uid = (p: string) => `${p}_${Date.now().toString(36)}_${(seq++).toString(36)}`;
+const CONV_COLS =
+  'id, professional_id, client_id, service_id, client_last_read_at, professional_last_read_at, client:profiles!conversations_client_id_fkey(full_name, avatar_url)';
+const MESSAGE_COLS = 'id, conversation_id, sender_id, kind, body, proposal_id, request_when, request_address, photos, created_at';
 
-const DAY = 86400000;
-function seed(): { conversations: Conversation[]; orders: Order[] } {
-  const t = Date.now() - 2 * DAY;
-  const address = { label: 'Casa', line: 'Rua das Acácias, 120', area: 'Santa Terezinha' };
-  const conv: Conversation = {
-    id: 'c_seed',
-    proId: 'claudia',
-    serviceId: 'limpeza',
-    unread: 0,
-    typing: false,
-    orderId: 'o_seed',
-    messages: [
-      { id: 'm1', at: t, from: 'me', kind: 'request', serviceTitle: 'Limpeza', description: 'Faxina completa num apartamento de 2 quartos.', when: 'Sábado, 9h', address },
-      { id: 'm2', at: t + 4 * 60000, from: 'pro', kind: 'text', text: 'Bom dia! Consigo sim. Levo todos os produtos.' },
-      { id: 'm3', at: t + 5 * 60000, from: 'pro', kind: 'proposal', amount: 220, when: 'Sábado, 9h', note: 'Faxina completa, produtos inclusos.', status: 'accepted' },
-      { id: 'm4', at: t + 9 * 60000, from: 'system', kind: 'system', text: `Serviço combinado · ${formatBRL(220)} · Sábado, 9h` },
-      { id: 'm5', at: t + 10 * 60000, from: 'pro', kind: 'text', text: 'Combinado! Até sábado.' },
-    ],
-  };
-  const order: Order = {
-    id: 'o_seed',
-    conversationId: 'c_seed',
-    proId: 'claudia',
-    serviceId: 'limpeza',
-    amount: 220,
-    when: 'Sábado, 9h',
-    address,
-    status: 'concluido',
-    rating: 5,
-    createdAt: t + 9 * 60000,
-  };
-  return { conversations: [conv], orders: [order] };
-}
+export type AppStatus = 'idle' | 'loading' | 'ready' | 'error';
 
 type AppValue = {
+  /** 'idle' = sem login. */
+  status: AppStatus;
+  /** Lado que o usuário vê. */
+  role: UserRole;
+  refresh: () => void;
   conversations: Conversation[];
   orders: Order[];
   favorites: string[];
   unreadTotal: number;
-  startRequest: (input: { proId: string; serviceId: string; description: string; when: string; address: Address }) => string;
-  sendText: (conversationId: string, text: string) => void;
-  respondProposal: (conversationId: string, messageId: string, accept: boolean) => void;
+  /** Abre a conversa com o pedido (enviando as fotos antes) e devolve o id dela. */
+  startRequest: (input: {
+    proId: string;
+    serviceId: string;
+    description: string;
+    when: string;
+    address: Address;
+    photos?: LocalPhoto[];
+    /** Progresso do envio das fotos. */
+    onProgress?: (sent: number, total: number) => void;
+  }) => Promise<string>;
+  sendText: (conversationId: string, text: string) => Promise<void>;
+  respondProposal: (conversationId: string, messageId: string, accept: boolean) => Promise<void>;
+  /** Profissional: envia uma proposta (substitui a pendente anterior). */
+  sendProposal: (conversationId: string, input: { amount: number; when: string; note?: string }) => Promise<void>;
   markRead: (conversationId: string) => void;
-  completeOrder: (orderId: string) => void;
-  cancelOrder: (orderId: string) => void;
-  rateOrder: (orderId: string, stars: number) => void;
+  completeOrder: (orderId: string) => Promise<void>;
+  cancelOrder: (orderId: string) => Promise<void>;
+  rateOrder: (orderId: string, stars: number) => Promise<void>;
   toggleFavorite: (serviceId: string) => void;
   isFavorite: (serviceId: string) => boolean;
-  /** Id da conversa que está aberta na tela (não conta como não lida). */
-  setOpenConversation: (id: string | null) => void;
 };
 
 const Ctx = createContext<AppValue | null>(null);
 
+const byId = <T extends { id: string }>(rows: T[]) => Object.fromEntries(rows.map((r) => [r.id, r]));
+const time = (iso: string) => Date.parse(iso);
+const isTmp = (id: string) => id.startsWith('tmp:');
+
+function toAddress(value: Json | null): Address {
+  const v = value && typeof value === 'object' && !Array.isArray(value) ? value : {};
+  const str = (x: Json | undefined) => (typeof x === 'string' ? x : '');
+  return { label: str(v.label) || 'Casa', line: str(v.line), area: str(v.area) };
+}
+
+async function fetchStore(uid: string, role: UserRole): Promise<Store> {
+  const { data, error } = await supabase
+    .from('conversations')
+    .select(
+      'id, professional_id, client_id, service_id, client_last_read_at, professional_last_read_at, client:profiles!conversations_client_id_fkey(full_name, avatar_url), messages(id, conversation_id, sender_id, kind, body, proposal_id, request_when, request_address, photos, created_at), proposals(id, conversation_id, amount, scheduled_label, note, status), order:orders(id, conversation_id, professional_id, service_id, amount, scheduled_label, address, status, created_at, review:reviews(rating))',
+    )
+    .eq(role === 'profissional' ? 'professional_id' : 'client_id', uid);
+  if (error) throw error;
+
+  const store: Store = { convs: {}, messages: {}, proposals: {}, orders: {} };
+  for (const { messages, proposals, order, ...conv } of data) {
+    store.convs[conv.id] = conv;
+    Object.assign(store.messages, byId(messages));
+    Object.assign(store.proposals, byId(proposals));
+    if (order) {
+      const { review, ...o } = order;
+      store.orders[o.id] = { ...o, rating: review?.rating };
+    }
+  }
+  return store;
+}
+
 export function AppProvider({ children }: { children: ReactNode }) {
-  const initial = useMemo(seed, []);
-  const [conversations, setConversations] = useState<Conversation[]>(initial.conversations);
-  const [orders, setOrders] = useState<Order[]>(initial.orders);
+  const { session, profile, ready: authReady } = useAuth();
+  const { getService, getProfessional, refresh: refreshCatalog } = useCatalog();
+  const uid = session?.user.id ?? null;
+  // O papel vem do perfil; sem perfil (ex.: sem rede), segue como cliente.
+  const role: UserRole = profile?.role ?? 'cliente';
+  const owner = uid && (profile || authReady) ? `${uid}:${role}` : null;
+
+  // Dados guardados com o id do dono: trocar de conta invalida sozinho.
+  const [data, setData] = useState<{ owner: string; store: Store } | null>(null);
+  const [failedFor, setFailedFor] = useState<string | null>(null);
   const [favorites, setFavorites] = useState<string[]>([]);
-  const openRef = useRef<string | null>(null);
-  const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
 
-  useEffect(() => () => timers.current.forEach(clearTimeout), []);
-  const later = (ms: number, fn: () => void) => {
-    timers.current.push(setTimeout(fn, ms));
-  };
+  const loaded = !!owner && data?.owner === owner;
+  const store = loaded ? data.store : EMPTY;
+  const status: AppStatus = !uid ? 'idle' : loaded ? 'ready' : owner && failedFor === owner ? 'error' : 'loading';
 
-  const patch = useCallback((id: string, fn: (c: Conversation) => Conversation) => {
-    setConversations((list) => list.map((c) => (c.id === id ? fn(c) : c)));
-  }, []);
+  // Para os callbacks do Realtime consultarem o estado atual.
+  const storeRef = useRef(store);
+  useEffect(() => {
+    storeRef.current = store;
+  }, [store]);
 
-  const push = useCallback(
-    (id: string, msg: Message) => {
-      patch(id, (c) => {
-        // Proposta que chega depois do serviço combinado não vale mais
-        if (msg.kind === 'proposal' && c.orderId) return { ...c, typing: false };
-        return {
-          ...c,
-          typing: msg.from === 'pro' ? false : c.typing,
-          unread: msg.from !== 'me' && openRef.current !== id ? c.unread + 1 : c.unread,
-          messages: [...c.messages, msg],
-        };
+  // Mudanças que chegam enquanto uma busca completa está no ar: são guardadas e
+  // reaplicadas sobre o resultado, senão o retrato antigo apagaria o que veio
+  // pelo Realtime nesse meio-tempo. Todas as mudanças são "inserir/atualizar por
+  // id", então reaplicar não duplica nada.
+  const replay = useRef<((s: Store) => Store)[] | null>(null);
+
+  const update = useCallback(
+    (fn: (s: Store) => Store) => {
+      replay.current?.push(fn);
+      setData((d) => (d && d.owner === owner ? { owner: d.owner, store: fn(d.store) } : d));
+    },
+    [owner],
+  );
+
+  /** Busca tudo do banco (abertura, reconexão do Realtime, app de volta, "Tentar de novo"). */
+  const load = useCallback(() => {
+    if (!uid || !owner) return;
+    const buffer: ((s: Store) => Store)[] = [];
+    replay.current = buffer;
+    fetchStore(uid, role)
+      .then((fresh) => {
+        setData((d) => {
+          // Mantém mensagens ainda não confirmadas pelo banco.
+          const pending = d?.owner === owner ? Object.values(d.store.messages).filter((m) => isTmp(m.id)) : [];
+          let next: Store = { ...fresh, messages: { ...fresh.messages, ...byId(pending) } };
+          for (const fn of buffer) next = fn(next);
+          return { owner, store: next };
+        });
+        setFailedFor(null);
+      })
+      .catch(() => setFailedFor(owner))
+      .finally(() => {
+        if (replay.current === buffer) replay.current = null;
       });
+  }, [uid, owner, role]);
+
+  // Carga inicial (e a cada troca de conta).
+  useEffect(() => {
+    if (!owner || loaded) return;
+    load();
+  }, [owner, loaded, load]);
+
+  // Realtime: o banco só entrega as linhas que este usuário pode ler (RLS).
+  useEffect(() => {
+    if (!uid) return;
+
+    const channel = supabase
+      .channel(`app:${uid}`)
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, ({ new: row }) => {
+        const m = row as MessageRow;
+        // Conversa criada em outro aparelho: busca tudo de novo.
+        if (!storeRef.current.convs[m.conversation_id] && !replay.current) return load();
+        update((s) => ({ ...s, messages: { ...s.messages, [m.id]: m } }));
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'proposals' }, ({ new: row }) => {
+        if (!('id' in row)) return;
+        const p = row as ProposalRow;
+        update((s) => ({ ...s, proposals: { ...s.proposals, [p.id]: p } }));
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, ({ new: row }) => {
+        if (!('id' in row)) return;
+        const o = row as OrderRow;
+        update((s) => ({ ...s, orders: { ...s.orders, [o.id]: { ...s.orders[o.id], ...o } } }));
+      })
+      // Só as avaliações deste usuário (a tabela é pública; não precisa receber as de todo mundo).
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'reviews', filter: `${role === 'profissional' ? 'professional_id' : 'client_id'}=eq.${uid}` },
+        ({ new: row }) => {
+          const r = row as Tables['reviews']['Row'];
+          update((s) => (s.orders[r.order_id] ? { ...s, orders: { ...s.orders, [r.order_id]: { ...s.orders[r.order_id], rating: r.rating } } } : s));
+          // A nota do profissional (painel, lista) vem do catálogo.
+          if (role === 'profissional') refreshCatalog();
+        },
+      )
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'conversations' }, ({ new: row }) => {
+        const c = row as Tables['conversations']['Row'];
+        update((s) =>
+          s.convs[c.id]
+            ? {
+                ...s,
+                convs: {
+                  ...s.convs,
+                  [c.id]: { ...s.convs[c.id], client_last_read_at: c.client_last_read_at, professional_last_read_at: c.professional_last_read_at },
+                },
+              }
+            : s,
+        );
+      })
+      .subscribe((state) => {
+        // Conectou (ou reconectou): busca o que pode ter chegado antes da conexão.
+        if (state === 'SUBSCRIBED') load();
+      });
+
+    const appState = AppState.addEventListener('change', (s) => {
+      if (s === 'active') load();
+    });
+
+    return () => {
+      appState.remove();
+      supabase.removeChannel(channel);
+    };
+  }, [uid, role, update, load, refreshCatalog]);
+
+  // ----- leitura -----
+
+  // Nome e foto do outro participante.
+  const otherOf = useCallback(
+    (c: ConvRow): Party => {
+      if (role === 'profissional') {
+        return { id: c.client_id, name: c.client?.full_name.trim() || 'Cliente', avatarUrl: c.client?.avatar_url ?? undefined };
+      }
+      const pro = getProfessional(c.professional_id);
+      return { id: c.professional_id, name: pro?.name ?? 'Profissional', avatarUrl: pro?.avatarUrl };
     },
-    [patch],
+    [role, getProfessional],
   );
 
-  /** Resposta simulada do profissional (substituir pelo back-end). */
-  const proSays = useCallback(
-    (id: string, delay: number, make: () => Message) => {
-      later(Math.max(200, delay - 900), () => patch(id, (c) => ({ ...c, typing: true })));
-      later(delay, () => push(id, make()));
-    },
-    [patch, push],
+  const conversations = useMemo<Conversation[]>(() => {
+    if (!uid) return [];
+    const grouped: Record<string, MessageRow[]> = {};
+    for (const m of Object.values(store.messages)) (grouped[m.conversation_id] ??= []).push(m);
+    const orderByConv = Object.fromEntries(Object.values(store.orders).map((o) => [o.conversation_id, o.id]));
+
+    const list = Object.values(store.convs).map((c): Conversation => {
+      const rows = (grouped[c.id] ?? []).sort((a, b) => time(a.created_at) - time(b.created_at));
+      const messages: Message[] = [];
+      for (const r of rows) {
+        const from = r.sender_id === null ? 'system' : r.sender_id === uid ? 'me' : 'them';
+        const base = { id: r.id, at: time(r.created_at), from } as const;
+        if (r.kind === 'proposal') {
+          const p = r.proposal_id ? store.proposals[r.proposal_id] : undefined;
+          // A proposta chega pelo Realtime junto com a mensagem; até lá, não mostra.
+          if (!p) continue;
+          messages.push({
+            ...base,
+            kind: 'proposal',
+            proposalId: p.id,
+            amount: Number(p.amount),
+            when: p.scheduled_label,
+            note: p.note ?? undefined,
+            status: p.status === 'superseded' ? 'declined' : p.status,
+          });
+        } else if (r.kind === 'request') {
+          messages.push({
+            ...base,
+            kind: 'request',
+            serviceTitle: getService(c.service_id)?.title ?? '',
+            description: r.body ?? '',
+            when: r.request_when ?? '',
+            address: toAddress(r.request_address),
+            photos: r.photos ?? [],
+          });
+        } else if (r.kind === 'system') {
+          messages.push({ ...base, kind: 'system', text: r.body ?? '' });
+        } else {
+          messages.push({ ...base, kind: 'text', text: r.body ?? '', pending: isTmp(r.id) });
+        }
+      }
+      const readAt = time(role === 'profissional' ? c.professional_last_read_at : c.client_last_read_at);
+      // O chat aberto marca como lido no banco assim que algo chega (ver chat/[id].tsx).
+      const unread = rows.filter((r) => r.sender_id !== uid && time(r.created_at) > readAt).length;
+      return {
+        id: c.id,
+        proId: c.professional_id,
+        clientId: c.client_id,
+        other: otherOf(c),
+        serviceId: c.service_id,
+        messages,
+        unread,
+        orderId: orderByConv[c.id],
+      };
+    });
+
+    return list
+      .filter((c) => c.messages.length > 0)
+      .sort((a, b) => (b.messages.at(-1)?.at ?? 0) - (a.messages.at(-1)?.at ?? 0));
+  }, [store, uid, role, getService, otherOf]);
+
+  const orders = useMemo<Order[]>(
+    () =>
+      Object.values(store.orders)
+        .map((o) => ({
+          id: o.id,
+          conversationId: o.conversation_id,
+          proId: o.professional_id,
+          clientId: store.convs[o.conversation_id]?.client_id ?? '',
+          other: store.convs[o.conversation_id] ? otherOf(store.convs[o.conversation_id]) : { id: o.professional_id, name: '' },
+          serviceId: o.service_id,
+          amount: Number(o.amount),
+          when: o.scheduled_label,
+          address: toAddress(o.address),
+          status: o.status,
+          rating: o.rating,
+          createdAt: time(o.created_at),
+        }))
+        .sort((a, b) => b.createdAt - a.createdAt),
+    [store.orders, store.convs, otherOf],
   );
+
+  // ----- ações -----
 
   const startRequest: AppValue['startRequest'] = useCallback(
-    ({ proId, serviceId, description, when, address }) => {
-      const pro = getProfessional(proId);
-      const service = getService(serviceId);
-      const id = uid('c');
-      const now = Date.now();
-      const conv: Conversation = {
-        id,
-        proId,
-        serviceId,
-        unread: 0,
-        typing: false,
-        messages: [
-          { id: uid('m'), at: now, from: 'me', kind: 'request', serviceTitle: service?.title ?? '', description, when, address },
-        ],
-      };
-      setConversations((list) => [conv, ...list]);
-      const name = pro ? firstName(pro.name) : 'o profissional';
-      proSays(id, 1800, () => ({
-        id: uid('m'),
-        at: Date.now(),
-        from: 'pro',
-        kind: 'text',
-        text: `Oi! Aqui é ${name}. Vi seu pedido e consigo te ajudar.`,
-      }));
-      proSays(id, 4200, () => ({
-        id: uid('m'),
-        at: Date.now(),
-        from: 'pro',
-        kind: 'proposal',
-        amount: exampleQuote[serviceId] ?? 150,
-        when: when === 'O quanto antes' ? 'Hoje, 16h' : when,
-        note: 'Valor com a visita inclusa. Materiais à parte, se precisar.',
-        status: 'pending',
-      }));
-      return id;
+    async ({ proId, serviceId, description, when, address, photos = [], onProgress }) => {
+      const { data: conv, error } = await supabase
+        .from('conversations')
+        .insert({ professional_id: proId, service_id: serviceId })
+        .select(CONV_COLS)
+        .single();
+      if (error) throw error;
+      update((s) => ({ ...s, convs: { ...s.convs, [conv.id]: conv } }));
+
+      // Fotos vão na pasta da conversa (é o que o Storage e o banco exigem).
+      const paths: string[] = [];
+      onProgress?.(0, photos.length);
+      for (const photo of photos) {
+        const path = `${conv.id}/${photoName()}`;
+        await uploadPhoto('request-photos', path, photo.uri);
+        paths.push(path);
+        onProgress?.(paths.length, photos.length);
+      }
+
+      const { data: msg, error: msgError } = await supabase
+        .from('messages')
+        .insert({ conversation_id: conv.id, kind: 'request', body: description, request_when: when, request_address: address, photos: paths })
+        .select(MESSAGE_COLS)
+        .single();
+      if (msgError) {
+        // Não deixa foto solta no Storage.
+        if (paths.length) supabase.storage.from('request-photos').remove(paths).then(() => {});
+        throw msgError;
+      }
+      update((s) => ({ ...s, messages: { ...s.messages, [msg.id]: msg } }));
+      return conv.id;
     },
-    [proSays],
+    [update],
   );
 
   const sendText: AppValue['sendText'] = useCallback(
-    (id, text) => {
-      const msg: TextMsg = { id: uid('m'), at: Date.now(), from: 'me', kind: 'text', text };
-      push(id, msg);
-      const conv = conversations.find((c) => c.id === id);
-      const value = parseAmount(text);
-      const pending = conv?.messages.find((m) => m.kind === 'proposal' && m.status === 'pending') as ProposalMsg | undefined;
-      if (value && !conv?.orderId) {
-        // contraproposta: o profissional aceita e manda uma proposta atualizada
-        if (pending) patch(id, (c) => ({ ...c, messages: c.messages.map((m) => (m.id === pending.id ? { ...m, status: 'declined' } : m)) as Message[] }));
-        proSays(id, 2200, () => ({ id: uid('m'), at: Date.now(), from: 'pro', kind: 'text', text: 'Consigo fazer por esse valor. Te mandei a proposta atualizada.' }));
-        proSays(id, 3600, () => ({
-          id: uid('m'),
-          at: Date.now(),
-          from: 'pro',
-          kind: 'proposal',
-          amount: value,
-          when: pending?.when ?? 'Amanhã, 14h',
-          status: 'pending',
-        }));
-      } else {
-        proSays(id, 2400, () => ({
-          id: uid('m'),
-          at: Date.now(),
-          from: 'pro',
-          kind: 'text',
-          text: conv?.orderId ? 'Combinado! Qualquer coisa é só chamar por aqui.' : 'Entendi! Se quiser, me fala um valor e eu vejo se consigo.',
-        }));
-      }
+    async (conversationId, text) => {
+      if (!uid) return;
+      // Aparece na hora; é trocada pela mensagem real quando o banco confirma.
+      const tmpId = `tmp:${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
+      const tmp: MessageRow = {
+        id: tmpId,
+        conversation_id: conversationId,
+        sender_id: uid,
+        kind: 'text',
+        body: text,
+        proposal_id: null,
+        request_when: null,
+        request_address: null,
+        photos: [],
+        created_at: new Date().toISOString(),
+      };
+      update((s) => ({ ...s, messages: { ...s.messages, [tmpId]: tmp } }));
+
+      const { data: msg, error } = await supabase
+        .from('messages')
+        .insert({ conversation_id: conversationId, body: text })
+        .select(MESSAGE_COLS)
+        .single();
+      update((s) => {
+        const rest = { ...s.messages };
+        delete rest[tmpId];
+        if (msg) rest[msg.id] = msg;
+        return { ...s, messages: rest };
+      });
+      if (error) throw error;
     },
-    [conversations, patch, proSays, push],
+    [uid, update],
   );
 
   const respondProposal: AppValue['respondProposal'] = useCallback(
-    (id, messageId, accept) => {
-      const conv = conversations.find((c) => c.id === id);
-      const proposal = conv?.messages.find((m) => m.id === messageId) as ProposalMsg | undefined;
-      const request = conv?.messages.find((m) => m.kind === 'request') as RequestMsg | undefined;
-      if (!conv || !proposal || conv.orderId || proposal.kind !== 'proposal' || proposal.status !== 'pending') return;
-      patch(id, (c) => ({
-        ...c,
-        // Ao aceitar uma, as outras propostas pendentes ficam recusadas
-        messages: c.messages.map((m) =>
-          m.id === messageId
-            ? { ...m, status: accept ? 'accepted' : 'declined' }
-            : accept && m.kind === 'proposal' && m.status === 'pending'
-              ? { ...m, status: 'declined' }
-              : m,
-        ) as Message[],
-      }));
-      if (!accept) {
-        push(id, { id: uid('m'), at: Date.now(), from: 'system', kind: 'system', text: 'Você recusou a proposta' });
-        proSays(id, 2200, () => ({ id: uid('m'), at: Date.now(), from: 'pro', kind: 'text', text: 'Sem problemas. Me diz um valor que fique bom pra você.' }));
-        return;
+    async (_conversationId, messageId, accept) => {
+      const proposalId = store.messages[messageId]?.proposal_id;
+      if (!proposalId) return;
+      if (accept) {
+        const { data: order, error } = await supabase.rpc('accept_proposal', { p_proposal_id: proposalId });
+        if (error) throw error;
+        update((s) => ({
+          ...s,
+          proposals: { ...s.proposals, [proposalId]: { ...s.proposals[proposalId], status: 'accepted' } },
+          orders: { ...s.orders, [order.id]: { ...s.orders[order.id], ...order } },
+        }));
+      } else {
+        const { data: proposal, error } = await supabase.rpc('decline_proposal', { p_proposal_id: proposalId });
+        if (error) throw error;
+        update((s) => ({ ...s, proposals: { ...s.proposals, [proposal.id]: proposal } }));
       }
-      const orderId = uid('o');
-      const order: Order = {
-        id: orderId,
-        conversationId: id,
-        proId: conv.proId,
-        serviceId: conv.serviceId,
-        amount: proposal.amount,
-        when: proposal.when,
-        address: request?.address ?? { label: 'Casa', line: '', area: '' },
-        status: 'combinado',
-        createdAt: Date.now(),
-      };
-      setOrders((list) => [order, ...list]);
-      patch(id, (c) => ({ ...c, orderId }));
-      push(id, { id: uid('m'), at: Date.now(), from: 'system', kind: 'system', text: `Serviço combinado · ${formatBRL(proposal.amount)} · ${proposal.when}` });
-      proSays(id, 2000, () => ({ id: uid('m'), at: Date.now(), from: 'pro', kind: 'text', text: 'Perfeito, combinado! Te aviso por aqui quando estiver a caminho.' }));
     },
-    [conversations, patch, proSays, push],
+    [store.messages, update],
   );
 
-  const markRead = useCallback((id: string) => patch(id, (c) => (c.unread ? { ...c, unread: 0 } : c)), [patch]);
-  const setOpenConversation = useCallback((id: string | null) => {
-    openRef.current = id;
-  }, []);
+  const markRead = useCallback(
+    (conversationId: string) => {
+      // Usa o horário (do servidor) da última mensagem, não o relógio do aparelho.
+      let last = '';
+      for (const m of Object.values(store.messages)) {
+        if (m.conversation_id !== conversationId || isTmp(m.id)) continue;
+        if (!last || time(m.created_at) > time(last)) last = m.created_at;
+      }
+      if (last) {
+        update((s) =>
+          s.convs[conversationId]
+            ? {
+                ...s,
+                convs: {
+                  ...s.convs,
+                  [conversationId]: {
+                    ...s.convs[conversationId],
+                    [role === 'profissional' ? 'professional_last_read_at' : 'client_last_read_at']: last,
+                  },
+                },
+              }
+            : s,
+        );
+      }
+      supabase.rpc('mark_conversation_read', { p_conversation_id: conversationId }).then(() => {});
+    },
+    [store.messages, update, role],
+  );
 
-  const setOrder = (id: string, fn: (o: Order) => Order) => setOrders((list) => list.map((o) => (o.id === id ? fn(o) : o)));
-  const completeOrder = useCallback((id: string) => setOrder(id, (o) => ({ ...o, status: 'concluido' })), []);
-  const cancelOrder = useCallback((id: string) => setOrder(id, (o) => ({ ...o, status: 'cancelado' })), []);
-  const rateOrder = useCallback((id: string, stars: number) => setOrder(id, (o) => ({ ...o, rating: stars })), []);
+  const sendProposal: AppValue['sendProposal'] = useCallback(
+    async (conversationId, { amount, when, note }) => {
+      const { data: p, error } = await supabase
+        .from('proposals')
+        .insert({ conversation_id: conversationId, amount, scheduled_label: when, note: note?.trim() || null })
+        .select('id, conversation_id, amount, scheduled_label, note, status')
+        .single();
+      if (error) throw error;
+      // A mensagem da proposta é criada pelo banco e chega pelo Realtime.
+      update((s) => ({ ...s, proposals: { ...s.proposals, [p.id]: p } }));
+    },
+    [update],
+  );
+
+  const applyOrder = useCallback(
+    (order: Omit<OrderRow, 'rating'>) => update((s) => ({ ...s, orders: { ...s.orders, [order.id]: { ...s.orders[order.id], ...order } } })),
+    [update],
+  );
+
+  const completeOrder = useCallback(
+    async (orderId: string) => {
+      const { data: order, error } = await supabase.rpc('complete_order', { p_order_id: orderId });
+      if (error) throw error;
+      applyOrder(order);
+    },
+    [applyOrder],
+  );
+
+  const cancelOrder = useCallback(
+    async (orderId: string) => {
+      const { data: order, error } = await supabase.rpc('cancel_order', { p_order_id: orderId });
+      if (error) throw error;
+      applyOrder(order);
+    },
+    [applyOrder],
+  );
+
+  const rateOrder = useCallback(
+    async (orderId: string, stars: number) => {
+      const { data: review, error } = await supabase.rpc('rate_order', { p_order_id: orderId, p_rating: stars });
+      if (error) throw error;
+      update((s) => (s.orders[orderId] ? { ...s, orders: { ...s.orders, [orderId]: { ...s.orders[orderId], rating: review.rating } } } : s));
+    },
+    [update],
+  );
 
   const toggleFavorite = useCallback(
     (sid: string) => setFavorites((f) => (f.includes(sid) ? f.filter((x) => x !== sid) : [...f, sid])),
@@ -287,6 +568,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const value = useMemo<AppValue>(
     () => ({
+      status,
+      role,
+      refresh: load,
       conversations,
       orders,
       favorites,
@@ -294,15 +578,15 @@ export function AppProvider({ children }: { children: ReactNode }) {
       startRequest,
       sendText,
       respondProposal,
+      sendProposal,
       markRead,
       completeOrder,
       cancelOrder,
       rateOrder,
       toggleFavorite,
       isFavorite: (sid) => favorites.includes(sid),
-      setOpenConversation,
     }),
-    [conversations, orders, favorites, startRequest, sendText, respondProposal, markRead, completeOrder, cancelOrder, rateOrder, toggleFavorite, setOpenConversation],
+    [status, role, load, conversations, orders, favorites, startRequest, sendText, respondProposal, sendProposal, markRead, completeOrder, cancelOrder, rateOrder, toggleFavorite],
   );
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;

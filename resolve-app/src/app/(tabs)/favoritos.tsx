@@ -3,13 +3,14 @@ import { ScrollView, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { EmptyState, ServiceCard, TopBar } from '@/components';
-import { services } from '@/data/catalog';
 import { useApp } from '@/state/app';
+import { useCatalog } from '@/state/catalog';
 import { colors, spacing } from '@/theme/tokens';
 
 /** Aberto pelo Perfil (não aparece na barra de abas). */
 export default function Favoritos() {
   const { favorites } = useApp();
+  const { services } = useCatalog();
   const items = services.filter((s) => favorites.includes(s.id));
 
   return (

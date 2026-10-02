@@ -196,6 +196,7 @@ export type Database = {
           created_at: string
           id: string
           kind: Database["public"]["Enums"]["message_kind"]
+          photos: string[]
           proposal_id: string | null
           request_address: Json | null
           request_when: string | null
@@ -207,6 +208,7 @@ export type Database = {
           created_at?: string
           id?: string
           kind?: Database["public"]["Enums"]["message_kind"]
+          photos?: string[]
           proposal_id?: string | null
           request_address?: Json | null
           request_when?: string | null
@@ -218,6 +220,7 @@ export type Database = {
           created_at?: string
           id?: string
           kind?: Database["public"]["Enums"]["message_kind"]
+          photos?: string[]
           proposal_id?: string | null
           request_address?: Json | null
           request_when?: string | null

@@ -2,9 +2,9 @@ import { router } from 'expo-router';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { Button, ConversationRow, EmptyState, Text } from '@/components';
-import { getProfessional, getService } from '@/data/catalog';
+import { Button, CatalogFallback, ConversationRow, EmptyState, Text } from '@/components';
 import { useApp, type Message } from '@/state/app';
+import { useCatalog } from '@/state/catalog';
 import { colors, spacing } from '@/theme/tokens';
 import { formatBRL, formatDay } from '@/utils/format';
 
@@ -22,8 +22,10 @@ function preview(m: Message) {
 }
 
 export default function Mensagens() {
-  const { conversations, orders } = useApp();
-  const sorted = [...conversations].sort((a, b) => (b.messages.at(-1)?.at ?? 0) - (a.messages.at(-1)?.at ?? 0));
+  const { getService } = useCatalog();
+  const { status, role, refresh, conversations, orders } = useApp();
+  // Já vem ordenado pela última mensagem.
+  const sorted = conversations;
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
@@ -39,23 +41,42 @@ export default function Mensagens() {
           return (
             <ConversationRow
               key={c.id}
-              name={getProfessional(c.proId)?.name ?? ''}
+              name={c.other.name}
+              avatarUrl={c.other.avatarUrl}
               service={getService(c.serviceId)?.title ?? ''}
               preview={preview(last)}
               time={formatDay(last.at)}
               unread={c.unread}
-              typing={c.typing}
               done={order?.status === 'concluido'}
               onPress={() => router.push({ pathname: '/chat/[id]', params: { id: c.id } })}
             />
           );
         })}
-        {sorted.length === 0 ? (
+        {status === 'idle' ? (
           <View style={{ padding: spacing[5], gap: spacing[4] }}>
-            <EmptyState icon="message-circle" title="Nenhuma conversa ainda" description="Peça um orçamento e a conversa com o profissional aparece aqui." />
-            <Button variant="primary" block onPress={() => router.push('/buscar')}>
-              Encontrar um serviço
+            <EmptyState icon="message-circle" title="Entre para ver suas conversas" description="Seus pedidos de orçamento e as conversas com os profissionais ficam aqui." />
+            <Button variant="primary" block onPress={() => router.push('/entrar')}>
+              Entrar ou criar conta
             </Button>
+          </View>
+        ) : null}
+        {status === 'loading' || status === 'error' ? (
+          <View style={{ padding: spacing[5] }}>
+            <CatalogFallback status={status} onRetry={refresh} />
+          </View>
+        ) : null}
+        {status === 'ready' && sorted.length === 0 ? (
+          <View style={{ padding: spacing[5], gap: spacing[4] }}>
+            {role === 'profissional' ? (
+              <EmptyState icon="message-circle" title="Nenhuma conversa ainda" description="Quando um cliente pedir um orçamento, a conversa aparece aqui." />
+            ) : (
+              <>
+                <EmptyState icon="message-circle" title="Nenhuma conversa ainda" description="Peça um orçamento e a conversa com o profissional aparece aqui." />
+                <Button variant="primary" block onPress={() => router.push('/buscar')}>
+                  Encontrar um serviço
+                </Button>
+              </>
+            )}
           </View>
         ) : null}
       </ScrollView>

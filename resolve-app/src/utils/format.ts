@@ -46,18 +46,13 @@ export function firstName(name: string) {
   return name.split(' ')[0];
 }
 
-/**
- * Lê um valor em reais de um texto: "faz por 120?" → 120, "R$ 1.500" → 1500.
- * Só conta número com cara de dinheiro ("R$", "reais", "por 120"…),
- * pra "pode vir às 14h?" ou "dia 15" não virarem contraproposta.
- */
-export function parseAmount(text: string): number | null {
-  const t = text.toLowerCase().replace(/(\d)\.(?=\d{3}\b)/g, '$1');
-  const num = String.raw`(\d{2,5})(?:,(\d{1,2}))?(?![\d:h])`;
-  const m =
-    t.match(/r\$\s*(\d{1,5})(?:,(\d{1,2}))?/) ??
-    t.match(new RegExp(`${num}\\s*(?:reais|conto|pila)\\b`)) ??
-    t.match(new RegExp(`\\b(?:por|faz|fecha|fechar|pago|valor|ofereço|ofereco|consigo)\\s+(?:uns\\s+|de\\s+)?${num}`));
-  if (!m) return null;
-  return Number(m[1]) + (m[2] ? Number(m[2].padEnd(2, '0')) / 100 : 0);
+/** Valor digitado em reais: "150" → 150, "1.500,50" → 1500.5, "99.9" → 99.9. Inválido → null. */
+export function parseBRLInput(text: string): number | null {
+  const t = text.trim();
+  if (!t) return null;
+  // Com vírgula, o ponto é milhar; sem vírgula, um único ponto com 1–2 casas é decimal.
+  const normalized = t.includes(',') ? t.replace(/\./g, '').replace(',', '.') : /^\d+\.\d{1,2}$/.test(t) ? t : t.replace(/\./g, '');
+  if (!/^\d+(\.\d{1,2})?$/.test(normalized)) return null;
+  const n = Number(normalized);
+  return Number.isFinite(n) && n <= 99_999_999 ? n : null;
 }

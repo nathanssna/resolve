@@ -3,49 +3,50 @@ import { useMemo, useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { Button, EmptyState, FilterChip, Icon, ProfessionalOption, StickyFooter, Text, TopBar } from '@/components';
-import { getProfessionals, getService, type Professional } from '@/data/catalog';
+import { Button, CatalogFallback, EmptyState, FilterChip, Icon, ProfessionalOption, StickyFooter, Text, TopBar } from '@/components';
+import { useCatalog, type Professional } from '@/state/catalog';
 import { colors, radius, spacing } from '@/theme/tokens';
-import { firstName, formatCount, formatDecimal } from '@/utils/format';
+import { firstName, formatCount, formatExperience } from '@/utils/format';
 
-type Sort = 'recomendados' | 'avaliados' | 'proximos' | 'rapidos';
+// Sem 'Mais próximos' até o endereço do usuário ter coordenadas.
+type Sort = 'recomendados' | 'avaliados' | 'rapidos';
 
 const FILTERS: { id: Sort; label: string }[] = [
   { id: 'recomendados', label: 'Recomendados' },
   { id: 'avaliados', label: 'Mais bem avaliados' },
-  { id: 'proximos', label: 'Mais próximos' },
   { id: 'rapidos', label: 'Respondem rápido' },
 ];
 
 /** Recomendação simples: nota, volume e rapidez. */
-const score = (p: Professional) => p.rating * 20 + Math.min(p.jobs, 500) / 50 - p.replyMin / 5 - p.distanceKm;
+const score = (p: Professional) => p.rating * 20 + Math.min(p.jobs, 500) / 50 - p.replyMin / 5;
 
 function sortList(list: Professional[], sort: Sort) {
   const copy = [...list];
   if (sort === 'recomendados') copy.sort((a, b) => score(b) - score(a));
   if (sort === 'avaliados') copy.sort((a, b) => b.rating - a.rating || b.reviews - a.reviews);
-  if (sort === 'proximos') copy.sort((a, b) => a.distanceKm - b.distanceKm);
   if (sort === 'rapidos') copy.sort((a, b) => a.replyMin - b.replyMin);
   return copy;
 }
 
 export default function Profissionais() {
   const { serviceId } = useLocalSearchParams<{ serviceId: string }>();
+  const { getService, getProfessionals, status, refresh } = useCatalog();
   const service = getService(serviceId);
-  const all = getProfessionals(serviceId);
+  const all = useMemo(() => getProfessionals(serviceId), [getProfessionals, serviceId]);
   const [sort, setSort] = useState<Sort>('recomendados');
   const list = useMemo(() => sortList(all, sort), [all, sort]);
-  const [selected, setSelected] = useState<string | undefined>(() => sortList(all, 'recomendados')[0]?.id);
+  const best = useMemo(() => sortList(all, 'recomendados')[0]?.id, [all]);
+  const fastest = useMemo(() => sortList(all, 'rapidos')[0]?.id, [all]);
+  // Começa no recomendado (também quando a lista chega depois de abrir a tela).
+  const [picked, setSelected] = useState<string>();
+  const selected = picked ?? best;
   const chosen = all.find((p) => p.id === selected);
-
-  const best = sortList(all, 'recomendados')[0]?.id;
-  const fastest = sortList(all, 'rapidos')[0]?.id;
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
       <TopBar title="Escolha um profissional" />
       <Text variant="bodySm" color={colors.inkMuted} style={styles.sub}>
-        {service?.title} · {all.length} perto de você
+        {service?.title} · {all.length === 1 ? '1 profissional' : `${all.length} profissionais`}
       </Text>
 
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexGrow: 0 }} contentContainerStyle={styles.filters}>
@@ -68,9 +69,10 @@ export default function Profissionais() {
           <ProfessionalOption
             key={p.id}
             name={p.name}
+            avatarUrl={p.avatarUrl}
             rating={p.rating}
             reviews={p.reviews}
-            meta={`${formatDecimal(p.distanceKm)} km · ${formatCount(p.jobs)} serviços`}
+            meta={`${formatExperience(p.years)} · ${formatCount(p.jobs)} serviços`}
             aside={`~${p.replyMin} min`}
             asideLabel="para responder"
             badge={p.id === best ? 'RECOMENDADO' : p.id === fastest ? 'RESPONDE RÁPIDO' : undefined}
@@ -79,7 +81,8 @@ export default function Profissionais() {
           />
         ))}
 
-        {list.length === 0 ? (
+        {status !== 'ready' ? <CatalogFallback status={status} onRetry={refresh} /> : null}
+        {status === 'ready' && list.length === 0 ? (
           <EmptyState icon="user-round" title="Ainda não há profissionais" description="Estamos chegando na sua região. Volte em breve." />
         ) : null}
       </ScrollView>

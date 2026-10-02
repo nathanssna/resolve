@@ -37,7 +37,9 @@ export default function SobreVoce() {
     setError(null);
     try {
       await completeOnboarding(name, role);
-      finish();
+      // Profissional completa a ficha antes de entrar (é o que o faz aparecer para os clientes).
+      if (role === 'profissional') router.replace({ pathname: '/profissional/ficha', params: { primeira: '1' } });
+      else finish();
     } catch (e) {
       setError(authErrorMessage(e));
       setSaving(false);

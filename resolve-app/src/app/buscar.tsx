@@ -3,20 +3,21 @@ import { useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { EmptyState, Field, Icon, IconButton, goBack, SectionHeader, Text } from '@/components';
-import { services } from '@/data/catalog';
+import { CatalogFallback, EmptyState, Field, Icon, IconButton, goBack, SectionHeader, Text } from '@/components';
+import { useCatalog } from '@/state/catalog';
 import { colors, radius, spacing } from '@/theme/tokens';
 
 const normalize = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
 
 export default function Buscar() {
+  const { services, status, refresh } = useCatalog();
   const [q, setQ] = useState('');
   const query = normalize(q.trim());
 
   const results = useMemo(() => {
     if (!query) return services;
     return services.filter((s) => normalize([s.title, s.subtitle, s.area, ...s.examples, ...s.includes].join(' ')).includes(query));
-  }, [query]);
+  }, [query, services]);
 
   const suggestions = services.flatMap((s) => s.examples.slice(0, 1).map((e) => ({ text: e, id: s.id })));
   const open = (id: string) => router.push({ pathname: '/servico/[id]', params: { id } });
@@ -31,7 +32,8 @@ export default function Buscar() {
       </View>
 
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-        {!query ? (
+        {status !== 'ready' ? <CatalogFallback status={status} onRetry={refresh} /> : null}
+        {status === 'ready' && !query ? (
           <View style={{ gap: spacing[3] }}>
             <SectionHeader title="Buscas comuns" />
             <View style={styles.chips}>
@@ -61,7 +63,7 @@ export default function Buscar() {
               <Icon name="chevron-right" size={18} />
             </Pressable>
           ))}
-          {results.length === 0 ? (
+          {status === 'ready' && results.length === 0 ? (
             <EmptyState icon="search" title="Nada encontrado" description="Tente outra palavra, como “vazamento” ou “montar”." />
           ) : null}
         </View>

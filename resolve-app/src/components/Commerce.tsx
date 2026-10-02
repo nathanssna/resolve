@@ -153,6 +153,7 @@ export function ActiveOrderCard({
 /** Opção selecionável de profissional (lista de escolha, como opções de corrida). */
 export function ProfessionalOption({
   name,
+  avatarUrl,
   rating,
   reviews,
   meta,
@@ -163,6 +164,8 @@ export function ProfessionalOption({
   onPress,
 }: {
   name: string;
+  /** Foto do profissional; sem foto, o bonequinho. */
+  avatarUrl?: string;
   rating: number;
   reviews: number;
   meta: string;
@@ -182,7 +185,7 @@ export function ProfessionalOption({
       onPress={onPress}
       style={[styles.option, selected && styles.optionOn]}
     >
-      <Avatar size={52} />
+      <Avatar size={52} uri={avatarUrl} />
       <View style={{ flex: 1, gap: 3 }}>
         {badge ? <Badge tone={selected ? 'ink' : 'brand'}>{badge}</Badge> : null}
         <Text variant="labelLg">{name}</Text>

@@ -11,6 +11,8 @@
 import type { Session } from '@supabase/supabase-js';
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 
+import { uploadPhoto, type LocalPhoto } from '@/lib/photos';
+import { unregisterPush } from '@/lib/push';
 import { supabase, type Profile, type UserRole } from '@/lib/supabase';
 
 type AuthValue = {
@@ -26,6 +28,8 @@ type AuthValue = {
   verifyCode: (email: string, code: string) => Promise<Profile | null>;
   completeOnboarding: (fullName: string, role: UserRole) => Promise<void>;
   refreshProfile: () => Promise<Profile | null>;
+  /** Troca a foto de perfil (já reduzida). */
+  setAvatar: (photo: LocalPhoto) => Promise<void>;
   signOut: () => Promise<void>;
 };
 
@@ -94,7 +98,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return p;
   }, [userId]);
 
+  const setAvatar = useCallback(
+    async (photo: LocalPhoto) => {
+      if (!userId) return;
+      const path = `${userId}/avatar.jpg`;
+      await uploadPhoto('avatars', path, photo.uri, true);
+      // O ?v= faz o celular buscar a foto nova em vez da que está no cache.
+      const url = `${supabase.storage.from('avatars').getPublicUrl(path).data.publicUrl}?v=${Date.now()}`;
+      const { error } = await supabase.from('profiles').update({ avatar_url: url }).eq('id', userId);
+      if (error) throw error;
+      const p = await fetchMyProfile();
+      setLoaded({ uid: userId, profile: p });
+    },
+    [userId],
+  );
+
   const signOut = useCallback(async () => {
+    // Este aparelho para de receber o push da conta (precisa da sessão para apagar).
+    await unregisterPush().catch(() => {});
     // 'local' encerra a sessão neste aparelho mesmo sem internet.
     await supabase.auth.signOut({ scope: 'local' });
   }, []);
@@ -103,8 +124,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const needsOnboarding = !!profile && profile.full_name.trim() === '';
 
   const value = useMemo<AuthValue>(
-    () => ({ ready, session, profile, needsOnboarding, sendCode, verifyCode, completeOnboarding, refreshProfile, signOut }),
-    [ready, session, profile, needsOnboarding, sendCode, verifyCode, completeOnboarding, refreshProfile, signOut],
+    () => ({ ready, session, profile, needsOnboarding, sendCode, verifyCode, completeOnboarding, refreshProfile, setAvatar, signOut }),
+    [ready, session, profile, needsOnboarding, sendCode, verifyCode, completeOnboarding, refreshProfile, setAvatar, signOut],
   );
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;

@@ -2,9 +2,9 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { ScrollView, Share, StyleSheet, View } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { Button, CheckItem, EmptyState, Icon, InfoBanner, Rating, SectionHeader, StickyFooter, Text, TopBar } from '@/components';
-import { getProfessionals, getService } from '@/data/catalog';
+import { Button, CatalogFallback, CheckItem, EmptyState, Icon, InfoBanner, Rating, SectionHeader, StickyFooter, Text, TopBar } from '@/components';
 import { useApp } from '@/state/app';
+import { useCatalog } from '@/state/catalog';
 import { colors, radius, shadows, spacing } from '@/theme/tokens';
 
 const howItWorks = [
@@ -15,6 +15,7 @@ const howItWorks = [
 
 export default function ServicoDetalhe() {
   const { id } = useLocalSearchParams<{ id: string }>();
+  const { getService, getProfessionals, status, refresh } = useCatalog();
   const service = getService(id);
   const { isFavorite, toggleFavorite } = useApp();
   const insets = useSafeAreaInsets();
@@ -24,7 +25,7 @@ export default function ServicoDetalhe() {
       <SafeAreaView style={{ flex: 1, backgroundColor: colors.surface }}>
         <TopBar />
         <View style={{ padding: spacing[5] }}>
-          <EmptyState icon="search" title="Serviço não encontrado" />
+          {status === 'ready' ? <EmptyState icon="search" title="Serviço não encontrado" /> : <CatalogFallback status={status} onRetry={refresh} />}
         </View>
       </SafeAreaView>
     );

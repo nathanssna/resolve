@@ -4,6 +4,7 @@ import { Animated, Pressable, ScrollView, StyleSheet, TextInput, View } from 're
 import { colors, fonts, radius, shadows, spacing } from '@/theme/tokens';
 import { formatBRL, formatTime } from '@/utils/format';
 import { Icon, type IconName } from './Icon';
+import { PhotoThumbs } from './Photos';
 import { Avatar } from './ProfessionalCard';
 import { Badge } from './Surfaces';
 import { Text } from './Text';
@@ -44,16 +45,24 @@ export function RequestCard({
   when,
   address,
   at,
+  photos = [],
+  onOpenPhoto,
+  mine = true,
 }: {
+  /** true: quem vê é o cliente que fez o pedido (card à direita). */
+  mine?: boolean;
   serviceTitle: string;
   description: string;
   when: string;
   address: string;
   at: number;
+  /** URLs das fotos (vazio = carregando). */
+  photos?: (string | undefined)[];
+  onOpenPhoto?: (index: number) => void;
 }) {
   return (
-    <View style={[styles.bubbleRow, { justifyContent: 'flex-end' }]}>
-      <View style={[styles.card, styles.requestCard]}>
+    <View style={[styles.bubbleRow, mine && { justifyContent: 'flex-end' }]}>
+      <View style={[styles.card, styles.requestCard, !mine && styles.requestTheirs]}>
         <View style={styles.cardHead}>
           <Badge tone="ink" icon="clipboard-list">
             PEDIDO
@@ -66,6 +75,7 @@ export function RequestCard({
         <Text variant="body" color={colors.inkBody}>
           {description}
         </Text>
+        {photos.length ? <PhotoThumbs uris={photos} size={64} onOpen={onOpenPhoto} /> : null}
         <View style={{ gap: 6 }}>
           <CardRow icon="calendar-clock" text={when} />
           <CardRow icon="map-pin" text={address} />
@@ -85,7 +95,10 @@ export function ProposalCard({
   onAccept,
   onDecline,
   onCounter,
+  mine = false,
 }: {
+  /** true: quem vê é o profissional que enviou (sem Aceitar/Recusar). */
+  mine?: boolean;
   amount: number;
   when: string;
   note?: string;
@@ -96,8 +109,8 @@ export function ProposalCard({
   onCounter?: () => void;
 }) {
   return (
-    <View style={styles.bubbleRow}>
-      <View style={[styles.card, styles.proposal, status === 'declined' && { opacity: 0.6 }]}>
+    <View style={[styles.bubbleRow, mine && { justifyContent: 'flex-end' }]}>
+      <View style={[styles.card, styles.proposal, mine && styles.proposalMine, status === 'declined' && { opacity: 0.6 }]}>
         <View style={styles.cardHead}>
           <Badge tone={status === 'accepted' ? 'success' : status === 'declined' ? 'muted' : 'brand'} icon={status === 'accepted' ? 'check' : 'receipt'}>
             {status === 'accepted' ? 'ACEITA' : status === 'declined' ? 'RECUSADA' : 'PROPOSTA'}
@@ -111,7 +124,15 @@ export function ProposalCard({
           <CardRow icon="calendar-clock" text={when} />
           {note ? <CardRow icon="info" text={note} /> : null}
         </View>
-        {status === 'pending' ? (
+        {status === 'pending' && mine ? (
+          <View style={styles.waiting}>
+            <Icon name="clock" size={16} strokeWidth={2.25} color={colors.inkMuted} />
+            <Text variant="bodySm" color={colors.inkMuted}>
+              Aguardando resposta do cliente
+            </Text>
+          </View>
+        ) : null}
+        {status === 'pending' && !mine ? (
           <View style={{ gap: spacing[2], marginTop: spacing[1] }}>
             <Pressable accessibilityRole="button" onPress={onAccept} style={({ pressed }) => [styles.accept, pressed && { opacity: 0.88 }]}>
               <Icon name="check" size={18} strokeWidth={2.5} color={colors.onBrand} />
@@ -177,10 +198,13 @@ export function TypingBubble() {
 /** Campo de mensagem com respostas rápidas. */
 export function Composer({
   onSend,
+  onTyping,
   quickReplies = [],
   prefill,
 }: {
   onSend: (text: string) => void;
+  /** Chamado enquanto a pessoa digita (para o "digitando…" do outro lado). */
+  onTyping?: () => void;
   quickReplies?: string[];
   /** Quando muda, preenche o campo e foca (ex.: "Negociar"). */
   prefill?: { text: string; key: number };
@@ -216,7 +240,10 @@ export function Composer({
         <TextInput
           ref={ref}
           value={text}
-          onChangeText={setText}
+          onChangeText={(t) => {
+            setText(t);
+            if (t.trim()) onTyping?.();
+          }}
           placeholder="Escreva uma mensagem"
           placeholderTextColor={colors.inkMuted}
           accessibilityLabel="Escreva uma mensagem"
@@ -248,7 +275,9 @@ export function ConversationRow({
   typing,
   done,
   onPress,
+  avatarUrl,
 }: {
+  avatarUrl?: string;
   name: string;
   service: string;
   preview: string;
@@ -261,7 +290,7 @@ export function ConversationRow({
   return (
     <Pressable accessibilityRole="button" onPress={onPress} style={({ pressed }) => [styles.convRow, pressed && { backgroundColor: colors.surfaceMuted }]}>
       <View>
-        <Avatar size={52} />
+        <Avatar size={52} uri={avatarUrl} />
         {done ? (
           <View style={styles.convCheck}>
             <Icon name="check" size={11} strokeWidth={3} color={colors.onInk} />
@@ -305,7 +334,10 @@ const styles = StyleSheet.create({
   time: { alignSelf: 'flex-end', fontSize: 10, lineHeight: 12, opacity: 0.8 },
   card: { width: '84%', padding: spacing[4], borderRadius: radius.xl, gap: spacing[3] },
   requestCard: { backgroundColor: colors.brandTint, borderBottomRightRadius: 6 },
+  requestTheirs: { borderBottomRightRadius: radius.xl, borderBottomLeftRadius: 6 },
   proposal: { backgroundColor: colors.surface, borderBottomLeftRadius: 6, boxShadow: shadows.card, borderWidth: 1, borderColor: colors.line },
+  proposalMine: { borderBottomLeftRadius: radius.xl, borderBottomRightRadius: 6 },
+  waiting: { flexDirection: 'row', alignItems: 'center', gap: spacing[2], marginTop: spacing[1] },
   cardHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   cardRow: { flexDirection: 'row', alignItems: 'center', gap: spacing[2] },
   amount: { fontFamily: fonts.extrabold, fontSize: 30, lineHeight: 34, letterSpacing: -0.6, color: colors.ink },

@@ -1,9 +1,10 @@
 import { router } from 'expo-router';
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Pressable, RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import {
   ActiveOrderCard,
+  CatalogFallback,
   Icon,
   IconButton,
   PromoCard,
@@ -13,15 +14,25 @@ import {
   ServiceTile,
   Text,
 } from '@/components';
-import { defaultAddress, getProfessional, getService, popular, services } from '@/data/catalog';
+import { defaultAddress } from '@/data/sample';
 import { useApp, type ProposalMsg } from '@/state/app';
+import { useAuth } from '@/state/auth';
+import { useCatalog } from '@/state/catalog';
+import { ProHome } from '@/screens/ProHome';
 import { colors, radius, shadows, spacing } from '@/theme/tokens';
 import { firstName, formatBRL } from '@/utils/format';
 import { notify } from '@/utils/dialog';
 
+/** Profissional vê o painel dele; cliente, o catálogo. */
 export default function Inicio() {
+  const { profile } = useAuth();
+  return profile?.role === 'profissional' ? <ProHome /> : <ClientHome />;
+}
+
+function ClientHome() {
   const insets = useSafeAreaInsets();
   const { conversations, orders } = useApp();
+  const { services, popular, getService, getProfessional, status, refresh, refreshing } = useCatalog();
 
   // Card de destaque: proposta esperando resposta > serviço combinado
   const pendingConv = conversations.find((c) => !c.orderId && c.messages.some((m) => m.kind === 'proposal' && m.status === 'pending'));
@@ -51,7 +62,12 @@ export default function Inicio() {
   const openService = (id: string) => router.push({ pathname: '/servico/[id]', params: { id } });
 
   return (
-    <ScrollView style={styles.root} contentContainerStyle={{ paddingBottom: spacing[8] }} showsVerticalScrollIndicator={false}>
+    <ScrollView
+      style={styles.root}
+      contentContainerStyle={{ paddingBottom: spacing[8] }}
+      showsVerticalScrollIndicator={false}
+      refreshControl={<RefreshControl refreshing={refreshing && status === 'ready'} onRefresh={refresh} tintColor={colors.ink} />}
+    >
       {/* Topo amarelo */}
       <View style={[styles.hero, { paddingTop: insets.top + spacing[3] }]}>
         <View style={styles.heroTop}>
@@ -83,11 +99,15 @@ export default function Inicio() {
 
         <View style={{ gap: spacing[3] }}>
           <SectionHeader title="Serviços" action="Ver todos" onAction={() => router.push('/buscar')} />
-          <View style={styles.grid}>
-            {services.map((s) => (
-              <ServiceTile key={s.id} icon={s.icon} label={s.short} badge={s.badge} onPress={() => openService(s.id)} />
-            ))}
-          </View>
+          {status === 'ready' ? (
+            <View style={styles.grid}>
+              {services.map((s) => (
+                <ServiceTile key={s.id} icon={s.icon} label={s.short} badge={s.badge} onPress={() => openService(s.id)} />
+              ))}
+            </View>
+          ) : (
+            <CatalogFallback status={status} onRetry={refresh} />
+          )}
         </View>
       </View>
 
@@ -147,23 +167,26 @@ export default function Inicio() {
           </View>
         ) : null}
 
-        <View style={{ gap: spacing[3] }}>
-          <SectionHeader title="Mais pedidos na sua região" />
-          {popular.map((id) => {
-            const s = getService(id)!;
-            return (
-              <ServiceCard
-                key={s.id}
-                icon={s.icon}
-                title={s.title}
-                subtitle={s.subtitle}
-                rating={s.rating}
-                count={s.reviews}
-                onPress={() => openService(s.id)}
-              />
-            );
-          })}
-        </View>
+        {popular.length > 0 ? (
+          <View style={{ gap: spacing[3] }}>
+            <SectionHeader title="Mais pedidos na sua região" />
+            {popular.map((id) => {
+              const s = getService(id);
+              if (!s) return null;
+              return (
+                <ServiceCard
+                  key={s.id}
+                  icon={s.icon}
+                  title={s.title}
+                  subtitle={s.subtitle}
+                  rating={s.rating}
+                  count={s.reviews}
+                  onPress={() => openService(s.id)}
+                />
+              );
+            })}
+          </View>
+        ) : null}
       </View>
     </ScrollView>
   );

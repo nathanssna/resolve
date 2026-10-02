@@ -3,9 +3,9 @@ import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { Badge, Button, EmptyState, Icon, Segmented, Text } from '@/components';
-import { getProfessional, getService } from '@/data/catalog';
+import { Badge, Button, CatalogFallback, EmptyState, Icon, Segmented, Text } from '@/components';
 import { useApp, type Order } from '@/state/app';
+import { useCatalog } from '@/state/catalog';
 import { colors, radius, shadows, spacing } from '@/theme/tokens';
 import { formatBRL } from '@/utils/format';
 
@@ -16,8 +16,8 @@ const statusBadge: Record<Order['status'], { tone: 'brand' | 'success' | 'muted'
 };
 
 function OrderCard({ order }: { order: Order }) {
+  const { getService } = useCatalog();
   const service = getService(order.serviceId);
-  const pro = getProfessional(order.proId);
   const b = statusBadge[order.status];
   return (
     <Pressable
@@ -32,7 +32,7 @@ function OrderCard({ order }: { order: Order }) {
         <View style={{ flex: 1, gap: 2 }}>
           <Text variant="labelLg">{service?.title}</Text>
           <Text variant="bodySm" color={colors.inkMuted}>
-            com {pro?.name}
+            {order.other.name ? `com ${order.other.name}` : ''}
           </Text>
         </View>
         <Badge tone={b.tone}>{b.label}</Badge>
@@ -49,7 +49,7 @@ function OrderCard({ order }: { order: Order }) {
 }
 
 export default function Pedidos() {
-  const { orders } = useApp();
+  const { status, role, refresh, orders } = useApp();
   const [tab, setTab] = useState<'andamento' | 'historico'>('andamento');
   const list = orders.filter((o) => (tab === 'andamento' ? o.status === 'combinado' : o.status !== 'combinado'));
 
@@ -72,14 +72,29 @@ export default function Pedidos() {
         {list.map((o) => (
           <OrderCard key={o.id} order={o} />
         ))}
-        {list.length === 0 ? (
+        {status === 'idle' ? (
+          <View style={{ gap: spacing[4] }}>
+            <EmptyState icon="clipboard-list" title="Entre para ver seus pedidos" description="Os serviços que você combinar no chat aparecem aqui." />
+            <Button variant="primary" block onPress={() => router.push('/entrar')}>
+              Entrar ou criar conta
+            </Button>
+          </View>
+        ) : null}
+        {status === 'loading' || status === 'error' ? <CatalogFallback status={status} onRetry={refresh} /> : null}
+        {status === 'ready' && list.length === 0 ? (
           <View style={{ gap: spacing[4] }}>
             <EmptyState
               icon="clipboard-list"
               title={tab === 'andamento' ? 'Nada combinado agora' : 'Sem histórico ainda'}
-              description={tab === 'andamento' ? 'Quando você aceitar uma proposta no chat, o serviço aparece aqui.' : 'Seus serviços concluídos aparecem aqui.'}
+              description={
+                tab === 'andamento'
+                  ? role === 'profissional'
+                    ? 'Quando um cliente aceitar uma proposta sua, o serviço aparece aqui.'
+                    : 'Quando você aceitar uma proposta no chat, o serviço aparece aqui.'
+                  : 'Seus serviços concluídos aparecem aqui.'
+              }
             />
-            {tab === 'andamento' ? (
+            {tab === 'andamento' && role !== 'profissional' ? (
               <Button variant="primary" block onPress={() => router.push('/buscar')}>
                 Pedir um orçamento
               </Button>
