@@ -1,6 +1,6 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
-import { Alert, Platform, Pressable, ScrollView, Share, StyleSheet, View } from 'react-native';
+import { Pressable, ScrollView, Share, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ActionButton, Avatar, Badge, Button, EmptyState, Icon, ListRow, StickyFooter, Text, Timeline, TopBar, type TimelineStep } from '@/components';
@@ -8,22 +8,7 @@ import { getProfessional, getService } from '@/data/catalog';
 import { useApp } from '@/state/app';
 import { colors, radius, spacing } from '@/theme/tokens';
 import { firstName, formatBRL, formatDecimal } from '@/utils/format';
-
-function notify(msg: string) {
-  if (Platform.OS === 'web') window.alert(msg);
-  else Alert.alert('Resolve', msg);
-}
-
-function confirm(msg: string, onYes: () => void) {
-  if (Platform.OS === 'web') {
-    if (window.confirm(msg)) onYes();
-  } else {
-    Alert.alert('Resolve', msg, [
-      { text: 'Voltar', style: 'cancel' },
-      { text: 'Confirmar', style: 'destructive', onPress: onYes },
-    ]);
-  }
-}
+import { notify, confirm } from '@/utils/dialog';
 
 export default function PedidoDetalhe() {
   const { id } = useLocalSearchParams<{ id: string }>();

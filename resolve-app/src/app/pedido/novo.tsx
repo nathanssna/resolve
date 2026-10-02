@@ -1,6 +1,6 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import { useMemo, useState } from 'react';
-import { Alert, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Avatar, Button, Field, Icon, ListRow, OptionChip, Segmented, StickyFooter, Text, TopBar } from '@/components';
@@ -8,6 +8,7 @@ import { defaultAddress, getProfessional, getService } from '@/data/catalog';
 import { useApp } from '@/state/app';
 import { colors, radius, spacing } from '@/theme/tokens';
 import { firstName, formatDecimal } from '@/utils/format';
+import { notify } from '@/utils/dialog';
 
 const WEEK = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
 const PERIODS = [
@@ -26,11 +27,6 @@ function nextDays(n = 6) {
     out.push({ id: String(i), label, sub: dd, long: i < 2 ? label : `${WEEK[d.getDay()]} ${dd}` });
   }
   return out;
-}
-
-function notify(msg: string) {
-  if (Platform.OS === 'web') window.alert(msg);
-  else Alert.alert('Resolve', msg);
 }
 
 export default function NovoPedido() {

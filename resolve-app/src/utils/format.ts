@@ -46,9 +46,18 @@ export function firstName(name: string) {
   return name.split(' ')[0];
 }
 
-/** Lê o primeiro valor em reais de um texto: "faz por 120?" → 120 */
+/**
+ * Lê um valor em reais de um texto: "faz por 120?" → 120, "R$ 1.500" → 1500.
+ * Só conta número com cara de dinheiro ("R$", "reais", "por 120"…),
+ * pra "pode vir às 14h?" ou "dia 15" não virarem contraproposta.
+ */
 export function parseAmount(text: string): number | null {
-  const m = text.replace(/\./g, '').match(/(\d{2,5})(?:,(\d{1,2}))?/);
+  const t = text.toLowerCase().replace(/(\d)\.(?=\d{3}\b)/g, '$1');
+  const num = String.raw`(\d{2,5})(?:,(\d{1,2}))?(?![\d:h])`;
+  const m =
+    t.match(/r\$\s*(\d{1,5})(?:,(\d{1,2}))?/) ??
+    t.match(new RegExp(`${num}\\s*(?:reais|conto|pila)\\b`)) ??
+    t.match(new RegExp(`\\b(?:por|faz|fecha|fechar|pago|valor|ofereço|ofereco|consigo)\\s+(?:uns\\s+|de\\s+)?${num}`));
   if (!m) return null;
   return Number(m[1]) + (m[2] ? Number(m[2].padEnd(2, '0')) / 100 : 0);
 }

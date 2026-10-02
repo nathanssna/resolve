@@ -1,16 +1,12 @@
 import { router } from 'expo-router';
-import { Alert, Platform, ScrollView, StyleSheet, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Avatar, Button, ListRow, Text } from '@/components';
 import { defaultAddress } from '@/data/catalog';
 import { useApp } from '@/state/app';
 import { colors, radius, spacing } from '@/theme/tokens';
-
-function notify(msg: string) {
-  if (Platform.OS === 'web') window.alert(msg);
-  else Alert.alert('Resolve', msg);
-}
+import { notify } from '@/utils/dialog';
 
 // TODO: dados do usuário logado (precisa de back-end e login).
 export default function Perfil() {

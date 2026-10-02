@@ -1,6 +1,6 @@
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Alert, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import {
@@ -22,11 +22,7 @@ import { getProfessional, getService } from '@/data/catalog';
 import { useApp } from '@/state/app';
 import { colors, radius, shadows, spacing } from '@/theme/tokens';
 import { formatBRL } from '@/utils/format';
-
-function notify(msg: string) {
-  if (Platform.OS === 'web') window.alert(msg);
-  else Alert.alert('Resolve', msg);
-}
+import { notify } from '@/utils/dialog';
 
 export default function Chat() {
   const { id } = useLocalSearchParams<{ id: string }>();

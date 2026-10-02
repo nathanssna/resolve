@@ -1,5 +1,5 @@
 import { router } from 'expo-router';
-import { Alert, Platform, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import {
@@ -17,11 +17,7 @@ import { defaultAddress, getProfessional, getService, popular, services } from '
 import { useApp, type ProposalMsg } from '@/state/app';
 import { colors, radius, shadows, spacing } from '@/theme/tokens';
 import { firstName, formatBRL } from '@/utils/format';
-
-function notify(msg: string) {
-  if (Platform.OS === 'web') window.alert(msg);
-  else Alert.alert('Resolve', msg);
-}
+import { notify } from '@/utils/dialog';
 
 export default function Inicio() {
   const insets = useSafeAreaInsets();

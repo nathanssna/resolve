@@ -132,12 +132,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const push = useCallback(
     (id: string, msg: Message) => {
-      patch(id, (c) => ({
-        ...c,
-        typing: msg.from === 'pro' ? false : c.typing,
-        unread: msg.from !== 'me' && openRef.current !== id ? c.unread + 1 : c.unread,
-        messages: [...c.messages, msg],
-      }));
+      patch(id, (c) => {
+        // Proposta que chega depois do serviço combinado não vale mais
+        if (msg.kind === 'proposal' && c.orderId) return { ...c, typing: false };
+        return {
+          ...c,
+          typing: msg.from === 'pro' ? false : c.typing,
+          unread: msg.from !== 'me' && openRef.current !== id ? c.unread + 1 : c.unread,
+          messages: [...c.messages, msg],
+        };
+      });
     },
     [patch],
   );
@@ -229,10 +233,17 @@ export function AppProvider({ children }: { children: ReactNode }) {
       const conv = conversations.find((c) => c.id === id);
       const proposal = conv?.messages.find((m) => m.id === messageId) as ProposalMsg | undefined;
       const request = conv?.messages.find((m) => m.kind === 'request') as RequestMsg | undefined;
-      if (!conv || !proposal) return;
+      if (!conv || !proposal || conv.orderId || proposal.kind !== 'proposal' || proposal.status !== 'pending') return;
       patch(id, (c) => ({
         ...c,
-        messages: c.messages.map((m) => (m.id === messageId ? { ...m, status: accept ? 'accepted' : 'declined' } : m)) as Message[],
+        // Ao aceitar uma, as outras propostas pendentes ficam recusadas
+        messages: c.messages.map((m) =>
+          m.id === messageId
+            ? { ...m, status: accept ? 'accepted' : 'declined' }
+            : accept && m.kind === 'proposal' && m.status === 'pending'
+              ? { ...m, status: 'declined' }
+              : m,
+        ) as Message[],
       }));
       if (!accept) {
         push(id, { id: uid('m'), at: Date.now(), from: 'system', kind: 'system', text: 'Você recusou a proposta' });
