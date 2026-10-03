@@ -85,12 +85,13 @@ export function ListRow({
   );
 }
 
-type BadgeTone = 'brand' | 'ink' | 'success' | 'muted';
+type BadgeTone = 'brand' | 'ink' | 'success' | 'muted' | 'danger';
 const badgeTone: Record<BadgeTone, { bg: string; fg: string }> = {
   brand: { bg: colors.brand, fg: colors.onBrand },
   ink: { bg: colors.ink, fg: colors.onInk },
   success: { bg: colors.successTint, fg: colors.success },
   muted: { bg: colors.surfaceMuted, fg: colors.ink },
+  danger: { bg: colors.danger, fg: colors.onInk },
 };
 
 /** Etiqueta curta: "Novo", "Recomendado", "Concluído". */

@@ -33,7 +33,7 @@ export default function ExcluirConta() {
       await signOut();
       router.dismissAll();
       router.replace('/');
-      notify('Sua conta foi excluída.');
+      notify('Sua conta foi excluída.', { tone: 'success' });
     } catch (e) {
       notify(`Não foi possível excluir a conta. ${authErrorMessage(e)}`);
       setBusy(false);
@@ -70,7 +70,7 @@ export default function ExcluirConta() {
           block
           iconLeft="trash-2"
           disabled={busy}
-          onPress={() => confirm('Excluir sua conta de vez? Isso não pode ser desfeito.', run)}
+          onPress={() => confirm('Excluir sua conta de vez? Isso não pode ser desfeito.', run, { confirmLabel: 'Excluir', danger: true })}
         >
           {busy ? 'Excluindo…' : 'Excluir minha conta'}
         </Button>

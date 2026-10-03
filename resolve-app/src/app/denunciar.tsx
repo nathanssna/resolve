@@ -40,7 +40,7 @@ export default function Denunciar() {
       if (error) throw error;
       if (alsoBlock && !alreadyBlocked) await block(userId);
       router.back();
-      notify('Denúncia enviada. Vamos analisar em até 24 horas.');
+      notify('Denúncia enviada. Vamos analisar em até 24 horas.', { tone: 'success' });
     } catch (e) {
       notify(`Não foi possível enviar a denúncia. ${authErrorMessage(e)}`);
       setSending(false);

@@ -68,3 +68,14 @@ export function formatPhoneBR(text: string) {
   const cut = rest.length > 8 ? 5 : 4;
   return rest.length > cut ? `(${ddd}) ${rest.slice(0, cut)}-${rest.slice(cut)}` : `(${ddd}) ${rest}`;
 }
+
+/** Tempo desde um instante: "agora", "há 5 min", "há 2 h", "há 3 dias". */
+export function timeAgo(ts: number, now = Date.now()) {
+  const min = Math.max(0, Math.round((now - ts) / 60000));
+  if (min < 1) return 'agora';
+  if (min < 60) return `há ${min} min`;
+  const h = Math.round(min / 60);
+  if (h < 24) return `há ${h} h`;
+  const d = Math.round(h / 24);
+  return d === 1 ? 'há 1 dia' : `há ${d} dias`;
+}

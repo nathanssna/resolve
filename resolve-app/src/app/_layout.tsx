@@ -12,6 +12,7 @@ import { useEffect } from 'react';
 import { View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
+import { DialogHost } from '@/components';
 import { onNotificationTap, registerPush } from '@/lib/push';
 import { AddressProvider } from '@/state/addresses';
 import { AppProvider } from '@/state/app';
@@ -93,6 +94,7 @@ export default function RootLayout() {
                 <Stack.Screen name="denunciar" options={{ animation: 'slide_from_bottom' }} />
                 <Stack.Screen name="legal/[doc]" />
               </Stack>
+              <DialogHost />
             </AppProvider>
           </AddressProvider>
         </CatalogProvider>

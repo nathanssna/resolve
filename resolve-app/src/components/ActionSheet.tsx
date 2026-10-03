@@ -1,4 +1,4 @@
-import { Modal, Pressable, StyleSheet, View } from 'react-native';
+import { Modal, Platform, Pressable, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { colors, radius, spacing } from '@/theme/tokens';
@@ -26,7 +26,9 @@ export function ActionSheet({ visible, title, actions, onClose }: { visible: boo
             accessibilityRole="button"
             onPress={() => {
               onClose();
-              a.onPress();
+              // No iOS, outro modal (ex.: confirmação) só abre depois que este fechou.
+              if (Platform.OS === 'ios') setTimeout(a.onPress, 350);
+              else a.onPress();
             }}
             style={({ pressed }) => [styles.row, pressed && { backgroundColor: colors.surfaceMuted }]}
           >

@@ -1,4 +1,5 @@
 import { memo } from 'react';
+import { Platform } from 'react-native';
 import { SvgXml } from 'react-native-svg';
 
 import { colors } from '@/theme/tokens';
@@ -20,20 +21,21 @@ type Props = {
   label?: string;
 };
 
+/** Ícone decorativo some para o leitor de tela; com rótulo, é lido. Na web o SVG vira <svg>, que só entende aria-*. */
+function a11y(label?: string): object {
+  if (Platform.OS === 'web') return label ? { role: 'img', 'aria-label': label } : { 'aria-hidden': true };
+  return {
+    accessible: !!label,
+    accessibilityLabel: label,
+    accessibilityElementsHidden: !label,
+    importantForAccessibility: label ? 'yes' : 'no-hide-descendants',
+  };
+}
+
 function IconBase({ name, size = 24, color = colors.ink, strokeWidth = 2, fill = 'none', duotone, label }: Props) {
   if (duotone) fill = colors.brand;
   const xml = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" fill="${fill}" stroke="${color}" stroke-width="${strokeWidth}" stroke-linecap="round" stroke-linejoin="round">${iconPaths[name]}</svg>`;
-  return (
-    <SvgXml
-      xml={xml}
-      width={size}
-      height={size}
-      accessible={!!label}
-      accessibilityLabel={label}
-      accessibilityElementsHidden={!label}
-      importantForAccessibility={label ? 'yes' : 'no-hide-descendants'}
-    />
-  );
+  return <SvgXml xml={xml} width={size} height={size} {...a11y(label)} />;
 }
 
 export const Icon = memo(IconBase);

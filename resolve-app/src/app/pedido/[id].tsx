@@ -178,7 +178,7 @@ export default function PedidoDetalhe() {
         ) : null}
 
         {!done && !canceled ? (
-          <Button variant="link" onPress={() => confirm(isPro ? 'Cancelar este serviço? Avise o cliente pelo chat.' : 'Cancelar este serviço? Avise o profissional pelo chat.', () => run(() => cancelOrder(order.id)))} style={{ alignSelf: 'center' }}>
+          <Button variant="link" onPress={() => confirm(isPro ? 'Cancelar este serviço? Avise o cliente pelo chat.' : 'Cancelar este serviço? Avise o profissional pelo chat.', () => run(() => cancelOrder(order.id)), { confirmLabel: 'Cancelar', danger: true })} style={{ alignSelf: 'center' }}>
             Cancelar serviço
           </Button>
         ) : null}

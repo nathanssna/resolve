@@ -8,6 +8,7 @@ export { ActiveOrderCard, ProfessionalOption, ProgressBar, PromoCard, ServiceTil
 export { Field, SearchTrigger } from './Fields';
 export { Icon, type IconName } from './Icon';
 export { CatalogFallback } from './CatalogFallback';
+export { DialogHost } from './DialogHost';
 export { CheckItem, EmptyState, InfoBanner } from './Info';
 export { LocationPill } from './LocationPill';
 export { Logo } from './Logo';

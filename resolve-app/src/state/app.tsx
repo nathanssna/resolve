@@ -108,6 +108,8 @@ export type Order = {
   /** Comentário da avaliação, se houver. */
   comment?: string;
   createdAt: number;
+  /** Quando foi concluído (resumo do mês do profissional). */
+  completedAt?: number;
 };
 
 type Tables = Database['public']['Tables'];
@@ -128,7 +130,7 @@ type MessageRow = Pick<
 type ProposalRow = Pick<Tables['proposals']['Row'], 'id' | 'conversation_id' | 'request_id' | 'amount' | 'scheduled_label' | 'note' | 'status'>;
 type OrderRow = Pick<
   Tables['orders']['Row'],
-  'id' | 'conversation_id' | 'request_id' | 'professional_id' | 'service_id' | 'amount' | 'scheduled_label' | 'address' | 'status' | 'created_at'
+  'id' | 'conversation_id' | 'request_id' | 'professional_id' | 'service_id' | 'amount' | 'scheduled_label' | 'address' | 'status' | 'created_at' | 'completed_at'
 > & { rating?: number; comment?: string | null };
 
 type Store = {
@@ -215,7 +217,7 @@ async function fetchStore(uid: string, role: UserRole): Promise<Store> {
       requests!requests_conversation_id_fkey(id, conversation_id, service_id, created_at, closed_at, closed_by, request_address:request_addresses(address)),
       messages!messages_conversation_id_fkey(id, conversation_id, request_id, sender_id, kind, body, proposal_id, request_when, request_address, photos, created_at),
       proposals!proposals_conversation_id_fkey(id, conversation_id, request_id, amount, scheduled_label, note, status),
-      orders!orders_conversation_id_fkey(id, conversation_id, request_id, professional_id, service_id, amount, scheduled_label, address, status, created_at, review:reviews(rating, comment))`,
+      orders!orders_conversation_id_fkey(id, conversation_id, request_id, professional_id, service_id, amount, scheduled_label, address, status, created_at, completed_at, review:reviews(rating, comment))`,
     )
     .eq(role === 'profissional' ? 'professional_id' : 'client_id', uid);
   if (error) throw error;
@@ -525,6 +527,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
           rating: o.rating,
           comment: o.comment ?? undefined,
           createdAt: time(o.created_at),
+          completedAt: o.completed_at ? time(o.completed_at) : undefined,
         }))
         .sort((a, b) => b.createdAt - a.createdAt),
     [store.orders, store.convs, otherOf],

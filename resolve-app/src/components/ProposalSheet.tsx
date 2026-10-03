@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { KeyboardAvoidingView, Modal, Platform, Pressable, StyleSheet, View } from 'react-native';
+import { Keyboard, KeyboardAvoidingView, Modal, Platform, Pressable, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { authErrorMessage } from '@/lib/authErrors';
@@ -22,9 +22,12 @@ export type ProposalJob = {
 export function ProposalSheet({
   visible,
   jobs,
+  initialJobId,
   onClose,
   onSubmit,
 }: {
+  /** Pedido que já vem escolhido (senão, o mais recente). */
+  initialJobId?: string;
   visible: boolean;
   /** Pedidos em aberto da conversa; o último vem escolhido. Com mais de um, aparece a escolha. */
   jobs: ProposalJob[];
@@ -33,7 +36,7 @@ export function ProposalSheet({
 }) {
   const insets = useSafeAreaInsets();
   const [jobId, setJobId] = useState<string | null>(null);
-  const job = jobs.find((j) => j.id === jobId) ?? jobs.at(-1);
+  const job = jobs.find((j) => j.id === (jobId ?? initialJobId)) ?? jobs.at(-1);
   const defaultWhen = job?.defaultWhen ?? '';
   const [amount, setAmount] = useState('');
   const [when, setWhen] = useState(defaultWhen);
@@ -54,6 +57,7 @@ export function ProposalSheet({
 
   const submit = async () => {
     if (!canSend || value === null || !job) return;
+    Keyboard.dismiss();
     setSending(true);
     setError(null);
     try {
@@ -71,7 +75,8 @@ export function ProposalSheet({
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose} onShow={() => setWhen((w) => w || defaultWhen)}>
       <Pressable style={styles.backdrop} onPress={onClose} accessibilityLabel="Fechar" />
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-        <View style={[styles.sheet, { paddingBottom: Math.max(insets.bottom, spacing[4]) }]}>
+        {/* No celular, tocar em qualquer área vazia da folha fecha o teclado (na web, o clique no campo cairia aqui também). */}
+        <Pressable accessible={false} onPress={Platform.OS === 'web' ? undefined : Keyboard.dismiss} style={[styles.sheet, { paddingBottom: Math.max(insets.bottom, spacing[4]) }]}>
           <View style={styles.handle} />
           <Text variant="titleMd" accessibilityRole="header">
             Enviar proposta
@@ -103,10 +108,19 @@ export function ProposalSheet({
             onChangeText={(t) => setAmount(t.replace(/[^\d,.]/g, ''))}
             keyboardType="decimal-pad"
             inputMode="decimal"
-            autoFocus
+            returnKeyType="done"
+            onSubmitEditing={Keyboard.dismiss}
           />
-          <Field label="Quando" placeholder="Ex.: Amanhã, 14h" value={when} onChangeText={setWhen} maxLength={120} />
-          <Field label="Observação (opcional)" placeholder="Ex.: materiais à parte" value={note} onChangeText={setNote} maxLength={1000} />
+          <Field label="Quando" placeholder="Ex.: Amanhã, 14h" value={when} onChangeText={setWhen} maxLength={120} returnKeyType="done" onSubmitEditing={Keyboard.dismiss} />
+          <Field
+            label="Observação (opcional)"
+            placeholder="Ex.: materiais à parte"
+            value={note}
+            onChangeText={setNote}
+            maxLength={1000}
+            returnKeyType="done"
+            onSubmitEditing={Keyboard.dismiss}
+          />
           {error ? (
             <Text variant="bodySm" color={colors.danger} accessibilityLiveRegion="polite">
               {error}
@@ -118,7 +132,7 @@ export function ProposalSheet({
           <Button variant="link" onPress={onClose} style={{ alignSelf: 'center' }}>
             Cancelar
           </Button>
-        </View>
+        </Pressable>
       </KeyboardAvoidingView>
     </Modal>
   );

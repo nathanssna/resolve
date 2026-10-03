@@ -32,8 +32,9 @@ export const colors = {
   /** Status positivo (concluído, verificado) — texto sobre branco 5.7:1. */
   success: '#13773A',
   successTint: '#E3F4E8',
-  /** Ação destrutiva (cancelar). */
+  /** Ação destrutiva (cancelar) e urgência. */
   danger: '#B42318',
+  dangerTint: '#FDECEA',
 
   /** Fundo das telas e painéis. */
   surface: '#FFFFFF',

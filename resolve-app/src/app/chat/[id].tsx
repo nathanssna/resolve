@@ -37,7 +37,8 @@ import { formatBRL } from '@/utils/format';
 import { confirm, notify } from '@/utils/dialog';
 
 export default function Chat() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  // `proposta`: id do pedido para já abrir a proposta (botão do painel do profissional).
+  const { id, proposta } = useLocalSearchParams<{ id: string; proposta?: string }>();
   const { status, role, refresh, conversations, orders, sendText, respondProposal, sendProposal, markRead, closeRequest, block, unblock } = useApp();
   const isPro = role === 'profissional';
   const { session } = useAuth();
@@ -59,7 +60,7 @@ export default function Chat() {
   const photoPaths = conv?.messages.flatMap((m) => (m.kind === 'request' ? m.photos : [])) ?? [];
   const photoUrls = useSignedUrls(photoPaths);
   const [viewer, setViewer] = useState<{ uris: string[]; index: number } | null>(null);
-  const [proposing, setProposing] = useState(false);
+  const [proposing, setProposing] = useState(!!proposta);
   const [menu, setMenu] = useState(false);
 
   // Com o chat na tela, a notificação desta conversa não aparece.
@@ -133,6 +134,7 @@ export default function Chat() {
         ? `Recusar o pedido${title ? ` de ${title.toLowerCase()}` : ''}? O cliente será avisado.`
         : `Cancelar o pedido${title ? ` de ${title.toLowerCase()}` : ''}? O profissional será avisado.`,
       () => closeRequest(jobId).catch((e) => notify(authErrorMessage(e))),
+      { confirmLabel: isPro ? 'Recusar' : 'Cancelar', cancelLabel: 'Voltar', danger: true },
     );
   };
   const proposalJobs = openJobs.map((j) => ({
@@ -176,6 +178,7 @@ export default function Chat() {
                 onPress: () =>
                   confirm(`Bloquear ${conv.other.name}? Vocês não vão mais conseguir trocar mensagens, pedidos ou propostas.`, () =>
                     block(conv.other.id).catch((e) => notify(authErrorMessage(e))),
+                    { confirmLabel: 'Bloquear', danger: true },
                   ),
               },
         ]),
@@ -330,6 +333,7 @@ export default function Chat() {
         <ProposalSheet
           visible={proposing}
           jobs={proposalJobs}
+          initialJobId={proposta}
           onClose={() => setProposing(false)}
           onSubmit={(jobId, input) => sendProposal(conv.id, jobId, input)}
         />

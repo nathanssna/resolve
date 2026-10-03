@@ -100,7 +100,7 @@ export default function EditarEndereco() {
       } catch (e) {
         notify(authErrorMessage(e));
       }
-    });
+    }, { confirmLabel: 'Apagar', danger: true });
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
