@@ -1,0 +1,31 @@
+const fs = require('fs'); const { Client } = require('pg');
+const APP = require('path').resolve(__dirname, '../../supabase');
+let pass = 0, fail = 0; const ok = (c, m) => { c ? pass++ : fail++; console.log(c ? '  ok   ' : '  FALHA', m); };
+(async () => {
+  const a = new Client({ host: '127.0.0.1', port: 54999, user: 'postgres', database: 'postgres' }); await a.connect();
+  await a.query('drop database if exists d'); await a.query('create database d'); await a.end();
+  const db = new Client({ host: '127.0.0.1', port: 54999, user: 'postgres', database: 'd' }); await db.connect();
+  await db.query(fs.readFileSync(__dirname + '/bootstrap.sql', 'utf8'));
+  for (const m of fs.readdirSync(`${APP}/migrations`).sort()) await db.query(fs.readFileSync(`${APP}/migrations/${m}`, 'utf8').replace(/create extension if not exists pg_net;/, ''));
+  await db.query(fs.readFileSync(`${APP}/seed.sql`, 'utf8'));
+  const demo = fs.readFileSync(`${APP}/seeds/demo_professionals.sql`, 'utf8');
+  await db.query(demo); await db.query(demo);
+  const n = async (sql) => Number((await db.query(sql)).rows[0].n);
+  ok(await n("select count(*) n from auth.users") === 13, '13 contas demo (rodando 2x, sem duplicar)');
+  ok(await n("select count(*) n from public.profiles where role = 'profissional' and full_name <> ''") === 13, '13 profiles de profissional com nome');
+  ok(await n("select count(*) n from public.professionals where role_title <> '' and rating > 0") === 13, '13 fichas preenchidas');
+  ok(await n("select count(*) n from public.professional_services") === 13, '13 ligações profissional ↔ serviço');
+  ok(await n("select count(*) n from public.professional_services where service_id = 'informatica'") === 4, 'informática tem 4 profissionais');
+  const c = (await db.query("select pr.full_name, p.rating, p.review_count, p.verified, p.reply_minutes from public.professionals p join public.profiles pr on pr.id = p.id where pr.full_name = 'Cláudia Mendes'")).rows[0];
+  ok(c && Number(c.rating) === 4.9 && c.review_count === 340 && c.verified && c.reply_minutes === 5, 'dados da Cláudia batem com o catálogo antigo');
+  // como o app vai ler (anon, RLS)
+  await db.query('begin; set local role anon');
+  const r = (await db.query("select p.id, pr.full_name, array(select service_id from public.professional_services ps where ps.professional_id = p.id) s from public.professionals p join public.profiles pr on pr.id = p.id")).rows;
+  await db.query('commit');
+  ok(r.length === 13 && r.every((x) => x.full_name && x.s.length === 1), 'anon lê os 13 com nome e serviços (RLS)');
+  ok(await n("select count(*) n from auth.users where raw_app_meta_data->>'demo' = 'true' and email like 'demo+%@exemplo.invalid'") === 13, 'todas marcadas como demo');
+  await db.query(fs.readFileSync(`${APP}/demo_cleanup.sql`, 'utf8'));
+  ok(await n("select count(*) n from public.professionals") === 0 && await n("select count(*) n from public.profiles") === 0 && await n("select count(*) n from public.professional_services") === 0, 'demo_cleanup.sql apaga tudo em cascata');
+  ok(await n("select count(*) n from public.services") === 8, 'catálogo de serviços intacto após limpeza');
+  console.log(`${pass} ok, ${fail} falhas`); await db.end(); process.exit(fail ? 1 : 0);
+})().catch((e) => { console.error('ERRO', e.message); process.exit(2); });

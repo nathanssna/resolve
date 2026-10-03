@@ -1,0 +1,7 @@
+node_modules/
+db/data/
+db/pg.log
+e2e/shots/
+e2e/.e2e_pw
+e2e/.e2e_cli_id
+e2e/e2e_users.sql

@@ -1,0 +1,17 @@
+{
+  "name": "resolve-tests",
+  "private": true,
+  "description": "Testes do banco (Postgres embutido) e de ponta a ponta (navegador contra o Supabase real).",
+  "scripts": {
+    "db:start": "bash db/start.sh",
+    "db:stop": "bash db/stop.sh",
+    "test:db": "bash db/run.sh",
+    "e2e:users": "bash e2e/users.sh",
+    "e2e:cleanup": "bash e2e/cleanup.sh"
+  },
+  "dependencies": {
+    "@embedded-postgres/linux-x64": "^17.10.0-beta.17",
+    "pg": "^8.23.1",
+    "puppeteer-core": "^25.12.0"
+  }
+}
