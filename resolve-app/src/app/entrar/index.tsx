@@ -1,6 +1,6 @@
-import { router } from 'expo-router';
+import { Link, router } from 'expo-router';
 import { useState } from 'react';
-import { View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 import { AuthLayout, Button, Field, Icon, Text } from '@/components';
 import { authErrorMessage } from '@/lib/authErrors';
@@ -72,6 +72,25 @@ export default function Entrar() {
           Se for seu primeiro acesso, a conta é criada na hora.
         </Text>
       </View>
+      <Text variant="caption" color={colors.inkMuted}>
+        Ao continuar, você concorda com os{' '}
+        <Link href={{ pathname: '/legal/[doc]', params: { doc: 'termos' } }} asChild>
+          <Text variant="caption" style={styles.link}>
+            Termos de uso
+          </Text>
+        </Link>{' '}
+        e a{' '}
+        <Link href={{ pathname: '/legal/[doc]', params: { doc: 'privacidade' } }} asChild>
+          <Text variant="caption" style={styles.link}>
+            Política de privacidade
+          </Text>
+        </Link>
+        .
+      </Text>
     </AuthLayout>
   );
 }
+
+const styles = StyleSheet.create({
+  link: { textDecorationLine: 'underline', color: colors.inkBody },
+});

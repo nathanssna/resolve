@@ -35,7 +35,7 @@ export default function PerfilProfissional() {
   const { id, serviceId } = useLocalSearchParams<{ id: string; serviceId?: string }>();
   const { getProfessional, getService, status, refresh } = useCatalog();
   const { session } = useAuth();
-  const { role } = useApp();
+  const { role, blocked } = useApp();
   const pro = getProfessional(id);
   const [reviews, setReviews] = useState<{ id: string; list: Review[] | null } | null>(null);
   const list = reviews?.id === id ? reviews.list : undefined;
@@ -180,9 +180,19 @@ export default function PerfilProfissional() {
             </>
           )}
         </View>
+
+        {session && !isMe ? (
+          <Button
+            variant="link"
+            onPress={() => router.push({ pathname: '/denunciar', params: { userId: pro.id, name: pro.name } })}
+            style={{ alignSelf: 'center' }}
+          >
+            Denunciar este perfil
+          </Button>
+        ) : null}
       </ScrollView>
 
-      {!isMe && role !== 'profissional' && requestService ? (
+      {!isMe && role !== 'profissional' && requestService && !blocked.includes(pro.id) ? (
         <StickyFooter>
           <Button
             variant="primary"

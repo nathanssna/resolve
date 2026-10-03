@@ -4,6 +4,7 @@ import { ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button, CatalogFallback, EmptyState, FilterChip, Icon, ProfessionalOption, StickyFooter, Text, TopBar } from '@/components';
+import { useApp } from '@/state/app';
 import { useCatalog, type Professional } from '@/state/catalog';
 import { colors, radius, spacing } from '@/theme/tokens';
 import { firstName, formatCount, formatExperience } from '@/utils/format';
@@ -32,7 +33,9 @@ export default function Profissionais() {
   const { serviceId } = useLocalSearchParams<{ serviceId: string }>();
   const { getService, getProfessionals, status, refresh } = useCatalog();
   const service = getService(serviceId);
-  const all = useMemo(() => getProfessionals(serviceId), [getProfessionals, serviceId]);
+  const { blocked } = useApp();
+  // Quem eu bloqueei não aparece.
+  const all = useMemo(() => getProfessionals(serviceId).filter((p) => !blocked.includes(p.id)), [getProfessionals, serviceId, blocked]);
   const [sort, setSort] = useState<Sort>('recomendados');
   const list = useMemo(() => sortList(all, sort), [all, sort]);
   const best = useMemo(() => sortList(all, 'recomendados')[0]?.id, [all]);

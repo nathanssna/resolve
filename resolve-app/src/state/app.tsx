@@ -53,7 +53,7 @@ export type SystemMsg = Base & { kind: 'system'; text: string };
 export type Message = RequestMsg | TextMsg | ProposalMsg | SystemMsg;
 
 /** O outro participante, para mostrar nome e foto. */
-export type Party = { id: string; name: string; avatarUrl?: string };
+export type Party = { id: string; name: string; avatarUrl?: string; /** Excluiu a conta. */ deleted?: boolean };
 
 /**
  * Situação de um pedido: 'novo' (sem proposta), 'proposta' (esperando o
@@ -87,6 +87,8 @@ export type Conversation = {
   jobs: Job[];
   /** O pedido mais recente (o que aparece na lista de conversas). */
   latestJob?: Job;
+  /** Eu bloqueei o outro participante. */
+  blockedByMe: boolean;
 };
 
 export type OrderStatus = Database['public']['Enums']['order_status'];
@@ -109,8 +111,11 @@ export type Order = {
 };
 
 type Tables = Database['public']['Tables'];
+type PartyRow = { full_name: string; avatar_url: string | null; deleted_at: string | null };
 type ConvRow = Pick<Tables['conversations']['Row'], 'id' | 'professional_id' | 'client_id' | 'client_last_read_at' | 'professional_last_read_at'> & {
-  client: { full_name: string; avatar_url: string | null } | null;
+  client: PartyRow | null;
+  /** Nome do profissional mesmo fora do catálogo (ex.: conta excluída). */
+  professional: { profile: PartyRow | null } | null;
 };
 type RequestRow = Pick<Tables['requests']['Row'], 'id' | 'conversation_id' | 'service_id' | 'created_at' | 'closed_at' | 'closed_by'> & {
   /** Endereço completo do pedido: só o cliente recebe (o banco devolve null para o profissional). */
@@ -172,6 +177,10 @@ type AppValue = {
   closeRequest: (jobId: string) => Promise<void>;
   /** Só com login (a tela leva para o login antes). */
   toggleFavorite: (serviceId: string) => Promise<void>;
+  /** Pessoas que eu bloqueei. */
+  blocked: string[];
+  block: (userId: string) => Promise<void>;
+  unblock: (userId: string) => Promise<void>;
   isFavorite: (serviceId: string) => boolean;
 };
 
@@ -201,7 +210,8 @@ async function fetchStore(uid: string, role: UserRole): Promise<Store> {
     .from('conversations')
     .select(
       `id, professional_id, client_id, client_last_read_at, professional_last_read_at,
-      client:profiles!conversations_client_id_fkey(full_name, avatar_url),
+      client:profiles!conversations_client_id_fkey(full_name, avatar_url, deleted_at),
+      professional:professionals!conversations_professional_id_fkey(profile:profiles!professionals_id_fkey(full_name, avatar_url, deleted_at)),
       requests!requests_conversation_id_fkey(id, conversation_id, service_id, created_at, closed_at, closed_by, request_address:request_addresses(address)),
       messages!messages_conversation_id_fkey(id, conversation_id, request_id, sender_id, kind, body, proposal_id, request_when, request_address, photos, created_at),
       proposals!proposals_conversation_id_fkey(id, conversation_id, request_id, amount, scheduled_label, note, status),
@@ -234,6 +244,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [failedFor, setFailedFor] = useState<string | null>(null);
   const [favData, setFavData] = useState<{ uid: string; ids: string[] } | null>(null);
   const favorites = useMemo(() => (uid && favData?.uid === uid ? favData.ids : []), [uid, favData]);
+  const [blockData, setBlockData] = useState<{ uid: string; ids: string[] } | null>(null);
+  const blocked = useMemo(() => (uid && blockData?.uid === uid ? blockData.ids : []), [uid, blockData]);
 
   const loaded = !!owner && data?.owner === owner;
   const store = loaded ? data.store : EMPTY;
@@ -298,6 +310,17 @@ export function AppProvider({ children }: { children: ReactNode }) {
         if (rows) setFavData({ uid, ids: rows.map((r) => r.service_id) });
       });
   }, [uid, favData?.uid]);
+
+  // Bloqueios feitos por mim.
+  useEffect(() => {
+    if (!uid || blockData?.uid === uid) return;
+    supabase
+      .from('blocks')
+      .select('blocked_id')
+      .then(({ data: rows }) => {
+        if (rows) setBlockData({ uid, ids: rows.map((r) => r.blocked_id) });
+      });
+  }, [uid, blockData?.uid]);
 
   // Realtime: o banco só entrega as linhas que este usuário pode ler (RLS).
   useEffect(() => {
@@ -375,10 +398,22 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const otherOf = useCallback(
     (c: ConvRow): Party => {
       if (role === 'profissional') {
-        return { id: c.client_id, name: c.client?.full_name.trim() || 'Cliente', avatarUrl: c.client?.avatar_url ?? undefined };
+        return {
+          id: c.client_id,
+          name: c.client?.full_name.trim() || 'Cliente',
+          avatarUrl: c.client?.avatar_url ?? undefined,
+          deleted: !!c.client?.deleted_at,
+        };
       }
+      // Do catálogo (mais atual); fora dele (ex.: conta excluída), do próprio profile.
       const pro = getProfessional(c.professional_id);
-      return { id: c.professional_id, name: pro?.name ?? 'Profissional', avatarUrl: pro?.avatarUrl };
+      const profile = c.professional?.profile;
+      return {
+        id: c.professional_id,
+        name: pro?.name ?? (profile?.full_name.trim() || 'Profissional'),
+        avatarUrl: pro?.avatarUrl ?? profile?.avatar_url ?? undefined,
+        deleted: !!profile?.deleted_at,
+      };
     },
     [role, getProfessional],
   );
@@ -463,13 +498,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
         unread,
         jobs,
         latestJob: jobs.at(-1),
+        blockedByMe: blocked.includes(role === 'profissional' ? c.client_id : c.professional_id),
       };
     });
 
     return list
       .filter((c) => c.messages.length > 0)
       .sort((a, b) => (b.messages.at(-1)?.at ?? 0) - (a.messages.at(-1)?.at ?? 0));
-  }, [store, uid, role, getService, otherOf]);
+  }, [store, uid, role, getService, otherOf, blocked]);
 
   const orders = useMemo<Order[]>(
     () =>
@@ -538,7 +574,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       const requestId = msg.request_id!;
       update((s) => ({
         ...s,
-        convs: { ...s.convs, [conv.id]: s.convs[conv.id] ?? { ...conv, client: null } },
+        convs: { ...s.convs, [conv.id]: s.convs[conv.id] ?? { ...conv, client: null, professional: null } },
         requests: {
           ...s.requests,
           [requestId]: {
@@ -719,6 +755,27 @@ export function AppProvider({ children }: { children: ReactNode }) {
     [uid, favorites],
   );
 
+  const block = useCallback(
+    async (userId: string) => {
+      if (!uid) return;
+      const { error } = await supabase.from('blocks').insert({ blocked_id: userId });
+      // Já bloqueado (chave repetida) conta como sucesso.
+      if (error && error.code !== '23505') throw error;
+      setBlockData((d) => ({ uid, ids: [...(d?.uid === uid ? d.ids.filter((x) => x !== userId) : []), userId] }));
+    },
+    [uid],
+  );
+
+  const unblock = useCallback(
+    async (userId: string) => {
+      if (!uid) return;
+      const { error } = await supabase.from('blocks').delete().eq('blocked_id', userId);
+      if (error) throw error;
+      setBlockData((d) => ({ uid, ids: d?.uid === uid ? d.ids.filter((x) => x !== userId) : [] }));
+    },
+    [uid],
+  );
+
   const value = useMemo<AppValue>(
     () => ({
       status,
@@ -738,9 +795,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
       rateOrder,
       closeRequest,
       toggleFavorite,
+      blocked,
+      block,
+      unblock,
       isFavorite: (sid) => favorites.includes(sid),
     }),
-    [status, role, load, conversations, orders, favorites, startRequest, sendText, respondProposal, sendProposal, markRead, completeOrder, cancelOrder, rateOrder, closeRequest, toggleFavorite],
+    [status, role, load, conversations, orders, favorites, startRequest, sendText, respondProposal, sendProposal, markRead, completeOrder, cancelOrder, rateOrder, closeRequest, toggleFavorite, blocked, block, unblock],
   );
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;

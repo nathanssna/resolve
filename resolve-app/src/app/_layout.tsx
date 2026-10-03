@@ -88,6 +88,10 @@ export default function RootLayout() {
                 <Stack.Screen name="enderecos/index" />
                 <Stack.Screen name="enderecos/editar" />
                 <Stack.Screen name="telefone" />
+                <Stack.Screen name="conta/index" />
+                <Stack.Screen name="conta/excluir" />
+                <Stack.Screen name="denunciar" options={{ animation: 'slide_from_bottom' }} />
+                <Stack.Screen name="legal/[doc]" />
               </Stack>
             </AppProvider>
           </AddressProvider>

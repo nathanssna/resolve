@@ -98,6 +98,39 @@ export type Database = {
           },
         ]
       }
+      blocks: {
+        Row: {
+          blocked_id: string
+          blocker_id: string
+          created_at: string
+        }
+        Insert: {
+          blocked_id: string
+          blocker_id?: string
+          created_at?: string
+        }
+        Update: {
+          blocked_id?: string
+          blocker_id?: string
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "blocks_blocked_id_fkey"
+            columns: ["blocked_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "blocks_blocker_id_fkey"
+            columns: ["blocker_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       conversations: {
         Row: {
           client_id: string
@@ -459,6 +492,7 @@ export type Database = {
         Row: {
           avatar_url: string | null
           created_at: string
+          deleted_at: string | null
           full_name: string
           id: string
           phone: string | null
@@ -468,6 +502,7 @@ export type Database = {
         Insert: {
           avatar_url?: string | null
           created_at?: string
+          deleted_at?: string | null
           full_name?: string
           id: string
           phone?: string | null
@@ -477,6 +512,7 @@ export type Database = {
         Update: {
           avatar_url?: string | null
           created_at?: string
+          deleted_at?: string | null
           full_name?: string
           id?: string
           phone?: string | null
@@ -578,6 +614,61 @@ export type Database = {
           {
             foreignKeyName: "push_tokens_user_id_fkey"
             columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      reports: {
+        Row: {
+          conversation_id: string | null
+          created_at: string
+          details: string | null
+          id: string
+          reason: string
+          reported_id: string
+          reporter_id: string
+          resolved_at: string | null
+        }
+        Insert: {
+          conversation_id?: string | null
+          created_at?: string
+          details?: string | null
+          id?: string
+          reason: string
+          reported_id: string
+          reporter_id?: string
+          resolved_at?: string | null
+        }
+        Update: {
+          conversation_id?: string | null
+          created_at?: string
+          details?: string | null
+          id?: string
+          reason?: string
+          reported_id?: string
+          reporter_id?: string
+          resolved_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reports_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reports_reported_id_fkey"
+            columns: ["reported_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reports_reporter_id_fkey"
+            columns: ["reporter_id"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
@@ -854,6 +945,7 @@ export type Database = {
         Returns: {
           avatar_url: string | null
           created_at: string
+          deleted_at: string | null
           full_name: string
           id: string
           phone: string | null
@@ -946,6 +1038,7 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      delete_my_account: { Args: never; Returns: undefined }
       get_contact_phone: {
         Args: { p_conversation_id: string }
         Returns: string
@@ -955,6 +1048,7 @@ export type Database = {
         Returns: {
           avatar_url: string | null
           created_at: string
+          deleted_at: string | null
           full_name: string
           id: string
           phone: string | null

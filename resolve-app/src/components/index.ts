@@ -16,6 +16,7 @@ export { Avatar, ProfessionalCard } from './ProfessionalCard';
 export { Rating } from './Rating';
 export { SearchField } from './SearchField';
 export { ServiceCard } from './ServiceCard';
+export { ActionSheet, type SheetAction } from './ActionSheet';
 export { ActionButton, Badge, ListRow, OptionChip, SectionHeader, Segmented, Sheet, StickyFooter } from './Surfaces';
 export { Text } from './Text';
 export { ProposalSheet } from './ProposalSheet';

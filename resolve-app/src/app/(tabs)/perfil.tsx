@@ -114,7 +114,7 @@ export default function Perfil() {
           onPress={() => router.push('/enderecos')}
         />
         <ListRow icon="bell" value="Notificações" onPress={() => notify('Configurações de notificação em breve.')} />
-        <ListRow icon="shield-check" value="Segurança e privacidade" onPress={() => notify('Em breve.')} />
+        <ListRow icon="shield-check" value="Conta e privacidade" onPress={() => router.push('/conta')} />
         <ListRow icon="circle-help" value="Ajuda" onPress={() => notify('Central de ajuda em breve.')} />
         {!isPro ? (
           <View style={styles.pro}>

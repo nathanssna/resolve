@@ -4,6 +4,7 @@ import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, View
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import {
+  ActionSheet,
   Avatar,
   Bubble,
   Button,
@@ -37,7 +38,7 @@ import { confirm, notify } from '@/utils/dialog';
 
 export default function Chat() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { status, role, refresh, conversations, orders, sendText, respondProposal, sendProposal, markRead, closeRequest } = useApp();
+  const { status, role, refresh, conversations, orders, sendText, respondProposal, sendProposal, markRead, closeRequest, block, unblock } = useApp();
   const isPro = role === 'profissional';
   const { session } = useAuth();
   const focused = useIsFocused();
@@ -45,8 +46,6 @@ export default function Chat() {
   const conv = conversations.find((c) => c.id === id);
   // Do lado do cliente, os dados do profissional vêm do catálogo.
   const pro = conv && !isPro ? getProfessional(conv.proId) : undefined;
-  // Cabeçalho: o pedido mais recente que não foi encerrado (senão, o mais recente).
-  const service = getService((conv?.jobs.filter((j) => !j.closedBy).at(-1) ?? conv?.latestJob)?.serviceId);
   const convOrders = orders.filter((o) => o.conversationId === conv?.id);
   // Faixa no topo: serviços combinados; sem nenhum, o do pedido mais recente (para avaliar).
   const latestOrder = convOrders.find((o) => o.id === conv?.latestJob?.orderId);
@@ -61,6 +60,7 @@ export default function Chat() {
   const photoUrls = useSignedUrls(photoPaths);
   const [viewer, setViewer] = useState<{ uris: string[]; index: number } | null>(null);
   const [proposing, setProposing] = useState(false);
+  const [menu, setMenu] = useState(false);
 
   // Com o chat na tela, a notificação desta conversa não aparece.
   useEffect(() => {
@@ -144,6 +144,42 @@ export default function Chat() {
   const hasPending = openJobs.length === 1 && !!openJobs[0].pending;
   // Novo pedido ao mesmo profissional: começa no serviço do último pedido (se ele ainda fizer).
   const newRequestService = pro?.serviceIds.includes(conv.latestJob?.serviceId ?? '') ? conv.latestJob?.serviceId : pro?.serviceIds[0];
+  // Conversa travada: eu bloqueei ou a outra conta foi excluída.
+  const locked = conv.blockedByMe || !!conv.other.deleted;
+  const otherFirst = conv.other.name.split(' ')[0];
+  // Cabeçalho enxuto: só Ligar fica à vista; o resto vai para o menu ⋮.
+  const menuActions = [
+    ...(pro && newRequestService && !locked
+      ? [
+          {
+            icon: 'plus' as const,
+            label: 'Novo pedido',
+            onPress: () => router.push({ pathname: '/pedido/novo', params: { serviceId: newRequestService, proId: pro.id } }),
+          },
+        ]
+      : []),
+    ...(pro ? [{ icon: 'user-round' as const, label: 'Ver perfil', onPress: () => router.push({ pathname: '/profissional/[id]', params: { id: pro.id } }) }] : []),
+    ...(conv.other.deleted
+      ? []
+      : [
+          {
+            icon: 'flag' as const,
+            label: `Denunciar ${otherFirst}`,
+            onPress: () => router.push({ pathname: '/denunciar', params: { userId: conv.other.id, name: conv.other.name, conversationId: conv.id } }),
+          },
+          conv.blockedByMe
+            ? { icon: 'ban' as const, label: `Desbloquear ${otherFirst}`, onPress: () => unblock(conv.other.id).catch((e) => notify(authErrorMessage(e))) }
+            : {
+                icon: 'ban' as const,
+                label: `Bloquear ${otherFirst}`,
+                danger: true,
+                onPress: () =>
+                  confirm(`Bloquear ${conv.other.name}? Vocês não vão mais conseguir trocar mensagens, pedidos ou propostas.`, () =>
+                    block(conv.other.id).catch((e) => notify(authErrorMessage(e))),
+                  ),
+              },
+        ]),
+  ];
   const combined = convOrders.some((o) => o.status === 'combinado' || o.status === 'concluido');
   const openCount = openJobs.length;
 
@@ -168,27 +204,16 @@ export default function Chat() {
                 </Text>
                 {pro?.verified ? <Icon name="badge-check" size={16} strokeWidth={2.25} fill={colors.brand} /> : null}
               </View>
-              <Text variant="caption" color={typing ? colors.success : colors.inkMuted} numberOfLines={1}>
-                {typing
-                  ? 'digitando…'
-                  : isPro
-                    ? openCount > 1
-                      ? `${openCount} pedidos em aberto`
-                      : openCount
-                        ? `${getService(openJobs[0].serviceId)?.short} · pedido de orçamento`
-                        : service?.short
-                    : `${service?.short}${pro ? ` · responde em ~${pro.replyMin} min` : ''}`}
-              </Text>
+              {/* Só o nome; o "digitando…" aparece embaixo quando for o caso. */}
+              {typing ? (
+                <Text variant="caption" color={colors.success} numberOfLines={1}>
+                  digitando…
+                </Text>
+              ) : null}
             </View>
           </Pressable>
-          {pro && newRequestService ? (
-            <IconButton
-              icon="plus"
-              label="Novo pedido"
-              onPress={() => router.push({ pathname: '/pedido/novo', params: { serviceId: newRequestService, proId: pro.id } })}
-            />
-          ) : null}
-          <IconButton icon="phone" label="Ligar" onPress={() => callOther(conv.id, conv.other.name, combined)} />
+          {!conv.other.deleted ? <IconButton icon="phone" label="Ligar" onPress={() => callOther(conv.id, conv.other.name, combined)} /> : null}
+          <IconButton icon="ellipsis-vertical" label="Mais opções" onPress={() => setMenu(true)} />
         </View>
 
         {banners.map((order) => (
@@ -226,7 +251,7 @@ export default function Chat() {
                     key={m.id}
                     mine={m.from === 'me'}
                     closed={job?.closedBy ? (job.closedBy === 'cliente' ? 'CANCELADO' : 'RECUSADO') : undefined}
-                    action={open ? { label: isPro ? 'Recusar pedido' : 'Cancelar pedido', onPress: () => close(job.id) } : undefined}
+                    action={open && !locked ? { label: isPro ? 'Recusar pedido' : 'Cancelar pedido', onPress: () => close(job.id) } : undefined}
                     serviceTitle={m.serviceTitle}
                     description={m.description}
                     when={m.when}
@@ -275,15 +300,32 @@ export default function Chat() {
         </ScrollView>
 
         <View style={[styles.composer, { paddingBottom: Math.max(insets.bottom, spacing[3]) }]}>
-          {isPro && openCount ? (
-            <Button variant="secondary" block size="md" iconLeft="receipt" onPress={() => setProposing(true)}>
-              {hasPending ? 'Enviar nova proposta' : 'Enviar proposta'}
-            </Button>
-          ) : null}
-          <Composer quickReplies={quick} prefill={prefill} onSend={send} onTyping={notifyTyping} />
+          {locked ? (
+            <View style={styles.locked}>
+              <Icon name="ban" size={18} color={colors.inkMuted} />
+              <Text variant="bodySm" color={colors.inkBody} style={{ flex: 1 }}>
+                {conv.other.deleted ? 'Esta conta foi excluída. Não é possível enviar mensagens.' : `Você bloqueou ${conv.other.name}.`}
+              </Text>
+              {conv.blockedByMe && !conv.other.deleted ? (
+                <Button variant="secondary" size="md" onPress={() => unblock(conv.other.id).catch((e) => notify(authErrorMessage(e)))}>
+                  Desbloquear
+                </Button>
+              ) : null}
+            </View>
+          ) : (
+            <>
+              {isPro && openCount ? (
+                <Button variant="secondary" block size="md" iconLeft="receipt" onPress={() => setProposing(true)}>
+                  {hasPending ? 'Enviar nova proposta' : 'Enviar proposta'}
+                </Button>
+              ) : null}
+              <Composer quickReplies={quick} prefill={prefill} onSend={send} onTyping={notifyTyping} />
+            </>
+          )}
         </View>
       </KeyboardAvoidingView>
       <PhotoViewer uris={viewer?.uris ?? []} index={viewer ? viewer.index : null} onClose={() => setViewer(null)} />
+      <ActionSheet visible={menu} title={conv.other.name} actions={menuActions} onClose={() => setMenu(false)} />
       {isPro ? (
         <ProposalSheet
           visible={proposing}
@@ -298,6 +340,7 @@ export default function Chat() {
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.surface },
+  locked: { flexDirection: 'row', alignItems: 'center', gap: spacing[3], paddingBottom: spacing[1] },
   who: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: spacing[3] },
   head: {
     flexDirection: 'row',
