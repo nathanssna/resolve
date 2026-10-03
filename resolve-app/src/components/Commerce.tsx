@@ -181,7 +181,8 @@ export function ProfessionalOption({
     <Pressable
       accessibilityRole="radio"
       accessibilityState={{ checked: !!selected }}
-      accessibilityLabel={`${name}, nota ${formatDecimal(rating)}, ${aside} ${asideLabel ?? ''}`}
+      aria-checked={!!selected}
+      accessibilityLabel={`${name}, ${reviews ? `nota ${formatDecimal(rating)}` : 'novo no Resolve'}, ${aside} ${asideLabel ?? ''}`}
       onPress={onPress}
       style={[styles.option, selected && styles.optionOn]}
     >
@@ -189,15 +190,25 @@ export function ProfessionalOption({
       <View style={{ flex: 1, gap: 3 }}>
         {badge ? <Badge tone={selected ? 'ink' : 'brand'}>{badge}</Badge> : null}
         <Text variant="labelLg">{name}</Text>
-        <View style={styles.optionMeta}>
-          <Icon name="star" size={13} fill={colors.star} color={colors.star} strokeWidth={1} />
-          <Text variant="bodySm" style={{ fontFamily: fonts.bold }}>
-            {formatDecimal(rating)}
-          </Text>
-          <Text variant="bodySm" color={colors.inkMuted}>
-            ({reviews} avaliações)
-          </Text>
-        </View>
+        {/* Sem avaliações ainda: "Novo" em vez de uma nota 0,0 que parece ruim. */}
+        {reviews ? (
+          <View style={styles.optionMeta}>
+            <Icon name="star" size={13} fill={colors.star} color={colors.star} strokeWidth={1} />
+            <Text variant="bodySm" style={{ fontFamily: fonts.bold }}>
+              {formatDecimal(rating)}
+            </Text>
+            <Text variant="bodySm" color={colors.inkMuted}>
+              {reviews === 1 ? '(1 avaliação)' : `(${reviews} avaliações)`}
+            </Text>
+          </View>
+        ) : (
+          <View style={styles.optionMeta}>
+            <Icon name="sparkles" size={13} strokeWidth={2} />
+            <Text variant="bodySm" style={{ fontFamily: fonts.bold }}>
+              Novo no Resolve
+            </Text>
+          </View>
+        )}
         <Text variant="bodySm" color={colors.inkMuted}>
           {meta}
         </Text>

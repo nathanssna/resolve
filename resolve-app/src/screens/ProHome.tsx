@@ -3,20 +3,20 @@ import { Pressable, RefreshControl, ScrollView, StyleSheet, View } from 'react-n
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Avatar, Badge, Button, CatalogFallback, EmptyState, Icon, SectionHeader, Text } from '@/components';
-import { useApp, type Conversation, type Order, type RequestMsg } from '@/state/app';
+import { useApp, type Conversation, type Job, type Order } from '@/state/app';
 import { useAuth } from '@/state/auth';
 import { useCatalog } from '@/state/catalog';
 import { colors, radius, shadows, spacing } from '@/theme/tokens';
 import { firstName, formatBRL, formatDay, formatDecimal } from '@/utils/format';
 
-function RequestRow({ conv, label }: { conv: Conversation; label: string }) {
+function RequestRow({ conv, job, label }: { conv: Conversation; job: Job; label: string }) {
   const { getService } = useCatalog();
-  const request = conv.messages.find((m): m is RequestMsg => m.kind === 'request');
+  const request = job.request;
   const last = conv.messages.at(-1);
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={`${label}: ${conv.other.name}, ${getService(conv.serviceId)?.title ?? ''}`}
+      accessibilityLabel={`${label}: ${conv.other.name}, ${getService(job.serviceId)?.title ?? ''}`}
       onPress={() => router.push({ pathname: '/chat/[id]', params: { id: conv.id } })}
       style={({ pressed }) => [styles.card, pressed && { opacity: 0.94 }]}
     >
@@ -27,7 +27,7 @@ function RequestRow({ conv, label }: { conv: Conversation; label: string }) {
             {conv.other.name}
           </Text>
           <Text variant="caption" color={colors.inkMuted} numberOfLines={1}>
-            {getService(conv.serviceId)?.title} · {last ? formatDay(last.at) : ''}
+            {getService(job.serviceId)?.title} · {last ? formatDay(last.at) : ''}
           </Text>
         </View>
         {conv.unread ? (
@@ -96,9 +96,10 @@ export function ProHome() {
   // Só aparece no catálogo quem tem nome e pelo menos um serviço.
   const me = getProfessional(session?.user.id);
 
-  const open = conversations.filter((c) => !c.orderId);
-  const toAnswer = open.filter((c) => !c.messages.some((m) => m.kind === 'proposal'));
-  const waiting = open.filter((c) => c.messages.some((m) => m.kind === 'proposal' && m.status === 'pending'));
+  // Cada pedido aparece sozinho, mesmo quando o cliente fez vários na mesma conversa.
+  const jobs = conversations.flatMap((conv) => conv.jobs.map((job) => ({ conv, job })));
+  const toAnswer = jobs.filter(({ job }) => job.state === 'novo');
+  const waiting = jobs.filter(({ job }) => job.state === 'proposta');
   const active = orders.filter((o) => o.status === 'combinado');
   const done = orders.filter((o) => o.status === 'concluido').length;
 
@@ -170,7 +171,7 @@ export function ProHome() {
             <View style={{ gap: spacing[3] }}>
               <SectionHeader title="Responda" />
               {toAnswer.length ? (
-                toAnswer.map((c) => <RequestRow key={c.id} conv={c} label="Pedido novo" />)
+                toAnswer.map(({ conv, job }) => <RequestRow key={job.id} conv={conv} job={job} label="Pedido novo" />)
               ) : (
                 <EmptyState icon="message-circle" title="Nenhum pedido novo" description="Quando um cliente pedir orçamento, ele aparece aqui e você recebe uma notificação." />
               )}
@@ -179,8 +180,8 @@ export function ProHome() {
             {waiting.length ? (
               <View style={{ gap: spacing[3] }}>
                 <SectionHeader title="Aguardando o cliente" />
-                {waiting.map((c) => (
-                  <RequestRow key={c.id} conv={c} label="Proposta enviada" />
+                {waiting.map(({ conv, job }) => (
+                  <RequestRow key={job.id} conv={conv} job={job} label="Proposta enviada" />
                 ))}
               </View>
             ) : null}

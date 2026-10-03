@@ -48,7 +48,10 @@ export function RequestCard({
   photos = [],
   onOpenPhoto,
   mine = true,
+  addressHint,
 }: {
+  /** Nota embaixo do endereço (ex.: "Endereço completo depois de combinar"). */
+  addressHint?: string;
   /** true: quem vê é o cliente que fez o pedido (card à direita). */
   mine?: boolean;
   serviceTitle: string;
@@ -79,6 +82,11 @@ export function RequestCard({
         <View style={{ gap: 6 }}>
           <CardRow icon="calendar-clock" text={when} />
           <CardRow icon="map-pin" text={address} />
+          {addressHint ? (
+            <Text variant="caption" color={colors.inkMuted} style={{ paddingLeft: 24 }}>
+              {addressHint}
+            </Text>
+          ) : null}
         </View>
       </View>
     </View>
@@ -87,6 +95,7 @@ export function RequestCard({
 
 /** Proposta enviada pelo profissional: valor + quando, com Aceitar/Recusar. */
 export function ProposalCard({
+  serviceTitle,
   amount,
   when,
   note,
@@ -99,6 +108,8 @@ export function ProposalCard({
 }: {
   /** true: quem vê é o profissional que enviou (sem Aceitar/Recusar). */
   mine?: boolean;
+  /** Para qual pedido (quando a conversa tem mais de um). */
+  serviceTitle?: string;
   amount: number;
   when: string;
   note?: string;
@@ -119,6 +130,7 @@ export function ProposalCard({
             {formatTime(at)}
           </Text>
         </View>
+        {serviceTitle ? <Text variant="label">{serviceTitle}</Text> : null}
         <Text style={[styles.amount, status === 'declined' && { textDecorationLine: 'line-through' }]}>{formatBRL(amount)}</Text>
         <View style={{ gap: 6 }}>
           <CardRow icon="calendar-clock" text={when} />

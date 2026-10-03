@@ -23,7 +23,7 @@ function preview(m: Message) {
 
 export default function Mensagens() {
   const { getService } = useCatalog();
-  const { status, role, refresh, conversations, orders } = useApp();
+  const { status, role, refresh, conversations } = useApp();
   // Já vem ordenado pela última mensagem.
   const sorted = conversations;
 
@@ -37,17 +37,19 @@ export default function Mensagens() {
       <ScrollView contentContainerStyle={{ paddingBottom: spacing[6] }}>
         {sorted.map((c) => {
           const last = c.messages.at(-1)!;
-          const order = orders.find((o) => o.id === c.orderId);
+          // Uma linha por pessoa: mostra o pedido mais recente (e quantos há).
+          const service = getService(c.latestJob?.serviceId)?.title ?? '';
+          const more = c.jobs.length > 1 ? ` · ${c.jobs.length} pedidos` : '';
           return (
             <ConversationRow
               key={c.id}
               name={c.other.name}
               avatarUrl={c.other.avatarUrl}
-              service={getService(c.serviceId)?.title ?? ''}
+              service={service + more}
               preview={preview(last)}
               time={formatDay(last.at)}
               unread={c.unread}
-              done={order?.status === 'concluido'}
+              done={c.latestJob?.state === 'concluido'}
               onPress={() => router.push({ pathname: '/chat/[id]', params: { id: c.id } })}
             />
           );

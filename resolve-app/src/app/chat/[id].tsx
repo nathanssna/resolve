@@ -28,6 +28,7 @@ import { setOpenChat } from '@/lib/push';
 import { useApp } from '@/state/app';
 import { useAuth } from '@/state/auth';
 import { useCatalog } from '@/state/catalog';
+import { addressLine } from '@/state/addresses';
 import { useSignedUrls } from '@/state/photoUrls';
 import { useTyping } from '@/state/typing';
 import { colors, radius, shadows, spacing } from '@/theme/tokens';
@@ -44,8 +45,12 @@ export default function Chat() {
   const conv = conversations.find((c) => c.id === id);
   // Do lado do cliente, os dados do profissional vêm do catálogo.
   const pro = conv && !isPro ? getProfessional(conv.proId) : undefined;
-  const service = conv ? getService(conv.serviceId) : undefined;
-  const order = conv?.orderId ? orders.find((o) => o.id === conv.orderId) : undefined;
+  const service = getService(conv?.latestJob?.serviceId);
+  const convOrders = orders.filter((o) => o.conversationId === conv?.id);
+  // Faixa no topo: serviços combinados; sem nenhum, o do pedido mais recente (para avaliar).
+  const latestOrder = convOrders.find((o) => o.id === conv?.latestJob?.orderId);
+  const active = convOrders.filter((o) => o.status === 'combinado').sort((a, b) => a.createdAt - b.createdAt);
+  const banners = active.length ? active : latestOrder && latestOrder.status === 'concluido' ? [latestOrder] : [];
   const insets = useSafeAreaInsets();
   const scroll = useRef<ScrollView>(null);
   const [prefill, setPrefill] = useState<{ text: string; key: number }>();
@@ -105,19 +110,29 @@ export default function Chat() {
     );
   }
 
+  const dealt = active.length > 0;
   const quick = isPro
-    ? order
+    ? dealt
       ? ['Estou a caminho', 'Chego em 15 minutos', 'Serviço finalizado!']
-      : ['Qual o endereço exato?', 'Pode mandar mais fotos?', 'Consigo ir hoje']
-    : order
+      : ['Pode mandar mais fotos?', 'Consigo ir hoje', 'Qual o melhor horário?']
+    : dealt
       ? ['Obrigado!', 'Pode confirmar o horário?', 'Já está a caminho?']
       : ['Qual o valor?', 'Pode vir hoje?', 'Aceita Pix?'];
 
-  // Sugestão de "Quando" na proposta: o horário do pedido.
-  const requestWhen = conv.messages.find((m) => m.kind === 'request')?.when ?? '';
-  const defaultWhen = requestWhen === 'O quanto antes' ? 'Hoje' : requestWhen;
-  const hasPending = conv.messages.some((m) => m.kind === 'proposal' && m.status === 'pending');
-  const combined = order?.status === 'combinado' || order?.status === 'concluido';
+  // Com mais de um pedido na conversa, propostas e avisos dizem de qual serviço são.
+  const multi = conv.jobs.length > 1;
+  const jobTitle = (jobId?: string) => getService(conv.jobs.find((j) => j.id === jobId)?.serviceId)?.title;
+  // Pedidos ainda sem serviço combinado: o profissional pode mandar proposta.
+  const openJobs = conv.jobs.filter((j) => !j.orderId);
+  const proposalJobs = openJobs.map((j) => ({
+    id: j.id,
+    label: getService(j.serviceId)?.title ?? 'Pedido',
+    // Sugestão de "Quando": o horário do pedido.
+    defaultWhen: j.request?.when === 'O quanto antes' ? 'Hoje' : (j.request?.when ?? ''),
+  }));
+  const hasPending = openJobs.length === 1 && !!openJobs[0].pending;
+  const combined = convOrders.some((o) => o.status === 'combinado' || o.status === 'concluido');
+  const openCount = openJobs.length;
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
@@ -137,23 +152,29 @@ export default function Chat() {
               {typing
                 ? 'digitando…'
                 : isPro
-                  ? `${service?.short} · pedido de orçamento`
+                  ? openCount > 1
+                    ? `${openCount} pedidos em aberto`
+                    : openCount
+                      ? `${getService(openJobs[0].serviceId)?.short} · pedido de orçamento`
+                      : service?.short
                   : `${service?.short}${pro ? ` · responde em ~${pro.replyMin} min` : ''}`}
             </Text>
           </View>
           <IconButton icon="phone" label="Ligar" onPress={() => callOther(conv.id, conv.other.name, combined)} />
         </View>
 
-        {order ? (
+        {banners.map((order) => (
           <Pressable
+            key={order.id}
             accessibilityRole="button"
             onPress={() => router.push({ pathname: '/pedido/[id]', params: { id: order.id } })}
             style={({ pressed }) => [styles.deal, pressed && { opacity: 0.9 }]}
           >
             <Icon name="badge-check" size={20} strokeWidth={2.25} color={colors.brand} />
             <View style={{ flex: 1 }}>
-              <Text variant="label" color={colors.onInk}>
+              <Text variant="label" color={colors.onInk} numberOfLines={1}>
                 {order.status === 'concluido' ? 'Serviço concluído' : 'Serviço combinado'}
+                {multi ? ` · ${getService(order.serviceId)?.short ?? ''}` : ''}
               </Text>
               <Text variant="caption" color={colors.onInkMuted}>
                 {formatBRL(order.amount)} · {order.when}
@@ -163,7 +184,7 @@ export default function Chat() {
               Ver
             </Text>
           </Pressable>
-        ) : null}
+        ))}
 
         <ScrollView ref={scroll} style={styles.list} contentContainerStyle={styles.listContent}>
           <SystemNote text="Combine tudo por aqui. Não compartilhe senhas ou códigos." />
@@ -177,7 +198,12 @@ export default function Chat() {
                     serviceTitle={m.serviceTitle}
                     description={m.description}
                     when={m.when}
-                    address={`${m.address.line} · ${m.address.area}`}
+                    address={
+                      m.addressPartial
+                        ? [m.address.area, m.address.city].filter(Boolean).join(' · ')
+                        : addressLine({ line: m.address.line, complement: m.address.complement ?? '', area: m.address.area })
+                    }
+                    addressHint={m.addressPartial ? 'Endereço completo depois de combinar' : undefined}
                     at={m.at}
                     photos={m.photos.map((p) => photoUrls[p])}
                     onOpenPhoto={(index) => {
@@ -191,6 +217,7 @@ export default function Chat() {
                   <ProposalCard
                     key={m.id}
                     mine={m.from === 'me'}
+                    serviceTitle={multi ? jobTitle(m.jobId) : undefined}
                     amount={m.amount}
                     when={m.when}
                     note={m.note}
@@ -201,8 +228,10 @@ export default function Chat() {
                     onCounter={() => setPrefill({ text: 'Consigo fechar por R$ ', key: Date.now() })}
                   />
                 );
-              case 'system':
-                return <SystemNote key={m.id} text={m.text} tone={m.text.startsWith('Serviço combinado') ? 'success' : 'muted'} />;
+              case 'system': {
+                const title = multi ? jobTitle(m.jobId) : undefined;
+                return <SystemNote key={m.id} text={title ? `${title}: ${m.text}` : m.text} tone={m.text.startsWith('Serviço combinado') ? 'success' : 'muted'} />;
+              }
               default:
                 return <Bubble key={m.id} mine={m.from === 'me'} text={m.text} at={m.at} />;
             }
@@ -211,7 +240,7 @@ export default function Chat() {
         </ScrollView>
 
         <View style={[styles.composer, { paddingBottom: Math.max(insets.bottom, spacing[3]) }]}>
-          {isPro && !order ? (
+          {isPro && openCount ? (
             <Button variant="secondary" block size="md" iconLeft="receipt" onPress={() => setProposing(true)}>
               {hasPending ? 'Enviar nova proposta' : 'Enviar proposta'}
             </Button>
@@ -223,9 +252,9 @@ export default function Chat() {
       {isPro ? (
         <ProposalSheet
           visible={proposing}
-          defaultWhen={defaultWhen}
+          jobs={proposalJobs}
           onClose={() => setProposing(false)}
-          onSubmit={(input) => sendProposal(conv.id, input)}
+          onSubmit={(jobId, input) => sendProposal(conv.id, jobId, input)}
         />
       ) : null}
     </SafeAreaView>

@@ -1,9 +1,13 @@
 /**
  * Conversas, propostas e pedidos do usuário logado, no Supabase.
  *
- * Carrega tudo do cliente de uma vez (conversas com mensagens, propostas,
- * pedido e avaliação) e se mantém atualizado pelo Realtime. As mudanças de
- * estado passam pelas RPCs do banco (accept_proposal, complete_order…).
+ * Carrega tudo do usuário de uma vez (conversas com pedidos, mensagens,
+ * propostas, serviços combinados e avaliações) e se mantém atualizado pelo
+ * Realtime. As mudanças de estado passam pelas RPCs do banco (create_request,
+ * accept_proposal, complete_order…).
+ *
+ * Uma conversa por cliente e profissional; cada pedido de orçamento (Job) vive
+ * dentro dela, com as próprias propostas e o próprio serviço combinado.
  *
  * Cada usuário vê o próprio lado: o cliente, as conversas que abriu; o
  * profissional, os pedidos que recebeu (pelo papel do perfil). Favoritos
@@ -18,16 +22,21 @@ import { supabase, type UserRole } from '@/lib/supabase';
 import { useAuth } from '@/state/auth';
 import { useCatalog } from '@/state/catalog';
 
-export type Address = { label: string; line: string; area: string };
+export type Address = { label: string; line: string; area: string; complement?: string; city?: string; state?: string; postalCode?: string };
 
-/** `them`: o outro participante (o profissional para o cliente, o cliente para o profissional). */
-type Base = { id: string; at: number; from: 'me' | 'them' | 'system' };
+/**
+ * `them`: o outro participante (o profissional para o cliente, o cliente para o profissional).
+ * `jobId`: o pedido a que a mensagem se refere (pedido, proposta e avisos do sistema).
+ */
+type Base = { id: string; at: number; from: 'me' | 'them' | 'system'; jobId?: string };
 export type RequestMsg = Base & {
   kind: 'request';
   serviceTitle: string;
   description: string;
   when: string;
   address: Address;
+  /** true: só bairro/cidade (profissional antes de combinar o serviço). */
+  addressPartial: boolean;
   /** Caminhos no bucket request-photos (use useSignedUrls para mostrar). */
   photos: string[];
 };
@@ -46,21 +55,43 @@ export type Message = RequestMsg | TextMsg | ProposalMsg | SystemMsg;
 /** O outro participante, para mostrar nome e foto. */
 export type Party = { id: string; name: string; avatarUrl?: string };
 
+/**
+ * Situação de um pedido: 'novo' (sem proposta), 'proposta' (esperando o
+ * cliente), 'recusada' (sem proposta pendente) ou a do serviço combinado.
+ */
+export type JobState = 'novo' | 'proposta' | 'recusada' | OrderStatus;
+
+/** Um pedido de orçamento dentro da conversa. */
+export type Job = {
+  id: string;
+  conversationId: string;
+  serviceId: string;
+  createdAt: number;
+  request?: RequestMsg;
+  /** Proposta esperando resposta do cliente. */
+  pending?: ProposalMsg;
+  orderId?: string;
+  state: JobState;
+};
+
 export type Conversation = {
   id: string;
   proId: string;
   clientId: string;
   other: Party;
-  serviceId: string;
   messages: Message[];
   unread: number;
-  orderId?: string;
+  /** Pedidos, do mais antigo ao mais recente. */
+  jobs: Job[];
+  /** O pedido mais recente (o que aparece na lista de conversas). */
+  latestJob?: Job;
 };
 
 export type OrderStatus = Database['public']['Enums']['order_status'];
 export type Order = {
   id: string;
   conversationId: string;
+  jobId: string;
   proId: string;
   clientId: string;
   other: Party;
@@ -74,31 +105,33 @@ export type Order = {
 };
 
 type Tables = Database['public']['Tables'];
-type ConvRow = Pick<
-  Tables['conversations']['Row'],
-  'id' | 'professional_id' | 'client_id' | 'service_id' | 'client_last_read_at' | 'professional_last_read_at'
-> & { client: { full_name: string; avatar_url: string | null } | null };
+type ConvRow = Pick<Tables['conversations']['Row'], 'id' | 'professional_id' | 'client_id' | 'client_last_read_at' | 'professional_last_read_at'> & {
+  client: { full_name: string; avatar_url: string | null } | null;
+};
+type RequestRow = Pick<Tables['requests']['Row'], 'id' | 'conversation_id' | 'service_id' | 'created_at'> & {
+  /** Endereço completo do pedido: só o cliente recebe (o banco devolve null para o profissional). */
+  request_address?: { address: Json } | null;
+};
 type MessageRow = Pick<
   Tables['messages']['Row'],
-  'id' | 'conversation_id' | 'sender_id' | 'kind' | 'body' | 'proposal_id' | 'request_when' | 'request_address' | 'photos' | 'created_at'
+  'id' | 'conversation_id' | 'request_id' | 'sender_id' | 'kind' | 'body' | 'proposal_id' | 'request_when' | 'request_address' | 'photos' | 'created_at'
 >;
-type ProposalRow = Pick<Tables['proposals']['Row'], 'id' | 'conversation_id' | 'amount' | 'scheduled_label' | 'note' | 'status'>;
+type ProposalRow = Pick<Tables['proposals']['Row'], 'id' | 'conversation_id' | 'request_id' | 'amount' | 'scheduled_label' | 'note' | 'status'>;
 type OrderRow = Pick<
   Tables['orders']['Row'],
-  'id' | 'conversation_id' | 'professional_id' | 'service_id' | 'amount' | 'scheduled_label' | 'address' | 'status' | 'created_at'
+  'id' | 'conversation_id' | 'request_id' | 'professional_id' | 'service_id' | 'amount' | 'scheduled_label' | 'address' | 'status' | 'created_at'
 > & { rating?: number };
 
 type Store = {
   convs: Record<string, ConvRow>;
+  requests: Record<string, RequestRow>;
   messages: Record<string, MessageRow>;
   proposals: Record<string, ProposalRow>;
   orders: Record<string, OrderRow>;
 };
-const EMPTY: Store = { convs: {}, messages: {}, proposals: {}, orders: {} };
+const EMPTY: Store = { convs: {}, requests: {}, messages: {}, proposals: {}, orders: {} };
 
-const CONV_COLS =
-  'id, professional_id, client_id, service_id, client_last_read_at, professional_last_read_at, client:profiles!conversations_client_id_fkey(full_name, avatar_url)';
-const MESSAGE_COLS = 'id, conversation_id, sender_id, kind, body, proposal_id, request_when, request_address, photos, created_at';
+const PROPOSAL_COLS = 'id, conversation_id, request_id, amount, scheduled_label, note, status';
 
 export type AppStatus = 'idle' | 'loading' | 'ready' | 'error';
 
@@ -112,7 +145,7 @@ type AppValue = {
   orders: Order[];
   favorites: string[];
   unreadTotal: number;
-  /** Abre a conversa com o pedido (enviando as fotos antes) e devolve o id dela. */
+  /** Faz o pedido na conversa com o profissional (abre se for a primeira vez, envia as fotos antes) e devolve o id da conversa. */
   startRequest: (input: {
     proId: string;
     serviceId: string;
@@ -125,8 +158,8 @@ type AppValue = {
   }) => Promise<string>;
   sendText: (conversationId: string, text: string) => Promise<void>;
   respondProposal: (conversationId: string, messageId: string, accept: boolean) => Promise<void>;
-  /** Profissional: envia uma proposta (substitui a pendente anterior). */
-  sendProposal: (conversationId: string, input: { amount: number; when: string; note?: string }) => Promise<void>;
+  /** Profissional: envia uma proposta para o pedido (substitui a pendente anterior dele). */
+  sendProposal: (conversationId: string, jobId: string, input: { amount: number; when: string; note?: string }) => Promise<void>;
   markRead: (conversationId: string) => void;
   completeOrder: (orderId: string) => Promise<void>;
   cancelOrder: (orderId: string) => Promise<void>;
@@ -144,27 +177,39 @@ const isTmp = (id: string) => id.startsWith('tmp:');
 function toAddress(value: Json | null): Address {
   const v = value && typeof value === 'object' && !Array.isArray(value) ? value : {};
   const str = (x: Json | undefined) => (typeof x === 'string' ? x : '');
-  return { label: str(v.label) || 'Casa', line: str(v.line), area: str(v.area) };
+  return {
+    label: str(v.label) || 'Casa',
+    line: str(v.line),
+    area: str(v.area),
+    complement: str(v.complement) || undefined,
+    city: str(v.city) || undefined,
+    state: str(v.state) || undefined,
+    postalCode: str(v.postal_code) || undefined,
+  };
 }
 
 async function fetchStore(uid: string, role: UserRole): Promise<Store> {
+  // As tabelas filhas também se ligam ao pedido (request_id): o !fkey diz que o caminho é pela conversa.
   const { data, error } = await supabase
     .from('conversations')
     .select(
-      'id, professional_id, client_id, service_id, client_last_read_at, professional_last_read_at, client:profiles!conversations_client_id_fkey(full_name, avatar_url), messages(id, conversation_id, sender_id, kind, body, proposal_id, request_when, request_address, photos, created_at), proposals(id, conversation_id, amount, scheduled_label, note, status), order:orders(id, conversation_id, professional_id, service_id, amount, scheduled_label, address, status, created_at, review:reviews(rating))',
+      `id, professional_id, client_id, client_last_read_at, professional_last_read_at,
+      client:profiles!conversations_client_id_fkey(full_name, avatar_url),
+      requests!requests_conversation_id_fkey(id, conversation_id, service_id, created_at, request_address:request_addresses(address)),
+      messages!messages_conversation_id_fkey(id, conversation_id, request_id, sender_id, kind, body, proposal_id, request_when, request_address, photos, created_at),
+      proposals!proposals_conversation_id_fkey(id, conversation_id, request_id, amount, scheduled_label, note, status),
+      orders!orders_conversation_id_fkey(id, conversation_id, request_id, professional_id, service_id, amount, scheduled_label, address, status, created_at, review:reviews(rating))`,
     )
     .eq(role === 'profissional' ? 'professional_id' : 'client_id', uid);
   if (error) throw error;
 
-  const store: Store = { convs: {}, messages: {}, proposals: {}, orders: {} };
-  for (const { messages, proposals, order, ...conv } of data) {
+  const store: Store = { convs: {}, requests: {}, messages: {}, proposals: {}, orders: {} };
+  for (const { requests, messages, proposals, orders, ...conv } of data) {
     store.convs[conv.id] = conv;
+    Object.assign(store.requests, byId(requests));
     Object.assign(store.messages, byId(messages));
     Object.assign(store.proposals, byId(proposals));
-    if (order) {
-      const { review, ...o } = order;
-      store.orders[o.id] = { ...o, rating: review?.rating };
-    }
+    for (const { review, ...o } of orders) store.orders[o.id] = { ...o, rating: review?.rating };
   }
   return store;
 }
@@ -240,6 +285,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
     const channel = supabase
       .channel(`app:${uid}`)
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'requests' }, ({ new: row }) => {
+        const r = row as RequestRow;
+        if (!storeRef.current.convs[r.conversation_id] && !replay.current) return load();
+        update((s) => ({ ...s, requests: { ...s.requests, [r.id]: { ...s.requests[r.id], ...r } } }));
+      })
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, ({ new: row }) => {
         const m = row as MessageRow;
         // Conversa criada em outro aparelho: busca tudo de novo.
@@ -314,14 +364,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
     if (!uid) return [];
     const grouped: Record<string, MessageRow[]> = {};
     for (const m of Object.values(store.messages)) (grouped[m.conversation_id] ??= []).push(m);
-    const orderByConv = Object.fromEntries(Object.values(store.orders).map((o) => [o.conversation_id, o.id]));
+    const requestsByConv: Record<string, RequestRow[]> = {};
+    for (const r of Object.values(store.requests)) (requestsByConv[r.conversation_id] ??= []).push(r);
+    const orderByRequest = Object.fromEntries(Object.values(store.orders).map((o) => [o.request_id, o]));
 
     const list = Object.values(store.convs).map((c): Conversation => {
       const rows = (grouped[c.id] ?? []).sort((a, b) => time(a.created_at) - time(b.created_at));
       const messages: Message[] = [];
       for (const r of rows) {
         const from = r.sender_id === null ? 'system' : r.sender_id === uid ? 'me' : 'them';
-        const base = { id: r.id, at: time(r.created_at), from } as const;
+        const base = { id: r.id, at: time(r.created_at), from, jobId: r.request_id ?? undefined } as const;
         if (r.kind === 'proposal') {
           const p = r.proposal_id ? store.proposals[r.proposal_id] : undefined;
           // A proposta chega pelo Realtime junto com a mensagem; até lá, não mostra.
@@ -336,13 +388,17 @@ export function AppProvider({ children }: { children: ReactNode }) {
             status: p.status === 'superseded' ? 'declined' : p.status,
           });
         } else if (r.kind === 'request') {
+          // Completo para o cliente; para o profissional, só a parte pública da mensagem.
+          const req = r.request_id ? store.requests[r.request_id] : undefined;
+          const full = req?.request_address?.address;
           messages.push({
             ...base,
             kind: 'request',
-            serviceTitle: getService(c.service_id)?.title ?? '',
+            serviceTitle: req ? (getService(req.service_id)?.title ?? '') : '',
             description: r.body ?? '',
             when: r.request_when ?? '',
-            address: toAddress(r.request_address),
+            address: toAddress(full ?? r.request_address),
+            addressPartial: !full && !toAddress(r.request_address).line,
             photos: r.photos ?? [],
           });
         } else if (r.kind === 'system') {
@@ -351,6 +407,26 @@ export function AppProvider({ children }: { children: ReactNode }) {
           messages.push({ ...base, kind: 'text', text: r.body ?? '', pending: isTmp(r.id) });
         }
       }
+
+      const jobs = (requestsByConv[c.id] ?? [])
+        .sort((a, b) => time(a.created_at) - time(b.created_at))
+        .map((r): Job => {
+          const order = orderByRequest[r.id];
+          const own = messages.filter((m) => m.jobId === r.id);
+          const proposals = own.filter((m): m is ProposalMsg => m.kind === 'proposal');
+          const pending = proposals.find((m) => m.status === 'pending');
+          return {
+            id: r.id,
+            conversationId: c.id,
+            serviceId: r.service_id,
+            createdAt: time(r.created_at),
+            request: own.find((m): m is RequestMsg => m.kind === 'request'),
+            pending,
+            orderId: order?.id,
+            state: order ? order.status : pending ? 'proposta' : proposals.length ? 'recusada' : 'novo',
+          };
+        });
+
       const readAt = time(role === 'profissional' ? c.professional_last_read_at : c.client_last_read_at);
       // O chat aberto marca como lido no banco assim que algo chega (ver chat/[id].tsx).
       const unread = rows.filter((r) => r.sender_id !== uid && time(r.created_at) > readAt).length;
@@ -359,10 +435,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
         proId: c.professional_id,
         clientId: c.client_id,
         other: otherOf(c),
-        serviceId: c.service_id,
         messages,
         unread,
-        orderId: orderByConv[c.id],
+        jobs,
+        latestJob: jobs.at(-1),
       };
     });
 
@@ -377,6 +453,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         .map((o) => ({
           id: o.id,
           conversationId: o.conversation_id,
+          jobId: o.request_id,
           proId: o.professional_id,
           clientId: store.convs[o.conversation_id]?.client_id ?? '',
           other: store.convs[o.conversation_id] ? otherOf(store.convs[o.conversation_id]) : { id: o.professional_id, name: '' },
@@ -396,13 +473,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const startRequest: AppValue['startRequest'] = useCallback(
     async ({ proId, serviceId, description, when, address, photos = [], onProgress }) => {
-      const { data: conv, error } = await supabase
-        .from('conversations')
-        .insert({ professional_id: proId, service_id: serviceId })
-        .select(CONV_COLS)
-        .single();
+      // Mesma conversa para todos os pedidos ao mesmo profissional.
+      const { data: conv, error } = await supabase.rpc('open_conversation', { p_professional_id: proId });
       if (error) throw error;
-      update((s) => ({ ...s, convs: { ...s.convs, [conv.id]: conv } }));
 
       // Fotos vão na pasta da conversa (é o que o Storage e o banco exigem).
       const paths: string[] = [];
@@ -414,17 +487,39 @@ export function AppProvider({ children }: { children: ReactNode }) {
         onProgress?.(paths.length, photos.length);
       }
 
-      const { data: msg, error: msgError } = await supabase
-        .from('messages')
-        .insert({ conversation_id: conv.id, kind: 'request', body: description, request_when: when, request_address: address, photos: paths })
-        .select(MESSAGE_COLS)
-        .single();
+      // Endereço completo: só o cliente lê; o profissional recebe no aceite.
+      const fullAddress = {
+        label: address.label,
+        line: address.line,
+        complement: address.complement ?? null,
+        area: address.area,
+        city: address.city ?? null,
+        state: address.state ?? null,
+        postal_code: address.postalCode ?? null,
+      };
+      const { data: msg, error: msgError } = await supabase.rpc('create_request', {
+        p_conversation_id: conv.id,
+        p_service_id: serviceId,
+        p_description: description,
+        p_when: when,
+        p_address: fullAddress,
+        p_photos: paths,
+      });
       if (msgError) {
         // Não deixa foto solta no Storage.
         if (paths.length) supabase.storage.from('request-photos').remove(paths).then(() => {});
         throw msgError;
       }
-      update((s) => ({ ...s, messages: { ...s.messages, [msg.id]: msg } }));
+      const requestId = msg.request_id!;
+      update((s) => ({
+        ...s,
+        convs: { ...s.convs, [conv.id]: s.convs[conv.id] ?? { ...conv, client: null } },
+        requests: {
+          ...s.requests,
+          [requestId]: { id: requestId, conversation_id: conv.id, service_id: serviceId, created_at: msg.created_at, request_address: { address: fullAddress } },
+        },
+        messages: { ...s.messages, [msg.id]: msg },
+      }));
       return conv.id;
     },
     [update],
@@ -438,6 +533,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       const tmp: MessageRow = {
         id: tmpId,
         conversation_id: conversationId,
+        request_id: null,
         sender_id: uid,
         kind: 'text',
         body: text,
@@ -452,7 +548,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       const { data: msg, error } = await supabase
         .from('messages')
         .insert({ conversation_id: conversationId, body: text })
-        .select(MESSAGE_COLS)
+        .select('id, conversation_id, request_id, sender_id, kind, body, proposal_id, request_when, request_address, photos, created_at')
         .single();
       update((s) => {
         const rest = { ...s.messages };
@@ -516,11 +612,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
   );
 
   const sendProposal: AppValue['sendProposal'] = useCallback(
-    async (conversationId, { amount, when, note }) => {
+    async (conversationId, jobId, { amount, when, note }) => {
       const { data: p, error } = await supabase
         .from('proposals')
-        .insert({ conversation_id: conversationId, amount, scheduled_label: when, note: note?.trim() || null })
-        .select('id, conversation_id, amount, scheduled_label, note, status')
+        .insert({ conversation_id: conversationId, request_id: jobId, amount, scheduled_label: when, note: note?.trim() || null })
+        .select(PROPOSAL_COLS)
         .single();
       if (error) throw error;
       // A mensagem da proposta é criada pelo banco e chega pelo Realtime.

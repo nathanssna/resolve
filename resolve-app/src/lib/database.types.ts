@@ -107,7 +107,6 @@ export type Database = {
           last_message_at: string
           professional_id: string
           professional_last_read_at: string
-          service_id: string
           updated_at: string
         }
         Insert: {
@@ -118,7 +117,6 @@ export type Database = {
           last_message_at?: string
           professional_id: string
           professional_last_read_at?: string
-          service_id: string
           updated_at?: string
         }
         Update: {
@@ -129,7 +127,6 @@ export type Database = {
           last_message_at?: string
           professional_id?: string
           professional_last_read_at?: string
-          service_id?: string
           updated_at?: string
         }
         Relationships: [
@@ -145,13 +142,6 @@ export type Database = {
             columns: ["professional_id"]
             isOneToOne: false
             referencedRelation: "professionals"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "conversations_service_id_fkey"
-            columns: ["service_id"]
-            isOneToOne: false
-            referencedRelation: "services"
             referencedColumns: ["id"]
           },
         ]
@@ -199,6 +189,7 @@ export type Database = {
           photos: string[]
           proposal_id: string | null
           request_address: Json | null
+          request_id: string | null
           request_when: string | null
           sender_id: string | null
         }
@@ -211,6 +202,7 @@ export type Database = {
           photos?: string[]
           proposal_id?: string | null
           request_address?: Json | null
+          request_id?: string | null
           request_when?: string | null
           sender_id?: string | null
         }
@@ -223,6 +215,7 @@ export type Database = {
           photos?: string[]
           proposal_id?: string | null
           request_address?: Json | null
+          request_id?: string | null
           request_when?: string | null
           sender_id?: string | null
         }
@@ -239,6 +232,13 @@ export type Database = {
             columns: ["proposal_id"]
             isOneToOne: false
             referencedRelation: "proposals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "messages_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "requests"
             referencedColumns: ["id"]
           },
           {
@@ -263,6 +263,7 @@ export type Database = {
           id: string
           professional_id: string
           proposal_id: string
+          request_id: string
           scheduled_at: string | null
           scheduled_label: string
           service_id: string
@@ -281,6 +282,7 @@ export type Database = {
           id?: string
           professional_id: string
           proposal_id: string
+          request_id: string
           scheduled_at?: string | null
           scheduled_label: string
           service_id: string
@@ -299,6 +301,7 @@ export type Database = {
           id?: string
           professional_id?: string
           proposal_id?: string
+          request_id?: string
           scheduled_at?: string | null
           scheduled_label?: string
           service_id?: string
@@ -323,7 +326,7 @@ export type Database = {
           {
             foreignKeyName: "orders_conversation_id_fkey"
             columns: ["conversation_id"]
-            isOneToOne: true
+            isOneToOne: false
             referencedRelation: "conversations"
             referencedColumns: ["id"]
           },
@@ -339,6 +342,13 @@ export type Database = {
             columns: ["proposal_id"]
             isOneToOne: true
             referencedRelation: "proposals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: true
+            referencedRelation: "requests"
             referencedColumns: ["id"]
           },
           {
@@ -483,6 +493,7 @@ export type Database = {
           id: string
           note: string | null
           professional_id: string
+          request_id: string
           responded_at: string | null
           scheduled_at: string | null
           scheduled_label: string
@@ -495,6 +506,7 @@ export type Database = {
           id?: string
           note?: string | null
           professional_id?: string
+          request_id: string
           responded_at?: string | null
           scheduled_at?: string | null
           scheduled_label: string
@@ -507,6 +519,7 @@ export type Database = {
           id?: string
           note?: string | null
           professional_id?: string
+          request_id?: string
           responded_at?: string | null
           scheduled_at?: string | null
           scheduled_label?: string
@@ -525,6 +538,13 @@ export type Database = {
             columns: ["professional_id"]
             isOneToOne: false
             referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "proposals_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "requests"
             referencedColumns: ["id"]
           },
         ]
@@ -560,6 +580,68 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      request_addresses: {
+        Row: {
+          address: Json
+          created_at: string
+          request_id: string
+        }
+        Insert: {
+          address: Json
+          created_at?: string
+          request_id: string
+        }
+        Update: {
+          address?: Json
+          created_at?: string
+          request_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "request_addresses_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: true
+            referencedRelation: "requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      requests: {
+        Row: {
+          conversation_id: string
+          created_at: string
+          id: string
+          service_id: string
+        }
+        Insert: {
+          conversation_id: string
+          created_at?: string
+          id?: string
+          service_id: string
+        }
+        Update: {
+          conversation_id?: string
+          created_at?: string
+          id?: string
+          service_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "requests_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "requests_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
             referencedColumns: ["id"]
           },
         ]
@@ -692,6 +774,7 @@ export type Database = {
           id: string
           professional_id: string
           proposal_id: string
+          request_id: string
           scheduled_at: string | null
           scheduled_label: string
           service_id: string
@@ -719,6 +802,7 @@ export type Database = {
           id: string
           professional_id: string
           proposal_id: string
+          request_id: string
           scheduled_at: string | null
           scheduled_label: string
           service_id: string
@@ -767,6 +851,7 @@ export type Database = {
           id: string
           professional_id: string
           proposal_id: string
+          request_id: string
           scheduled_at: string | null
           scheduled_label: string
           service_id: string
@@ -780,6 +865,35 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      create_request: {
+        Args: {
+          p_address?: Json
+          p_conversation_id: string
+          p_description: string
+          p_photos?: string[]
+          p_service_id: string
+          p_when: string
+        }
+        Returns: {
+          body: string | null
+          conversation_id: string
+          created_at: string
+          id: string
+          kind: Database["public"]["Enums"]["message_kind"]
+          photos: string[]
+          proposal_id: string | null
+          request_address: Json | null
+          request_id: string | null
+          request_when: string | null
+          sender_id: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "messages"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       decline_proposal: {
         Args: { p_proposal_id: string }
         Returns: {
@@ -789,6 +903,7 @@ export type Database = {
           id: string
           note: string | null
           professional_id: string
+          request_id: string
           responded_at: string | null
           scheduled_at: string | null
           scheduled_label: string
@@ -826,6 +941,25 @@ export type Database = {
       mark_conversation_read: {
         Args: { p_conversation_id: string }
         Returns: undefined
+      }
+      open_conversation: {
+        Args: { p_professional_id: string }
+        Returns: {
+          client_id: string
+          client_last_read_at: string
+          created_at: string
+          id: string
+          last_message_at: string
+          professional_id: string
+          professional_last_read_at: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "conversations"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       rate_order: {
         Args: { p_comment?: string; p_order_id: string; p_rating: number }

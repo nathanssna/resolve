@@ -13,6 +13,7 @@ import { View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { onNotificationTap, registerPush } from '@/lib/push';
+import { AddressProvider } from '@/state/addresses';
 import { AppProvider } from '@/state/app';
 import { AuthProvider, useAuth } from '@/state/auth';
 import { CatalogProvider } from '@/state/catalog';
@@ -64,26 +65,30 @@ export default function RootLayout() {
     <SafeAreaProvider>
       <AuthProvider>
         <CatalogProvider>
-          <AppProvider>
-            <StatusBar style="dark" />
-            <OnboardingGate />
-            <PushGate />
-            <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.surface } }}>
-              <Stack.Screen name="index" />
-              <Stack.Screen name="(tabs)" />
-              <Stack.Screen name="buscar" options={{ animation: 'fade' }} />
-              <Stack.Screen name="servico/[id]" />
-              <Stack.Screen name="profissionais/[serviceId]" />
-              <Stack.Screen name="pedido/novo" options={{ animation: 'slide_from_bottom' }} />
-              <Stack.Screen name="chat/[id]" />
-              <Stack.Screen name="pedido/[id]" />
-              <Stack.Screen name="entrar/index" />
-              <Stack.Screen name="entrar/codigo" />
-              {/* Sem voltar: o cadastro precisa ser concluído (ou trocar de conta) */}
-              <Stack.Screen name="entrar/sobre-voce" options={{ gestureEnabled: false }} />
-            <Stack.Screen name="profissional/ficha" />
-            </Stack>
-          </AppProvider>
+          <AddressProvider>
+            <AppProvider>
+              <StatusBar style="dark" />
+              <OnboardingGate />
+              <PushGate />
+              <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.surface } }}>
+                <Stack.Screen name="index" />
+                <Stack.Screen name="(tabs)" />
+                <Stack.Screen name="buscar" options={{ animation: 'fade' }} />
+                <Stack.Screen name="servico/[id]" />
+                <Stack.Screen name="profissionais/[serviceId]" />
+                <Stack.Screen name="pedido/novo" options={{ animation: 'slide_from_bottom' }} />
+                <Stack.Screen name="chat/[id]" />
+                <Stack.Screen name="pedido/[id]" />
+                <Stack.Screen name="entrar/index" />
+                <Stack.Screen name="entrar/codigo" />
+                {/* Sem voltar: o cadastro precisa ser concluído (ou trocar de conta) */}
+                <Stack.Screen name="entrar/sobre-voce" options={{ gestureEnabled: false }} />
+              <Stack.Screen name="profissional/ficha" />
+              <Stack.Screen name="enderecos/index" />
+              <Stack.Screen name="enderecos/editar" />
+              </Stack>
+            </AppProvider>
+          </AddressProvider>
         </CatalogProvider>
       </AuthProvider>
     </SafeAreaProvider>

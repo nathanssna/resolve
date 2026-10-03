@@ -12,6 +12,7 @@ export function CategoryTile({ icon, label, active, onPress }: Props) {
     <Pressable
       accessibilityRole="button"
       accessibilityState={{ selected: !!active }}
+      aria-selected={!!active}
       accessibilityLabel={label}
       onPress={onPress}
       style={({ pressed }) => [styles.wrap, pressed && { opacity: 0.8 }]}

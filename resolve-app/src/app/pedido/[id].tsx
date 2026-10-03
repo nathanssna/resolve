@@ -7,6 +7,7 @@ import { ActionButton, Avatar, Badge, Button, EmptyState, Icon, ListRow, StickyF
 import { authErrorMessage } from '@/lib/authErrors';
 import { callOther } from '@/lib/contact';
 import { useApp } from '@/state/app';
+import { addressLine } from '@/state/addresses';
 import { useCatalog } from '@/state/catalog';
 import { colors, radius, spacing } from '@/theme/tokens';
 import { firstName, formatBRL, formatDecimal } from '@/utils/format';
@@ -107,7 +108,7 @@ export default function PedidoDetalhe() {
           <View>
             <ListRow icon={service?.icon ?? 'wrench'} label="Serviço" value={service?.title ?? ''} />
             <ListRow icon="calendar-clock" label="Quando" value={order.when} />
-            <ListRow icon="map-pin" label="Onde" value={`${order.address.line} · ${order.address.area}`} />
+            <ListRow icon="map-pin" label="Onde" value={addressLine({ line: order.address.line, complement: order.address.complement ?? '', area: order.address.area })} />
             <ListRow icon="banknote" label={isPro ? 'Valor combinado · pago direto a você' : 'Valor combinado · pago direto ao profissional'} value={formatBRL(order.amount)} />
           </View>
         </View>

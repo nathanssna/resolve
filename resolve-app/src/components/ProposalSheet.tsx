@@ -7,22 +7,34 @@ import { colors, radius, spacing } from '@/theme/tokens';
 import { parseBRLInput } from '@/utils/format';
 import { Button } from './Button';
 import { Field } from './Fields';
+import { OptionChip } from './Surfaces';
 import { Text } from './Text';
 
-/** Profissional monta a proposta: valor, quando e observação. */
+export type ProposalJob = {
+  id: string;
+  /** Ex.: "Instalar chuveiro". */
+  label: string;
+  /** Sugestão para "Quando" (o horário do pedido). */
+  defaultWhen: string;
+};
+
+/** Profissional monta a proposta: para qual pedido, valor, quando e observação. */
 export function ProposalSheet({
   visible,
-  defaultWhen,
+  jobs,
   onClose,
   onSubmit,
 }: {
   visible: boolean;
-  /** Sugestão para "Quando" (o horário do pedido). */
-  defaultWhen: string;
+  /** Pedidos em aberto da conversa; o último vem escolhido. Com mais de um, aparece a escolha. */
+  jobs: ProposalJob[];
   onClose: () => void;
-  onSubmit: (input: { amount: number; when: string; note: string }) => Promise<void>;
+  onSubmit: (jobId: string, input: { amount: number; when: string; note: string }) => Promise<void>;
 }) {
   const insets = useSafeAreaInsets();
+  const [jobId, setJobId] = useState<string | null>(null);
+  const job = jobs.find((j) => j.id === jobId) ?? jobs.at(-1);
+  const defaultWhen = job?.defaultWhen ?? '';
   const [amount, setAmount] = useState('');
   const [when, setWhen] = useState(defaultWhen);
   const [note, setNote] = useState('');
@@ -30,21 +42,22 @@ export function ProposalSheet({
   const [error, setError] = useState<string | null>(null);
 
   const value = parseBRLInput(amount);
-  const canSend = value !== null && value > 0 && when.trim().length > 0 && !sending;
+  const canSend = !!job && value !== null && value > 0 && when.trim().length > 0 && !sending;
 
   const reset = () => {
+    setJobId(null);
     setAmount('');
-    setWhen(defaultWhen);
+    setWhen('');
     setNote('');
     setError(null);
   };
 
   const submit = async () => {
-    if (!canSend || value === null) return;
+    if (!canSend || value === null || !job) return;
     setSending(true);
     setError(null);
     try {
-      await onSubmit({ amount: value, when: when.trim(), note });
+      await onSubmit(job.id, { amount: value, when: when.trim(), note });
       reset();
       onClose();
     } catch (e) {
@@ -64,8 +77,25 @@ export function ProposalSheet({
             Enviar proposta
           </Text>
           <Text variant="bodySm" color={colors.inkMuted}>
-            O cliente pode aceitar, recusar ou negociar. Uma proposta nova substitui a anterior.
+            O cliente pode aceitar, recusar ou negociar. Uma proposta nova substitui a anterior do mesmo pedido.
           </Text>
+          {jobs.length > 1 ? (
+            <View style={{ gap: spacing[2] }}>
+              <Text variant="label">Para qual pedido?</Text>
+              {jobs.map((j) => (
+                <OptionChip
+                  key={j.id}
+                  label={j.label}
+                  sublabel={j.defaultWhen}
+                  active={j.id === job?.id}
+                  onPress={() => {
+                    setJobId(j.id);
+                    setWhen(j.defaultWhen);
+                  }}
+                />
+              ))}
+            </View>
+          ) : null}
           <Field
             label="Valor (R$)"
             placeholder="Ex.: 150,00"

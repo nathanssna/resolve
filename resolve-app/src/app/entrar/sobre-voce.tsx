@@ -88,6 +88,7 @@ export default function SobreVoce() {
                 key={r.id}
                 accessibilityRole="radio"
                 accessibilityState={{ checked: on }}
+                aria-checked={on}
                 accessibilityLabel={`${r.title}. ${r.text}`}
                 onPress={() => setRole(r.id)}
                 style={({ pressed }) => [styles.option, on && styles.optionOn, pressed && !on && { backgroundColor: colors.surfaceMuted }]}

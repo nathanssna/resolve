@@ -14,8 +14,8 @@ import {
   ServiceTile,
   Text,
 } from '@/components';
-import { defaultAddress } from '@/data/sample';
-import { useApp, type ProposalMsg } from '@/state/app';
+import { useAddresses } from '@/state/addresses';
+import { useApp } from '@/state/app';
 import { useAuth } from '@/state/auth';
 import { useCatalog } from '@/state/catalog';
 import { ProHome } from '@/screens/ProHome';
@@ -30,19 +30,22 @@ export default function Inicio() {
 }
 
 function ClientHome() {
+  const { primary } = useAddresses();
+  const addressText = primary ? `${primary.label} · ${primary.line}` : 'Adicionar endereço';
   const insets = useSafeAreaInsets();
   const { conversations, orders } = useApp();
   const { services, popular, getService, getProfessional, status, refresh, refreshing } = useCatalog();
 
   // Card de destaque: proposta esperando resposta > serviço combinado
-  const pendingConv = conversations.find((c) => !c.orderId && c.messages.some((m) => m.kind === 'proposal' && m.status === 'pending'));
+  const pendingJob = conversations.flatMap((c) => c.jobs).find((j) => j.state === 'proposta');
+  const pendingConv = pendingJob && conversations.find((c) => c.id === pendingJob.conversationId);
   const activeOrder = orders.find((o) => o.status === 'combinado');
   const lastDone = orders.find((o) => o.status === 'concluido');
 
   let highlight: { title: string; subtitle: string; progress: number; onPress: () => void } | null = null;
-  if (pendingConv) {
+  if (pendingConv && pendingJob?.pending) {
     const pro = getProfessional(pendingConv.proId);
-    const p = [...pendingConv.messages].reverse().find((m) => m.kind === 'proposal') as ProposalMsg;
+    const p = pendingJob.pending;
     highlight = {
       title: `${firstName(pro?.name ?? '')} enviou uma proposta`,
       subtitle: `${formatBRL(p.amount)} · ${p.when} · Toque para responder`,
@@ -73,13 +76,13 @@ function ClientHome() {
         <View style={styles.heroTop}>
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel={`Endereço: ${defaultAddress.label}, ${defaultAddress.line}. Trocar`}
-            onPress={() => notify('Troca de endereço em breve.')}
+            accessibilityLabel={primary ? `Endereço: ${primary.label}, ${primary.line}. Trocar` : 'Adicionar endereço'}
+            onPress={() => router.push('/enderecos')}
             style={styles.address}
           >
             <Icon name="map-pin" size={18} strokeWidth={2.25} fill={colors.ink} color={colors.brand} />
             <Text variant="label" numberOfLines={1} style={{ flexShrink: 1 }}>
-              {defaultAddress.label} · {defaultAddress.line}
+              {addressText}
             </Text>
             <Icon name="chevron-down" size={16} strokeWidth={2.5} />
           </Pressable>

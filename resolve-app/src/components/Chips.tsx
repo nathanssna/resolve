@@ -11,6 +11,7 @@ export function FilterChip({ active, onPress, children }: ChipProps) {
     <Pressable
       accessibilityRole="button"
       accessibilityState={{ selected: !!active }}
+      aria-selected={!!active}
       onPress={onPress}
       style={({ pressed }) => [styles.chip, active && styles.chipActive, pressed && { opacity: 0.85 }]}
     >

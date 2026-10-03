@@ -4,8 +4,8 @@ import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from 'reac
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Avatar, Button, Icon, ListRow, Text } from '@/components';
-import { defaultAddress } from '@/data/sample';
 import { AVATAR_SIDE, pickPhotos } from '@/lib/photos';
+import { useAddresses } from '@/state/addresses';
 import { useApp } from '@/state/app';
 import { useAuth } from '@/state/auth';
 import { colors, radius, spacing } from '@/theme/tokens';
@@ -19,6 +19,7 @@ export default function Perfil() {
   const { session, profile, signOut, setAvatar } = useAuth();
   const [uploading, setUploading] = useState(false);
   const isPro = profile?.role === 'profissional';
+  const { primary } = useAddresses();
   const done = orders.filter((o) => o.status === 'concluido').length;
   const email = session?.user.email;
   const name = profile?.full_name.trim() || (session ? 'Sua conta' : 'Visitante');
@@ -97,7 +98,12 @@ export default function Perfil() {
           </View>
         ) : null}
         <ListRow icon="heart" value="Favoritos" onPress={() => router.push('/favoritos')} />
-        <ListRow icon="map-pin" label="Endereço principal" value={`${defaultAddress.label} · ${defaultAddress.line}`} onPress={() => notify('Endereços em breve.')} />
+        <ListRow
+          icon="map-pin"
+          label="Endereço principal"
+          value={primary ? `${primary.label} · ${primary.line}` : 'Adicionar endereço'}
+          onPress={() => router.push('/enderecos')}
+        />
         <ListRow icon="bell" value="Notificações" onPress={() => notify('Configurações de notificação em breve.')} />
         <ListRow icon="shield-check" value="Segurança e privacidade" onPress={() => notify('Em breve.')} />
         <ListRow icon="circle-help" value="Ajuda" onPress={() => notify('Central de ajuda em breve.')} />

@@ -4,7 +4,8 @@
 --
 -- Mesma lógica da antiga simulação do app (src/state/app.tsx):
 --   pedido            → saudação + proposta com valor de exemplo
---   texto com valor   → nova proposta com esse valor ("faz por 120?")
+--   texto com valor   → nova proposta com esse valor ("faz por 120?"),
+--                       no pedido em aberto mais recente da conversa
 --   outro texto       → pede um valor (ou, já combinado, responde cordialmente)
 --   aceite / recusa / conclusão / cancelamento → resposta curta
 --
@@ -68,6 +69,7 @@ set search_path = ''
 as $$
 declare
   v_conv public.conversations;
+  v_request public.requests;
   v_name text;
   v_reply text;
   v_amount numeric;
@@ -90,13 +92,18 @@ begin
     select split_part(p.full_name, ' ', 1) into v_name from public.profiles p where p.id = v_conv.professional_id;
 
     if new.kind = 'request' then
-      v_reply := format('Oi! Aqui é %s. Vi seu pedido e consigo te ajudar.', coalesce(v_name, 'o profissional'));
+      select * into v_request from public.requests where id = new.request_id;
+      v_reply := case
+        when exists (select 1 from public.requests r where r.conversation_id = v_conv.id and r.id <> v_request.id)
+          then 'Oi de novo! Vi seu novo pedido e consigo te ajudar.'
+        else format('Oi! Aqui é %s. Vi seu pedido e consigo te ajudar.', coalesce(v_name, 'o profissional'))
+      end;
       insert into public.messages (conversation_id, sender_id, kind, body)
       values (v_conv.id, v_conv.professional_id, 'text', v_reply);
 
-      insert into public.proposals (conversation_id, professional_id, amount, scheduled_label, note)
+      insert into public.proposals (conversation_id, request_id, professional_id, amount, scheduled_label, note)
       values (
-        v_conv.id, v_conv.professional_id, private.demo_quote(v_conv.service_id),
+        v_conv.id, v_request.id, v_conv.professional_id, private.demo_quote(v_request.service_id),
         case when new.request_when = 'O quanto antes' then 'Hoje, 16h' else coalesce(new.request_when, 'Amanhã, 14h') end,
         'Valor com a visita inclusa. Materiais à parte, se precisar.'
       );
@@ -111,7 +118,15 @@ begin
         when new.body = 'Serviço cancelado pelo cliente' then 'Tudo bem, cancelado. Se precisar de novo, é só chamar.'
       end;
     elsif new.kind = 'text' then
-      if exists (select 1 from public.orders o where o.conversation_id = v_conv.id) then
+      -- Valor no texto vale para o pedido em aberto mais recente.
+      select r.* into v_request
+      from public.requests r
+      where r.conversation_id = v_conv.id
+        and not exists (select 1 from public.orders o where o.request_id = r.id)
+      order by r.created_at desc
+      limit 1;
+
+      if not found then
         v_reply := 'Combinado! Qualquer coisa é só chamar por aqui.';
       else
         v_amount := private.demo_parse_amount(new.body);
@@ -121,13 +136,13 @@ begin
 
           select p.scheduled_label into v_when
           from public.proposals p
-          where p.conversation_id = v_conv.id
+          where p.request_id = v_request.id
           order by p.created_at desc
           limit 1;
 
           -- O trigger de proposals substitui a pendente anterior.
-          insert into public.proposals (conversation_id, professional_id, amount, scheduled_label)
-          values (v_conv.id, v_conv.professional_id, v_amount, coalesce(v_when, 'Amanhã, 14h'));
+          insert into public.proposals (conversation_id, request_id, professional_id, amount, scheduled_label)
+          values (v_conv.id, v_request.id, v_conv.professional_id, v_amount, coalesce(v_when, 'Amanhã, 14h'));
           return null;
         end if;
         v_reply := 'Entendi! Se quiser, me fala um valor e eu vejo se consigo.';

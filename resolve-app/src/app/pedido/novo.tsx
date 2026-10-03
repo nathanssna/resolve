@@ -11,7 +11,6 @@ import {
   Field,
   goBack,
   Icon,
-  ListRow,
   OptionChip,
   PhotoThumbs,
   ProgressBar,
@@ -20,10 +19,10 @@ import {
   Text,
   TopBar,
 } from '@/components';
-import { defaultAddress } from '@/data/sample';
 import { authErrorMessage } from '@/lib/authErrors';
 import { PermissionDeniedError, pickPhotos, REQUEST_PHOTO_SIDE, type LocalPhoto } from '@/lib/photos';
 import { registerPush } from '@/lib/push';
+import { addressLine, useAddresses } from '@/state/addresses';
 import { useApp } from '@/state/app';
 import { useAuth } from '@/state/auth';
 import { useCatalog } from '@/state/catalog';
@@ -75,6 +74,14 @@ export default function NovoPedido() {
   const [photos, setPhotos] = useState<LocalPhoto[]>([]);
   const [adding, setAdding] = useState(false);
   const [sending, setSending] = useState<{ sent: number; total: number } | null>(null);
+  const { addresses, primary, lastAddedId, status: addrStatus, refresh: refreshAddresses } = useAddresses();
+  const [addressId, setAddressId] = useState<string>();
+  // Quem sai para adicionar um endereço volta com ele já escolhido.
+  const [addingFrom, setAddingFrom] = useState<{ before: string | null } | null>(null);
+  const exists = (id?: string | null) => !!id && addresses.some((a) => a.id === id);
+  const newlyAdded = addingFrom && lastAddedId !== addingFrom.before && exists(lastAddedId) ? lastAddedId : null;
+  const chosenId = newlyAdded ?? (exists(addressId) ? addressId : primary?.id);
+  const address = addresses.find((a) => a.id === chosenId);
 
   const focused = useIsFocused();
   const back = () => (step > 0 ? setStep(step - 1) : goBack());
@@ -131,7 +138,7 @@ export default function NovoPedido() {
   const send = async () => {
     // Sem login: entra e volta para esta tela, com tudo preservado.
     if (!session) return router.push('/entrar');
-    if (sending) return;
+    if (sending || !address) return;
     setSending({ sent: 0, total: photos.length });
     try {
       const id = await startRequest({
@@ -139,7 +146,15 @@ export default function NovoPedido() {
         serviceId: service.id,
         description: description.trim(),
         when,
-        address: defaultAddress,
+        address: {
+          label: address!.label,
+          line: address!.line,
+          complement: address!.complement || undefined,
+          area: address!.area,
+          city: address!.city,
+          state: address!.state,
+          postalCode: address!.postalCode || undefined,
+        },
         photos,
         onProgress: (sent, total) => setSending({ sent, total }),
       });
@@ -262,14 +277,62 @@ export default function NovoPedido() {
                 <Text variant="titleSm" accessibilityRole="header">
                   Onde?
                 </Text>
-                <View style={styles.box}>
-                  <ListRow
-                    icon="map-pin"
-                    label={defaultAddress.label}
-                    value={`${defaultAddress.line} · ${defaultAddress.area}`}
-                    onPress={() => notify('Troca de endereço em breve.')}
-                  />
-                </View>
+                {!session ? (
+                  <View style={[styles.box, { padding: spacing[4], gap: spacing[3] }]}>
+                    <Text variant="body" color={colors.inkBody}>
+                      Entre para escolher o endereço.
+                    </Text>
+                    <Button variant="secondary" size="md" onPress={() => router.push('/entrar')}>
+                      Entrar
+                    </Button>
+                  </View>
+                ) : addrStatus !== 'ready' ? (
+                  <CatalogFallback status={addrStatus === 'error' ? 'error' : 'loading'} onRetry={refreshAddresses} />
+                ) : (
+                  <View accessibilityRole="radiogroup" style={{ gap: spacing[2] }}>
+                    {addresses.map((a) => {
+                      const on = a.id === chosenId;
+                      return (
+                        <Pressable
+                          key={a.id}
+                          accessibilityRole="radio"
+                          accessibilityState={{ checked: on }}
+                          aria-checked={on}
+                          accessibilityLabel={`${a.label}: ${addressLine(a)}`}
+                          onPress={() => {
+                            setAddressId(a.id);
+                            setAddingFrom(null);
+                          }}
+                          style={[styles.addr, on && styles.addrOn]}
+                        >
+                          <Icon name="map-pin" size={20} strokeWidth={2} />
+                          <View style={{ flex: 1, gap: 1 }}>
+                            <Text variant="label">{a.label}</Text>
+                            <Text variant="bodySm" color={colors.inkBody} numberOfLines={2}>
+                              {addressLine(a)}
+                            </Text>
+                          </View>
+                          <View style={[styles.radio, on && styles.radioOn]}>{on ? <View style={styles.radioDot} /> : null}</View>
+                        </Pressable>
+                      );
+                    })}
+                    <Button
+                      variant="secondary"
+                      block
+                      size="md"
+                      iconLeft="plus"
+                      onPress={() => {
+                        setAddingFrom({ before: lastAddedId });
+                        router.push('/enderecos/editar');
+                      }}
+                    >
+                      {addresses.length ? 'Adicionar outro endereço' : 'Adicionar endereço'}
+                    </Button>
+                    <Text variant="caption" color={colors.inkMuted}>
+                      O profissional vê só o bairro até vocês combinarem o serviço.
+                    </Text>
+                  </View>
+                )}
               </View>
             </>
           ) : null}
@@ -326,7 +389,7 @@ export default function NovoPedido() {
                   <View style={styles.summaryRow}>
                     <Icon name="map-pin" size={16} strokeWidth={2} color={colors.inkMuted} />
                     <Text variant="bodySm" color={colors.inkBody} numberOfLines={1} style={{ flex: 1 }}>
-                      {`${defaultAddress.line} · ${defaultAddress.area}`}
+                      {address ? addressLine(address) : 'Endereço a escolher'}
                     </Text>
                   </View>
                 </View>
@@ -341,7 +404,7 @@ export default function NovoPedido() {
               variant="primary"
               block
               iconRight="arrow-right"
-              disabled={step === 0 && !descriptionOk}
+              disabled={(step === 0 && !descriptionOk) || (step === 1 && !!session && !address)}
               onPress={() => setStep((s) => s + 1)}
             >
               Continuar
@@ -354,7 +417,7 @@ export default function NovoPedido() {
                   Nada é cobrado agora. Vocês combinam o valor no chat.
                 </Text>
               </View>
-              <Button variant="primary" block iconRight="arrow-right" disabled={!!sending || adding} onPress={send}>
+              <Button variant="primary" block iconRight="arrow-right" disabled={!!sending || adding || (!!session && !address)} onPress={send}>
                 {sendLabel}
               </Button>
             </>
@@ -376,6 +439,11 @@ const styles = StyleSheet.create({
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing[2] },
   suggest: { flexDirection: 'row', alignItems: 'center', gap: 4, height: 34, paddingHorizontal: spacing[3], borderRadius: radius.pill, backgroundColor: colors.surfaceMuted },
   box: { borderRadius: radius.lg, borderWidth: 1.5, borderColor: colors.line, paddingHorizontal: spacing[1] },
+  addr: { flexDirection: 'row', alignItems: 'center', gap: spacing[3], padding: spacing[3], borderRadius: radius.lg, borderWidth: 1.5, borderColor: colors.line },
+  addrOn: { borderColor: colors.focus, backgroundColor: colors.brandTint },
+  radio: { width: 22, height: 22, borderRadius: radius.pill, borderWidth: 2, borderColor: colors.inkMuted, alignItems: 'center', justifyContent: 'center' },
+  radioOn: { borderColor: colors.ink },
+  radioDot: { width: 10, height: 10, borderRadius: radius.pill, backgroundColor: colors.ink },
   summary: { padding: spacing[4], borderRadius: radius.lg, backgroundColor: colors.surfaceMuted, gap: spacing[2] },
   summaryRow: { flexDirection: 'row', alignItems: 'center', gap: spacing[2] },
   free: { flexDirection: 'row', alignItems: 'center', gap: spacing[2] },

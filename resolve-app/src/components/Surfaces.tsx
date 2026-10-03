@@ -141,6 +141,7 @@ export function Segmented<T extends string>({
             key={o.id}
             accessibilityRole="radio"
             accessibilityState={{ checked: on }}
+            aria-checked={on}
             onPress={() => onChange(o.id)}
             style={[styles.segmentItem, on && styles.segmentOn]}
           >
@@ -171,6 +172,7 @@ export function OptionChip({
     <Pressable
       accessibilityRole="button"
       accessibilityState={{ selected: !!active }}
+      aria-selected={!!active}
       onPress={onPress}
       style={[styles.optChip, sublabel ? styles.optTall : null, active && styles.optOn]}
     >
