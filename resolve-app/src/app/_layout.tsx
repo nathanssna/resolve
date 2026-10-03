@@ -83,9 +83,11 @@ export default function RootLayout() {
                 <Stack.Screen name="entrar/codigo" />
                 {/* Sem voltar: o cadastro precisa ser concluído (ou trocar de conta) */}
                 <Stack.Screen name="entrar/sobre-voce" options={{ gestureEnabled: false }} />
-              <Stack.Screen name="profissional/ficha" />
-              <Stack.Screen name="enderecos/index" />
-              <Stack.Screen name="enderecos/editar" />
+                <Stack.Screen name="profissional/ficha" />
+                <Stack.Screen name="profissional/[id]" />
+                <Stack.Screen name="enderecos/index" />
+                <Stack.Screen name="enderecos/editar" />
+                <Stack.Screen name="telefone" />
               </Stack>
             </AppProvider>
           </AddressProvider>

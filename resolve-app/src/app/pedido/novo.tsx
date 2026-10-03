@@ -60,8 +60,10 @@ function nextDays(n = 6) {
 export default function NovoPedido() {
   const { serviceId, proId } = useLocalSearchParams<{ serviceId: string; proId: string }>();
   const { getService, getProfessional, status, refresh } = useCatalog();
-  const service = getService(serviceId);
   const pro = getProfessional(proId);
+  // O cliente pode trocar o serviço (entre os que o profissional faz).
+  const [pickedService, setPickedService] = useState<string>();
+  const service = getService(pickedService ?? (pro && !pro.serviceIds.includes(serviceId) ? pro.serviceIds[0] : serviceId));
   const { startRequest } = useApp();
   const { session } = useAuth();
 
@@ -201,9 +203,9 @@ export default function NovoPedido() {
                 <View style={{ flex: 1, gap: 2 }}>
                   <Text variant="labelLg">{pro.name}</Text>
                   <View style={styles.proMeta}>
-                    <Icon name="star" size={13} fill={colors.star} color={colors.star} strokeWidth={1} />
+                    <Icon name={pro.reviews ? 'star' : 'sparkles'} size={13} fill={pro.reviews ? colors.star : 'none'} color={pro.reviews ? colors.star : colors.ink} strokeWidth={pro.reviews ? 1 : 2} />
                     <Text variant="bodySm">
-                      {formatDecimal(pro.rating)} · {service.short}
+                      {pro.reviews ? formatDecimal(pro.rating) : 'Novo no Resolve'} · {service.short}
                     </Text>
                   </View>
                 </View>
@@ -212,6 +214,18 @@ export default function NovoPedido() {
                   <Text variant="caption">~{pro.replyMin} min</Text>
                 </View>
               </View>
+
+              {pro.serviceIds.length > 1 ? (
+                <View style={{ gap: spacing[2] }}>
+                  <Text variant="label">Qual serviço?</Text>
+                  <View style={styles.chips}>
+                    {pro.serviceIds.map((sid) => {
+                      const s = getService(sid);
+                      return s ? <OptionChip key={sid} label={s.short} active={sid === service.id} onPress={() => setPickedService(sid)} /> : null;
+                    })}
+                  </View>
+                </View>
+              ) : null}
 
               <View style={{ gap: spacing[3] }}>
                 <Field

@@ -198,9 +198,14 @@ export function ProHome() {
         ) : null}
 
         {me ? (
-          <Button variant="secondary" block iconLeft="pencil" onPress={() => router.push('/profissional/ficha')}>
-            Editar minha ficha
-          </Button>
+          <View style={{ gap: spacing[2] }}>
+            <Button variant="secondary" block iconLeft="pencil" onPress={() => router.push('/profissional/ficha')}>
+              Editar minha ficha
+            </Button>
+            <Button variant="link" onPress={() => router.push({ pathname: '/profissional/[id]', params: { id: me.id } })} style={{ alignSelf: 'center' }}>
+              Ver como os clientes me veem
+            </Button>
+          </View>
         ) : null}
       </View>
     </ScrollView>

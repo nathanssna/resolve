@@ -90,6 +90,13 @@ export default function Profissionais() {
       {chosen ? (
         <StickyFooter>
           <Button
+            variant="link"
+            onPress={() => router.push({ pathname: '/profissional/[id]', params: { id: chosen.id, serviceId } })}
+            style={{ alignSelf: 'center', marginBottom: spacing[2] }}
+          >
+            {`Ver perfil e avaliações de ${firstName(chosen.name)}`}
+          </Button>
+          <Button
             variant="primary"
             block
             iconLeft="message-circle"

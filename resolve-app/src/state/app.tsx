@@ -10,8 +10,8 @@
  * dentro dela, com as próprias propostas e o próprio serviço combinado.
  *
  * Cada usuário vê o próprio lado: o cliente, as conversas que abriu; o
- * profissional, os pedidos que recebeu (pelo papel do perfil). Favoritos
- * ainda ficam só na memória.
+ * profissional, os pedidos que recebeu (pelo papel do perfil). Os favoritos
+ * ficam na tabela favorites, presos à conta.
  */
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { AppState } from 'react-native';
@@ -59,7 +59,7 @@ export type Party = { id: string; name: string; avatarUrl?: string };
  * Situação de um pedido: 'novo' (sem proposta), 'proposta' (esperando o
  * cliente), 'recusada' (sem proposta pendente) ou a do serviço combinado.
  */
-export type JobState = 'novo' | 'proposta' | 'recusada' | OrderStatus;
+export type JobState = 'novo' | 'proposta' | 'recusada' | 'encerrado' | OrderStatus;
 
 /** Um pedido de orçamento dentro da conversa. */
 export type Job = {
@@ -71,6 +71,8 @@ export type Job = {
   /** Proposta esperando resposta do cliente. */
   pending?: ProposalMsg;
   orderId?: string;
+  /** Encerrado sem serviço: quem encerrou (o cliente cancelou ou o profissional recusou). */
+  closedBy?: 'cliente' | 'profissional';
   state: JobState;
 };
 
@@ -101,6 +103,8 @@ export type Order = {
   address: Address;
   status: OrderStatus;
   rating?: number;
+  /** Comentário da avaliação, se houver. */
+  comment?: string;
   createdAt: number;
 };
 
@@ -108,7 +112,7 @@ type Tables = Database['public']['Tables'];
 type ConvRow = Pick<Tables['conversations']['Row'], 'id' | 'professional_id' | 'client_id' | 'client_last_read_at' | 'professional_last_read_at'> & {
   client: { full_name: string; avatar_url: string | null } | null;
 };
-type RequestRow = Pick<Tables['requests']['Row'], 'id' | 'conversation_id' | 'service_id' | 'created_at'> & {
+type RequestRow = Pick<Tables['requests']['Row'], 'id' | 'conversation_id' | 'service_id' | 'created_at' | 'closed_at' | 'closed_by'> & {
   /** Endereço completo do pedido: só o cliente recebe (o banco devolve null para o profissional). */
   request_address?: { address: Json } | null;
 };
@@ -120,7 +124,7 @@ type ProposalRow = Pick<Tables['proposals']['Row'], 'id' | 'conversation_id' | '
 type OrderRow = Pick<
   Tables['orders']['Row'],
   'id' | 'conversation_id' | 'request_id' | 'professional_id' | 'service_id' | 'amount' | 'scheduled_label' | 'address' | 'status' | 'created_at'
-> & { rating?: number };
+> & { rating?: number; comment?: string | null };
 
 type Store = {
   convs: Record<string, ConvRow>;
@@ -163,8 +167,11 @@ type AppValue = {
   markRead: (conversationId: string) => void;
   completeOrder: (orderId: string) => Promise<void>;
   cancelOrder: (orderId: string) => Promise<void>;
-  rateOrder: (orderId: string, stars: number) => Promise<void>;
-  toggleFavorite: (serviceId: string) => void;
+  rateOrder: (orderId: string, stars: number, comment?: string) => Promise<void>;
+  /** Cliente cancela / profissional recusa um pedido ainda sem serviço combinado. */
+  closeRequest: (jobId: string) => Promise<void>;
+  /** Só com login (a tela leva para o login antes). */
+  toggleFavorite: (serviceId: string) => Promise<void>;
   isFavorite: (serviceId: string) => boolean;
 };
 
@@ -195,10 +202,10 @@ async function fetchStore(uid: string, role: UserRole): Promise<Store> {
     .select(
       `id, professional_id, client_id, client_last_read_at, professional_last_read_at,
       client:profiles!conversations_client_id_fkey(full_name, avatar_url),
-      requests!requests_conversation_id_fkey(id, conversation_id, service_id, created_at, request_address:request_addresses(address)),
+      requests!requests_conversation_id_fkey(id, conversation_id, service_id, created_at, closed_at, closed_by, request_address:request_addresses(address)),
       messages!messages_conversation_id_fkey(id, conversation_id, request_id, sender_id, kind, body, proposal_id, request_when, request_address, photos, created_at),
       proposals!proposals_conversation_id_fkey(id, conversation_id, request_id, amount, scheduled_label, note, status),
-      orders!orders_conversation_id_fkey(id, conversation_id, request_id, professional_id, service_id, amount, scheduled_label, address, status, created_at, review:reviews(rating))`,
+      orders!orders_conversation_id_fkey(id, conversation_id, request_id, professional_id, service_id, amount, scheduled_label, address, status, created_at, review:reviews(rating, comment))`,
     )
     .eq(role === 'profissional' ? 'professional_id' : 'client_id', uid);
   if (error) throw error;
@@ -209,7 +216,7 @@ async function fetchStore(uid: string, role: UserRole): Promise<Store> {
     Object.assign(store.requests, byId(requests));
     Object.assign(store.messages, byId(messages));
     Object.assign(store.proposals, byId(proposals));
-    for (const { review, ...o } of orders) store.orders[o.id] = { ...o, rating: review?.rating };
+    for (const { review, ...o } of orders) store.orders[o.id] = { ...o, rating: review?.rating, comment: review?.comment };
   }
   return store;
 }
@@ -225,7 +232,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
   // Dados guardados com o id do dono: trocar de conta invalida sozinho.
   const [data, setData] = useState<{ owner: string; store: Store } | null>(null);
   const [failedFor, setFailedFor] = useState<string | null>(null);
-  const [favorites, setFavorites] = useState<string[]>([]);
+  const [favData, setFavData] = useState<{ uid: string; ids: string[] } | null>(null);
+  const favorites = useMemo(() => (uid && favData?.uid === uid ? favData.ids : []), [uid, favData]);
 
   const loaded = !!owner && data?.owner === owner;
   const store = loaded ? data.store : EMPTY;
@@ -279,13 +287,26 @@ export function AppProvider({ children }: { children: ReactNode }) {
     load();
   }, [owner, loaded, load]);
 
+  // Favoritos da conta.
+  useEffect(() => {
+    if (!uid || favData?.uid === uid) return;
+    supabase
+      .from('favorites')
+      .select('service_id')
+      .order('created_at')
+      .then(({ data: rows }) => {
+        if (rows) setFavData({ uid, ids: rows.map((r) => r.service_id) });
+      });
+  }, [uid, favData?.uid]);
+
   // Realtime: o banco só entrega as linhas que este usuário pode ler (RLS).
   useEffect(() => {
     if (!uid) return;
 
     const channel = supabase
       .channel(`app:${uid}`)
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'requests' }, ({ new: row }) => {
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'requests' }, ({ new: row }) => {
+        if (!('id' in row)) return;
         const r = row as RequestRow;
         if (!storeRef.current.convs[r.conversation_id] && !replay.current) return load();
         update((s) => ({ ...s, requests: { ...s.requests, [r.id]: { ...s.requests[r.id], ...r } } }));
@@ -312,7 +333,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
         { event: 'INSERT', schema: 'public', table: 'reviews', filter: `${role === 'profissional' ? 'professional_id' : 'client_id'}=eq.${uid}` },
         ({ new: row }) => {
           const r = row as Tables['reviews']['Row'];
-          update((s) => (s.orders[r.order_id] ? { ...s, orders: { ...s.orders, [r.order_id]: { ...s.orders[r.order_id], rating: r.rating } } } : s));
+          update((s) =>
+            s.orders[r.order_id] ? { ...s, orders: { ...s.orders, [r.order_id]: { ...s.orders[r.order_id], rating: r.rating, comment: r.comment } } } : s,
+          );
           // A nota do profissional (painel, lista) vem do catálogo.
           if (role === 'profissional') refreshCatalog();
         },
@@ -423,7 +446,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
             request: own.find((m): m is RequestMsg => m.kind === 'request'),
             pending,
             orderId: order?.id,
-            state: order ? order.status : pending ? 'proposta' : proposals.length ? 'recusada' : 'novo',
+            closedBy: r.closed_by ? (r.closed_by === c.client_id ? 'cliente' : 'profissional') : undefined,
+            state: order ? order.status : r.closed_at ? 'encerrado' : pending ? 'proposta' : proposals.length ? 'recusada' : 'novo',
           };
         });
 
@@ -463,6 +487,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
           address: toAddress(o.address),
           status: o.status,
           rating: o.rating,
+          comment: o.comment ?? undefined,
           createdAt: time(o.created_at),
         }))
         .sort((a, b) => b.createdAt - a.createdAt),
@@ -516,7 +541,15 @@ export function AppProvider({ children }: { children: ReactNode }) {
         convs: { ...s.convs, [conv.id]: s.convs[conv.id] ?? { ...conv, client: null } },
         requests: {
           ...s.requests,
-          [requestId]: { id: requestId, conversation_id: conv.id, service_id: serviceId, created_at: msg.created_at, request_address: { address: fullAddress } },
+          [requestId]: {
+            id: requestId,
+            conversation_id: conv.id,
+            service_id: serviceId,
+            created_at: msg.created_at,
+            closed_at: null,
+            closed_by: null,
+            request_address: { address: fullAddress },
+          },
         },
         messages: { ...s.messages, [msg.id]: msg },
       }));
@@ -649,17 +682,41 @@ export function AppProvider({ children }: { children: ReactNode }) {
   );
 
   const rateOrder = useCallback(
-    async (orderId: string, stars: number) => {
-      const { data: review, error } = await supabase.rpc('rate_order', { p_order_id: orderId, p_rating: stars });
+    async (orderId: string, stars: number, comment?: string) => {
+      const { data: review, error } = await supabase.rpc('rate_order', { p_order_id: orderId, p_rating: stars, p_comment: comment?.trim() || undefined });
       if (error) throw error;
-      update((s) => (s.orders[orderId] ? { ...s, orders: { ...s.orders, [orderId]: { ...s.orders[orderId], rating: review.rating } } } : s));
+      update((s) =>
+        s.orders[orderId] ? { ...s, orders: { ...s.orders, [orderId]: { ...s.orders[orderId], rating: review.rating, comment: review.comment } } } : s,
+      );
+    },
+    [update],
+  );
+
+  const closeRequest = useCallback(
+    async (jobId: string) => {
+      const { data: r, error } = await supabase.rpc('close_request', { p_request_id: jobId });
+      if (error) throw error;
+      // As propostas pendentes e o aviso chegam pelo Realtime.
+      update((s) => ({ ...s, requests: { ...s.requests, [r.id]: { ...s.requests[r.id], ...r } } }));
     },
     [update],
   );
 
   const toggleFavorite = useCallback(
-    (sid: string) => setFavorites((f) => (f.includes(sid) ? f.filter((x) => x !== sid) : [...f, sid])),
-    [],
+    async (sid: string) => {
+      if (!uid) return;
+      const was = favorites.includes(sid);
+      const next = was ? favorites.filter((x) => x !== sid) : [...favorites, sid];
+      setFavData({ uid, ids: next });
+      const { error } = was
+        ? await supabase.from('favorites').delete().eq('service_id', sid)
+        : await supabase.from('favorites').insert({ service_id: sid });
+      if (error) {
+        setFavData((d) => (d?.uid === uid ? { uid, ids: was ? [...d.ids, sid] : d.ids.filter((x) => x !== sid) } : d));
+        throw error;
+      }
+    },
+    [uid, favorites],
   );
 
   const value = useMemo<AppValue>(
@@ -679,10 +736,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
       completeOrder,
       cancelOrder,
       rateOrder,
+      closeRequest,
       toggleFavorite,
       isFavorite: (sid) => favorites.includes(sid),
     }),
-    [status, role, load, conversations, orders, favorites, startRequest, sendText, respondProposal, sendProposal, markRead, completeOrder, cancelOrder, rateOrder, toggleFavorite],
+    [status, role, load, conversations, orders, favorites, startRequest, sendText, respondProposal, sendProposal, markRead, completeOrder, cancelOrder, rateOrder, closeRequest, toggleFavorite],
   );
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;

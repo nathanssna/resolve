@@ -3,9 +3,11 @@ import { ScrollView, Share, StyleSheet, View } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Button, CatalogFallback, CheckItem, EmptyState, Icon, InfoBanner, Rating, SectionHeader, StickyFooter, Text, TopBar } from '@/components';
+import { authErrorMessage } from '@/lib/authErrors';
 import { useApp } from '@/state/app';
 import { useCatalog } from '@/state/catalog';
 import { colors, radius, shadows, spacing } from '@/theme/tokens';
+import { notify } from '@/utils/dialog';
 
 const howItWorks = [
   { n: '1', title: 'Conte o que precisa', text: 'Descreva o problema e quando quer o serviço.' },
@@ -17,7 +19,10 @@ export default function ServicoDetalhe() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { getService, getProfessionals, status, refresh } = useCatalog();
   const service = getService(id);
-  const { isFavorite, toggleFavorite } = useApp();
+  const { status: appStatus, isFavorite, toggleFavorite } = useApp();
+  // Favoritos ficam na conta: sem login, entra primeiro.
+  const favorite = (sid: string) =>
+    appStatus === 'idle' ? router.push('/entrar') : toggleFavorite(sid).catch((e) => notify(`Não foi possível salvar o favorito. ${authErrorMessage(e)}`));
   const insets = useSafeAreaInsets();
 
   if (!service) {
@@ -41,7 +46,7 @@ export default function ServicoDetalhe() {
           <TopBar
             floating
             actions={[
-              { icon: 'heart', label: fav ? 'Remover dos favoritos' : 'Favoritar', filled: fav, onPress: () => toggleFavorite(service.id) },
+              { icon: 'heart', label: fav ? 'Remover dos favoritos' : 'Favoritar', filled: fav, onPress: () => favorite(service.id) },
               { icon: 'share', label: 'Compartilhar', onPress: () => Share.share({ message: `${service.title} no Resolve` }).catch(() => {}) },
             ]}
           />

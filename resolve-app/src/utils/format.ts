@@ -56,3 +56,15 @@ export function parseBRLInput(text: string): number | null {
   const n = Number(normalized);
   return Number.isFinite(n) && n <= 99_999_999 ? n : null;
 }
+
+/** Celular/telefone brasileiro enquanto digita: "11912345678" → "(11) 91234-5678". Aceita "+55…". */
+export function formatPhoneBR(text: string) {
+  let d = text.replace(/\D/g, '');
+  if (d.length > 11 && d.startsWith('55')) d = d.slice(2);
+  d = d.slice(0, 11);
+  if (d.length <= 2) return d.length ? `(${d}` : '';
+  const ddd = d.slice(0, 2);
+  const rest = d.slice(2);
+  const cut = rest.length > 8 ? 5 : 4;
+  return rest.length > cut ? `(${ddd}) ${rest.slice(0, cut)}-${rest.slice(cut)}` : `(${ddd}) ${rest}`;
+}

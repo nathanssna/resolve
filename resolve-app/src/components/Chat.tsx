@@ -49,7 +49,13 @@ export function RequestCard({
   onOpenPhoto,
   mine = true,
   addressHint,
+  closed,
+  action,
 }: {
+  /** Pedido encerrado sem serviço: o selo (ex.: "CANCELADO"). */
+  closed?: string;
+  /** Link no pé do card (ex.: "Cancelar pedido"). */
+  action?: { label: string; onPress: () => void };
   /** Nota embaixo do endereço (ex.: "Endereço completo depois de combinar"). */
   addressHint?: string;
   /** true: quem vê é o cliente que fez o pedido (card à direita). */
@@ -65,10 +71,10 @@ export function RequestCard({
 }) {
   return (
     <View style={[styles.bubbleRow, mine && { justifyContent: 'flex-end' }]}>
-      <View style={[styles.card, styles.requestCard, !mine && styles.requestTheirs]}>
+      <View style={[styles.card, styles.requestCard, !mine && styles.requestTheirs, !!closed && { opacity: 0.6 }]}>
         <View style={styles.cardHead}>
-          <Badge tone="ink" icon="clipboard-list">
-            PEDIDO
+          <Badge tone={closed ? 'muted' : 'ink'} icon={closed ? 'x' : 'clipboard-list'}>
+            {closed ?? 'PEDIDO'}
           </Badge>
           <Text variant="caption" color={colors.inkMuted}>
             {formatTime(at)}
@@ -88,6 +94,13 @@ export function RequestCard({
             </Text>
           ) : null}
         </View>
+        {action ? (
+          <Pressable accessibilityRole="button" onPress={action.onPress} hitSlop={8} style={({ pressed }) => [styles.cardAction, pressed && { opacity: 0.6 }]}>
+            <Text variant="label" color={colors.inkBody} style={{ textDecorationLine: 'underline' }}>
+              {action.label}
+            </Text>
+          </Pressable>
+        ) : null}
       </View>
     </View>
   );
@@ -339,6 +352,7 @@ export function ConversationRow({
 }
 
 const styles = StyleSheet.create({
+  cardAction: { alignSelf: 'flex-start', paddingTop: spacing[1] },
   bubbleRow: { flexDirection: 'row', paddingHorizontal: spacing[4] },
   bubble: { maxWidth: '80%', paddingHorizontal: spacing[4], paddingTop: 10, paddingBottom: 6, borderRadius: 20, gap: 2 },
   bubbleMine: { backgroundColor: colors.brand, borderBottomRightRadius: 6 },

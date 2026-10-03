@@ -10,6 +10,7 @@ import { useApp } from '@/state/app';
 import { useAuth } from '@/state/auth';
 import { colors, radius, spacing } from '@/theme/tokens';
 import { confirm, notify } from '@/utils/dialog';
+import { formatPhoneBR } from '@/utils/format';
 
 const ROLE_LABEL = { cliente: 'Cliente', profissional: 'Profissional' } as const;
 
@@ -98,6 +99,14 @@ export default function Perfil() {
           </View>
         ) : null}
         <ListRow icon="heart" value="Favoritos" onPress={() => router.push('/favoritos')} />
+        {session ? (
+          <ListRow
+            icon="phone"
+            label="Telefone"
+            value={profile?.phone ? formatPhoneBR(profile.phone) : 'Adicionar telefone'}
+            onPress={() => router.push('/telefone')}
+          />
+        ) : null}
         <ListRow
           icon="map-pin"
           label="Endereço principal"

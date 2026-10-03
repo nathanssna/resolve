@@ -116,12 +116,14 @@ begin
         when new.body = 'Proposta recusada' then 'Sem problemas. Me diz um valor que fique bom pra você.'
         when new.body = 'Serviço concluído' then 'Obrigado! Se puder, deixe sua avaliação no app.'
         when new.body = 'Serviço cancelado pelo cliente' then 'Tudo bem, cancelado. Se precisar de novo, é só chamar.'
+        when new.body = 'Pedido cancelado pelo cliente' then 'Tudo bem! Se precisar, é só chamar por aqui.'
       end;
     elsif new.kind = 'text' then
       -- Valor no texto vale para o pedido em aberto mais recente.
       select r.* into v_request
       from public.requests r
       where r.conversation_id = v_conv.id
+        and r.closed_at is null
         and not exists (select 1 from public.orders o where o.request_id = r.id)
       order by r.created_at desc
       limit 1;

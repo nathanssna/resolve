@@ -612,24 +612,37 @@ export type Database = {
       }
       requests: {
         Row: {
+          closed_at: string | null
+          closed_by: string | null
           conversation_id: string
           created_at: string
           id: string
           service_id: string
         }
         Insert: {
+          closed_at?: string | null
+          closed_by?: string | null
           conversation_id: string
           created_at?: string
           id?: string
           service_id: string
         }
         Update: {
+          closed_at?: string | null
+          closed_by?: string | null
           conversation_id?: string
           created_at?: string
           id?: string
           service_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "requests_closed_by_fkey"
+            columns: ["closed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "requests_conversation_id_fkey"
             columns: ["conversation_id"]
@@ -816,6 +829,23 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      close_request: {
+        Args: { p_request_id: string }
+        Returns: {
+          closed_at: string | null
+          closed_by: string | null
+          conversation_id: string
+          created_at: string
+          id: string
+          service_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "requests"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       complete_onboarding: {
         Args: {
           p_full_name: string
@@ -937,6 +967,17 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      get_professional_reviews: {
+        Args: { p_limit?: number; p_professional_id: string }
+        Returns: {
+          client_first_name: string
+          comment: string
+          created_at: string
+          id: string
+          rating: number
+          service_id: string
+        }[]
       }
       mark_conversation_read: {
         Args: { p_conversation_id: string }

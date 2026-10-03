@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { Pressable, ScrollView, Share, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { ActionButton, Avatar, Badge, Button, EmptyState, Icon, ListRow, StickyFooter, Text, Timeline, TopBar, type TimelineStep } from '@/components';
+import { ActionButton, Avatar, Badge, Button, EmptyState, Field, Icon, ListRow, StickyFooter, Text, Timeline, TopBar, type TimelineStep } from '@/components';
 import { authErrorMessage } from '@/lib/authErrors';
 import { callOther } from '@/lib/contact';
 import { useApp } from '@/state/app';
@@ -20,6 +20,7 @@ export default function PedidoDetalhe() {
   const { getProfessional, getService } = useCatalog();
   const order = orders.find((o) => o.id === id);
   const [stars, setStars] = useState(0);
+  const [comment, setComment] = useState('');
   const [busy, setBusy] = useState(false);
   const run = (action: () => Promise<void>) => {
     if (busy) return;
@@ -123,6 +124,11 @@ export default function PedidoDetalhe() {
                 ))}
               </View>
             ) : null}
+            {order.comment ? (
+              <Text variant="body" color={colors.inkBody} style={styles.quote}>
+                {`“${order.comment}”`}
+              </Text>
+            ) : null}
           </View>
         ) : null}
 
@@ -139,10 +145,34 @@ export default function PedidoDetalhe() {
                 );
               })}
             </View>
+            {order.rating && order.comment ? (
+              <Text variant="body" color={colors.inkBody} style={styles.quote}>
+                {`“${order.comment}”`}
+              </Text>
+            ) : null}
             {!order.rating ? (
-              <Button variant="dark" block disabled={!stars || busy} onPress={() => run(() => rateOrder(order.id, stars))}>
-                Enviar avaliação
-              </Button>
+              <>
+                {stars ? (
+                  <View style={{ alignSelf: 'stretch' }}>
+                    <Field
+                      label="Conte como foi (opcional)"
+                      placeholder={`Ex.: ${name} chegou no horário e deixou tudo limpo`}
+                      value={comment}
+                      onChangeText={setComment}
+                      multiline
+                      maxLength={500}
+                    />
+                  </View>
+                ) : null}
+                <Button variant="dark" block disabled={!stars || busy} onPress={() => run(() => rateOrder(order.id, stars, comment))}>
+                  Enviar avaliação
+                </Button>
+                {stars ? (
+                  <Text variant="caption" color={colors.inkMuted} style={{ textAlign: 'center' }}>
+                    A avaliação aparece no perfil do profissional, com seu primeiro nome.
+                  </Text>
+                ) : null}
+              </>
             ) : null}
           </View>
         ) : null}
@@ -175,4 +205,5 @@ const styles = StyleSheet.create({
   block: { gap: spacing[3] },
   rate: { padding: spacing[4], borderRadius: radius.xl, backgroundColor: colors.brandTint, alignItems: 'center' },
   stars: { flexDirection: 'row', gap: spacing[2], paddingVertical: spacing[2] },
+  quote: { textAlign: 'center', fontStyle: 'italic' },
 });

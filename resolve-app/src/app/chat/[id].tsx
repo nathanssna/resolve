@@ -33,11 +33,11 @@ import { useSignedUrls } from '@/state/photoUrls';
 import { useTyping } from '@/state/typing';
 import { colors, radius, shadows, spacing } from '@/theme/tokens';
 import { formatBRL } from '@/utils/format';
-import { notify } from '@/utils/dialog';
+import { confirm, notify } from '@/utils/dialog';
 
 export default function Chat() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { status, role, refresh, conversations, orders, sendText, respondProposal, sendProposal, markRead } = useApp();
+  const { status, role, refresh, conversations, orders, sendText, respondProposal, sendProposal, markRead, closeRequest } = useApp();
   const isPro = role === 'profissional';
   const { session } = useAuth();
   const focused = useIsFocused();
@@ -45,7 +45,8 @@ export default function Chat() {
   const conv = conversations.find((c) => c.id === id);
   // Do lado do cliente, os dados do profissional vêm do catálogo.
   const pro = conv && !isPro ? getProfessional(conv.proId) : undefined;
-  const service = getService(conv?.latestJob?.serviceId);
+  // Cabeçalho: o pedido mais recente que não foi encerrado (senão, o mais recente).
+  const service = getService((conv?.jobs.filter((j) => !j.closedBy).at(-1) ?? conv?.latestJob)?.serviceId);
   const convOrders = orders.filter((o) => o.conversationId === conv?.id);
   // Faixa no topo: serviços combinados; sem nenhum, o do pedido mais recente (para avaliar).
   const latestOrder = convOrders.find((o) => o.id === conv?.latestJob?.orderId);
@@ -122,8 +123,18 @@ export default function Chat() {
   // Com mais de um pedido na conversa, propostas e avisos dizem de qual serviço são.
   const multi = conv.jobs.length > 1;
   const jobTitle = (jobId?: string) => getService(conv.jobs.find((j) => j.id === jobId)?.serviceId)?.title;
-  // Pedidos ainda sem serviço combinado: o profissional pode mandar proposta.
-  const openJobs = conv.jobs.filter((j) => !j.orderId);
+  // Pedidos ainda sem serviço combinado (nem encerrados): o profissional pode mandar proposta.
+  const openJobs = conv.jobs.filter((j) => !j.orderId && !j.closedBy);
+  const jobOf = (jobId?: string) => conv.jobs.find((j) => j.id === jobId);
+  const close = (jobId: string) => {
+    const title = jobTitle(jobId);
+    confirm(
+      isPro
+        ? `Recusar o pedido${title ? ` de ${title.toLowerCase()}` : ''}? O cliente será avisado.`
+        : `Cancelar o pedido${title ? ` de ${title.toLowerCase()}` : ''}? O profissional será avisado.`,
+      () => closeRequest(jobId).catch((e) => notify(authErrorMessage(e))),
+    );
+  };
   const proposalJobs = openJobs.map((j) => ({
     id: j.id,
     label: getService(j.serviceId)?.title ?? 'Pedido',
@@ -131,6 +142,8 @@ export default function Chat() {
     defaultWhen: j.request?.when === 'O quanto antes' ? 'Hoje' : (j.request?.when ?? ''),
   }));
   const hasPending = openJobs.length === 1 && !!openJobs[0].pending;
+  // Novo pedido ao mesmo profissional: começa no serviço do último pedido (se ele ainda fizer).
+  const newRequestService = pro?.serviceIds.includes(conv.latestJob?.serviceId ?? '') ? conv.latestJob?.serviceId : pro?.serviceIds[0];
   const combined = convOrders.some((o) => o.status === 'combinado' || o.status === 'concluido');
   const openCount = openJobs.length;
 
@@ -140,26 +153,41 @@ export default function Chat() {
         {/* Cabeçalho */}
         <View style={styles.head}>
           <IconButton icon="arrow-left" label="Voltar" onPress={goBack} />
-          <Avatar size={44} uri={conv.other.avatarUrl} />
-          <View style={{ flex: 1, gap: 1 }}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-              <Text variant="labelLg" numberOfLines={1} style={{ flexShrink: 1 }}>
-                {conv.other.name}
+          <Pressable
+            accessibilityRole={pro ? 'button' : undefined}
+            accessibilityLabel={pro ? `Ver perfil de ${conv.other.name}` : undefined}
+            disabled={!pro}
+            onPress={() => pro && router.push({ pathname: '/profissional/[id]', params: { id: pro.id } })}
+            style={styles.who}
+          >
+            <Avatar size={44} uri={conv.other.avatarUrl} />
+            <View style={{ flex: 1, gap: 1 }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                <Text variant="labelLg" numberOfLines={1} style={{ flexShrink: 1 }}>
+                  {conv.other.name}
+                </Text>
+                {pro?.verified ? <Icon name="badge-check" size={16} strokeWidth={2.25} fill={colors.brand} /> : null}
+              </View>
+              <Text variant="caption" color={typing ? colors.success : colors.inkMuted} numberOfLines={1}>
+                {typing
+                  ? 'digitando…'
+                  : isPro
+                    ? openCount > 1
+                      ? `${openCount} pedidos em aberto`
+                      : openCount
+                        ? `${getService(openJobs[0].serviceId)?.short} · pedido de orçamento`
+                        : service?.short
+                    : `${service?.short}${pro ? ` · responde em ~${pro.replyMin} min` : ''}`}
               </Text>
-              {pro?.verified ? <Icon name="badge-check" size={16} strokeWidth={2.25} fill={colors.brand} /> : null}
             </View>
-            <Text variant="caption" color={typing ? colors.success : colors.inkMuted} numberOfLines={1}>
-              {typing
-                ? 'digitando…'
-                : isPro
-                  ? openCount > 1
-                    ? `${openCount} pedidos em aberto`
-                    : openCount
-                      ? `${getService(openJobs[0].serviceId)?.short} · pedido de orçamento`
-                      : service?.short
-                  : `${service?.short}${pro ? ` · responde em ~${pro.replyMin} min` : ''}`}
-            </Text>
-          </View>
+          </Pressable>
+          {pro && newRequestService ? (
+            <IconButton
+              icon="plus"
+              label="Novo pedido"
+              onPress={() => router.push({ pathname: '/pedido/novo', params: { serviceId: newRequestService, proId: pro.id } })}
+            />
+          ) : null}
           <IconButton icon="phone" label="Ligar" onPress={() => callOther(conv.id, conv.other.name, combined)} />
         </View>
 
@@ -190,11 +218,15 @@ export default function Chat() {
           <SystemNote text="Combine tudo por aqui. Não compartilhe senhas ou códigos." />
           {conv.messages.map((m) => {
             switch (m.kind) {
-              case 'request':
+              case 'request': {
+                const job = jobOf(m.jobId);
+                const open = !!job && !job.orderId && !job.closedBy;
                 return (
                   <RequestCard
                     key={m.id}
                     mine={m.from === 'me'}
+                    closed={job?.closedBy ? (job.closedBy === 'cliente' ? 'CANCELADO' : 'RECUSADO') : undefined}
+                    action={open ? { label: isPro ? 'Recusar pedido' : 'Cancelar pedido', onPress: () => close(job.id) } : undefined}
                     serviceTitle={m.serviceTitle}
                     description={m.description}
                     when={m.when}
@@ -212,6 +244,7 @@ export default function Chat() {
                     }}
                   />
                 );
+              }
               case 'proposal':
                 return (
                   <ProposalCard
@@ -230,7 +263,9 @@ export default function Chat() {
                 );
               case 'system': {
                 const title = multi ? jobTitle(m.jobId) : undefined;
-                return <SystemNote key={m.id} text={title ? `${title}: ${m.text}` : m.text} tone={m.text.startsWith('Serviço combinado') ? 'success' : 'muted'} />;
+                return (
+                  <SystemNote key={m.id} text={title ? `${title}: ${m.text}` : m.text} tone={m.text.startsWith('Serviço combinado') ? 'success' : 'muted'} />
+                );
               }
               default:
                 return <Bubble key={m.id} mine={m.from === 'me'} text={m.text} at={m.at} />;
@@ -263,6 +298,7 @@ export default function Chat() {
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.surface },
+  who: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: spacing[3] },
   head: {
     flexDirection: 'row',
     alignItems: 'center',
