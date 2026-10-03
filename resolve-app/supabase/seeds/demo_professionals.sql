@@ -83,4 +83,25 @@ select d.id, s.service_id
 from _demo_pros d, unnest(d.service_ids) as s(service_id)
 on conflict do nothing;
 
+-- 4. Área de atendimento: bairros de São Paulo, raio de 10 a 15 km.
+update public.professionals p
+set base_area = a.area, latitude = a.lat, longitude = a.lng, service_radius_km = a.radius
+from _demo_pros d
+join (values
+  ('lucas', 'Pinheiros, São Paulo', -23.566, -46.692, 10),
+  ('gabriel', 'Vila Mariana, São Paulo', -23.589, -46.635, 10),
+  ('rafael', 'Tatuapé, São Paulo', -23.540, -46.576, 10),
+  ('diego', 'Santana, São Paulo', -23.502, -46.625, 10),
+  ('marcos', 'Bela Vista, São Paulo', -23.561, -46.651, 10),
+  ('paulo', 'Mooca, São Paulo', -23.559, -46.599, 15),
+  ('andre', 'Moema, São Paulo', -23.601, -46.664, 10),
+  ('felipe', 'Butantã, São Paulo', -23.571, -46.708, 10),
+  ('jorge', 'Lapa, São Paulo', -23.527, -46.704, 15),
+  ('renata', 'Perdizes, São Paulo', -23.537, -46.676, 10),
+  ('claudia', 'Consolação, São Paulo', -23.552, -46.660, 10),
+  ('thiago', 'Ipiranga, São Paulo', -23.589, -46.606, 15),
+  ('sergio', 'Sé, São Paulo', -23.551, -46.633, 10)
+) as a(slug, area, lat, lng, radius) on a.slug = d.slug
+where p.id = d.id;
+
 drop table _demo_pros;

@@ -439,6 +439,7 @@ export type Database = {
           reply_minutes: number
           review_count: number
           role_title: string
+          service_radius_km: number
           tags: string[]
           updated_at: string
           verified: boolean
@@ -456,6 +457,7 @@ export type Database = {
           reply_minutes?: number
           review_count?: number
           role_title?: string
+          service_radius_km?: number
           tags?: string[]
           updated_at?: string
           verified?: boolean
@@ -473,6 +475,7 @@ export type Database = {
           reply_minutes?: number
           review_count?: number
           role_title?: string
+          service_radius_km?: number
           tags?: string[]
           updated_at?: string
           verified?: boolean
@@ -1095,6 +1098,14 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      professional_distances: {
+        Args: { p_lat: number; p_lng: number }
+        Returns: {
+          distance_km: number
+          in_range: boolean
+          professional_id: string
+        }[]
       }
       rate_order: {
         Args: { p_comment?: string; p_order_id: string; p_rating: number }

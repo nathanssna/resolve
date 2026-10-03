@@ -1,10 +1,12 @@
 import { router, Stack, useIsFocused, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { BackHandler, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, BackHandler, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { Button, CatalogFallback, Field, goBack, OptionChip, ProgressBar, StickyFooter, Tag, Text, TopBar } from '@/components';
+import { Button, CatalogFallback, Field, goBack, Icon, OptionChip, ProgressBar, StickyFooter, Tag, Text, TopBar } from '@/components';
 import { authErrorMessage } from '@/lib/authErrors';
+import { formatCep, lookupCep } from '@/lib/cep';
+import { currentPlace, GENERIC_PLACE, geocodeAddress, LocationDeniedError, roundCoord, type Coords } from '@/lib/geo';
 import { registerPush } from '@/lib/push';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/state/auth';
@@ -13,12 +15,13 @@ import { colors, spacing } from '@/theme/tokens';
 import { notify } from '@/utils/dialog';
 
 const REPLY_OPTIONS = [5, 15, 30, 60];
+const RADIUS_OPTIONS = [5, 10, 20, 30];
 const MAX_TAGS = 6;
 
 const STEPS = [
   { title: 'O que você faz?', short: 'Serviços', hint: 'Escolha os serviços e diga sua profissão. É o que faz você aparecer para os clientes.' },
   { title: 'Sobre você', short: 'Sobre você', hint: 'Opcional, mas ajuda o cliente a escolher você.' },
-  { title: 'Atendimento', short: 'Atendimento', hint: 'Como os clientes falam com você.' },
+  { title: 'Atendimento', short: 'Atendimento', hint: 'Onde você atende e como os clientes falam com você.' },
 ] as const;
 
 const toTags = (text: string) =>
@@ -47,6 +50,12 @@ export default function Ficha() {
   const [reply, setReply] = useState(30);
   const [tags, setTags] = useState('');
   const [phone, setPhone] = useState('');
+  // Área: o bairro aparece para o cliente; as coordenadas, não (o banco não as devolve).
+  const [area, setArea] = useState<{ label: string; coords?: Coords } | null>(null);
+  const [radius, setRadius] = useState(10);
+  const [areaCep, setAreaCep] = useState('');
+  const [locating, setLocating] = useState(false);
+  const [areaMsg, setAreaMsg] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -55,7 +64,7 @@ export default function Ficha() {
     Promise.all([
       supabase
         .from('professionals')
-        .select('role_title, bio, years_experience, reply_minutes, tags, professional_services(service_id)')
+        .select('role_title, bio, years_experience, reply_minutes, tags, base_area, service_radius_km, professional_services(service_id)')
         .eq('id', uid)
         .maybeSingle(),
       supabase.rpc('get_my_profile'),
@@ -70,6 +79,8 @@ export default function Ficha() {
         setYears(pro.data.years_experience ? String(pro.data.years_experience) : '');
         setReply(pro.data.reply_minutes);
         setTags(pro.data.tags.join(', '));
+        setArea(pro.data.base_area ? { label: pro.data.base_area } : null);
+        setRadius(pro.data.service_radius_km);
       }
       setPhone(me.data?.phone ?? '');
       setLoaded(true);
@@ -98,6 +109,40 @@ export default function Ficha() {
   const allOk = step1Ok && yearsOk && phoneOk;
   const canSave = !!uid && loaded && allOk && !saving;
 
+  const pickMyLocation = async () => {
+    if (locating) return;
+    setLocating(true);
+    setAreaMsg(null);
+    try {
+      const place = await currentPlace();
+      setArea({ label: place.label, coords: place });
+    } catch (e) {
+      setAreaMsg(e instanceof LocationDeniedError ? 'Sem permissão de localização. Use o CEP abaixo.' : 'Não foi possível pegar sua localização. Use o CEP abaixo.');
+    } finally {
+      setLocating(false);
+    }
+  };
+
+  // CEP de onde sai → bairro e coordenadas (sem número: só precisamos da região).
+  const searchCep = async (text: string) => {
+    const cep = formatCep(text);
+    setAreaCep(cep);
+    if (cep.replace(/\D/g, '').length !== 8) return;
+    setLocating(true);
+    setAreaMsg(null);
+    try {
+      const found = await lookupCep(cep);
+      if (!found) return setAreaMsg('CEP não encontrado.');
+      const coords = await geocodeAddress({ line: found.street, area: found.area, city: found.city, state: found.state, postalCode: cep });
+      if (!coords) return setAreaMsg('Não foi possível localizar esse CEP. Tente a localização atual.');
+      setArea({ label: [found.area, found.city].filter(Boolean).join(', '), coords });
+    } catch {
+      setAreaMsg('Sem conexão para buscar o CEP.');
+    } finally {
+      setLocating(false);
+    }
+  };
+
   const toggleService = (id: string) => setServiceIds((s) => (s.includes(id) ? s.filter((x) => x !== id) : [...s, id]));
   const back = () => (step > 0 ? setStep(step - 1) : goBack());
 
@@ -111,6 +156,10 @@ export default function Ficha() {
         years_experience: yearsNum,
         reply_minutes: reply,
         tags: toTags(tags),
+        base_area: area?.label ?? '',
+        service_radius_km: radius,
+        // Só manda coordenadas novas (as salvas não voltam do banco).
+        ...(area?.coords ? { latitude: roundCoord(area.coords.latitude), longitude: roundCoord(area.coords.longitude) } : {}),
       };
       // A ficha nasce no cadastro; update (não upsert: o usuário não pode alterar o id).
       const { data: updated, error } = await supabase.from('professionals').update(fields).eq('id', uid).select('id');
@@ -133,7 +182,9 @@ export default function Ficha() {
       setInitialServices(serviceIds);
 
       if (phoneDigits !== (profile?.phone ?? '').replace(/\D/g, '')) {
-        const { error: e } = await supabase.from('profiles').update({ phone: phoneDigits || null }).eq('id', uid);
+        // Mesmo formato da tela de telefone: +55 e só dígitos.
+        const normalized = phoneDigits ? (phoneDigits.startsWith('55') && phoneDigits.length > 11 ? `+${phoneDigits}` : `+55${phoneDigits}`) : null;
+        const { error: e } = await supabase.from('profiles').update({ phone: normalized }).eq('id', uid);
         if (e) throw e;
         await refreshProfile();
       }
@@ -264,6 +315,57 @@ export default function Ficha() {
           {ready && step === 2 ? (
             <>
               <View style={{ gap: spacing[3] }}>
+                <Text variant="label">Onde você atende</Text>
+                {area ? (
+                  <View style={styles.areaRow}>
+                    <Icon name="map-pin" size={20} />
+                    <Text variant="labelLg" style={{ flex: 1 }} numberOfLines={1}>
+                      {area.label}
+                    </Text>
+                    <Pressable accessibilityRole="button" onPress={() => setArea(null)} hitSlop={8}>
+                      <Text variant="label" color={colors.inkBody} style={{ textDecorationLine: 'underline' }}>
+                        Trocar
+                      </Text>
+                    </Pressable>
+                  </View>
+                ) : (
+                  <>
+                    <Button variant="secondary" block iconLeft="navigation" disabled={locating} onPress={pickMyLocation}>
+                      Usar minha localização atual
+                    </Button>
+                    <Field
+                      label="Ou o CEP de onde você sai"
+                      placeholder="00000-000"
+                      value={areaCep}
+                      onChangeText={searchCep}
+                      keyboardType="number-pad"
+                      inputMode="numeric"
+                      maxLength={9}
+                    />
+                    {locating ? <ActivityIndicator color={colors.ink} style={{ alignSelf: 'flex-start' }} /> : null}
+                  </>
+                )}
+                {areaMsg ? (
+                  <Text variant="caption" color={colors.danger} accessibilityLiveRegion="polite">
+                    {areaMsg}
+                  </Text>
+                ) : null}
+                <Text variant="label">Até que distância</Text>
+                <View style={{ flexDirection: 'row', gap: spacing[2] }}>
+                  {RADIUS_OPTIONS.map((km) => (
+                    <View key={km} style={{ flex: 1 }}>
+                      <OptionChip label={`${km} km`} active={radius === km} onPress={() => setRadius(km)} />
+                    </View>
+                  ))}
+                </View>
+                <Text variant="caption" color={colors.inkMuted}>
+                  {area
+                    ? `Você aparece para clientes até ${radius} km ${area.label === GENERIC_PLACE ? 'de onde você está' : `de ${area.label.split(',')[0]}`}. Eles veem só o bairro, nunca o seu endereço.`
+                    : 'Sem área, você aparece no fim da lista, como "área não informada".'}
+                </Text>
+              </View>
+
+              <View style={{ gap: spacing[3] }}>
                 <Text variant="label">Costuma responder em</Text>
                 <View style={{ flexDirection: 'row', gap: spacing[2] }}>
                   {REPLY_OPTIONS.map((m) => (
@@ -318,6 +420,7 @@ export default function Ficha() {
 }
 
 const styles = StyleSheet.create({
+  areaRow: { flexDirection: 'row', alignItems: 'center', gap: spacing[3], padding: spacing[4], borderRadius: 14, backgroundColor: colors.surfaceMuted },
   safe: { flex: 1, backgroundColor: colors.surface },
   progress: { paddingHorizontal: spacing[5], paddingBottom: spacing[2], gap: spacing[2] },
   progressHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },

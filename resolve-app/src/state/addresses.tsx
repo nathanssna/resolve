@@ -2,9 +2,10 @@
  * Endereços do usuário logado (tabela `addresses`, só o dono vê).
  * O principal aparece no Início e vem escolhido no pedido de orçamento.
  */
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 
 import type { Database } from '@/lib/database.types';
+import { geocodeAddress, type Coords } from '@/lib/geo';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/state/auth';
 
@@ -21,13 +22,17 @@ export type SavedAddress = {
   state: string;
   postalCode: string;
   isDefault: boolean;
+  /** Para a distância até os profissionais (o celular calcula ao salvar). */
+  coords?: Coords;
 };
 
-export type AddressInput = Omit<SavedAddress, 'id' | 'isDefault'> & { isDefault?: boolean };
+export type AddressInput = Omit<SavedAddress, 'id' | 'isDefault' | 'coords'> & { isDefault?: boolean };
 
-const COLS = 'id, label, line, complement, area, city, state, postal_code, is_default, created_at';
+const COLS = 'id, label, line, complement, area, city, state, postal_code, is_default, latitude, longitude, created_at';
 
-const toSaved = (r: Pick<Row, 'id' | 'label' | 'line' | 'complement' | 'area' | 'city' | 'state' | 'postal_code' | 'is_default'>): SavedAddress => ({
+const toSaved = (
+  r: Pick<Row, 'id' | 'label' | 'line' | 'complement' | 'area' | 'city' | 'state' | 'postal_code' | 'is_default' | 'latitude' | 'longitude'>,
+): SavedAddress => ({
   id: r.id,
   label: r.label,
   line: r.line,
@@ -37,7 +42,14 @@ const toSaved = (r: Pick<Row, 'id' | 'label' | 'line' | 'complement' | 'area' | 
   state: r.state,
   postalCode: r.postal_code ?? '',
   isDefault: r.is_default,
+  coords: r.latitude != null && r.longitude != null ? { latitude: r.latitude, longitude: r.longitude } : undefined,
 });
+
+/** Coordenadas do endereço; sem elas (web, celular não achou), grava vazio para não ficar uma antiga errada. */
+const coordsOf = async (a: AddressInput) => {
+  const c = await geocodeAddress({ line: a.line, area: a.area, city: a.city, state: a.state, postalCode: a.postalCode });
+  return c ? { latitude: c.latitude, longitude: c.longitude } : { latitude: null, longitude: null };
+};
 
 const toRow = (a: AddressInput) => ({
   label: a.label.trim() || 'Casa',
@@ -98,6 +110,24 @@ export function AddressProvider({ children }: { children: ReactNode }) {
     if (uid && !loaded) load();
   }, [uid, loaded, load]);
 
+  // Endereços salvos antes (ou na web) sem coordenadas: o celular calcula uma vez.
+  const geocoded = useRef(new Set<string>());
+  useEffect(() => {
+    const missing = addresses.filter((a) => !a.coords && !geocoded.current.has(a.id));
+    if (!missing.length) return;
+    missing.forEach((a) => geocoded.current.add(a.id));
+    Promise.all(
+      missing.map(async (a) => {
+        const c = await coordsOf(a);
+        if (c.latitude === null) return false;
+        await supabase.from('addresses').update(c).eq('id', a.id);
+        return true;
+      }),
+    ).then((done) => {
+      if (done.some(Boolean)) load();
+    });
+  }, [addresses, load]);
+
   /** Garante um único principal (o banco também exige). */
   const clearPrimary = useCallback(
     async (exceptId?: string) => {
@@ -117,7 +147,7 @@ export function AddressProvider({ children }: { children: ReactNode }) {
       if (makePrimary) await clearPrimary();
       const { data: row, error } = await supabase
         .from('addresses')
-        .insert({ ...toRow(input), is_default: makePrimary })
+        .insert({ ...toRow(input), ...(await coordsOf(input)), is_default: makePrimary })
         .select(COLS)
         .single();
       if (error) throw error;
@@ -134,7 +164,7 @@ export function AddressProvider({ children }: { children: ReactNode }) {
       if (input.isDefault) await clearPrimary(id);
       const { error } = await supabase
         .from('addresses')
-        .update({ ...toRow(input), ...(input.isDefault ? { is_default: true } : {}) })
+        .update({ ...toRow(input), ...(await coordsOf(input)), ...(input.isDefault ? { is_default: true } : {}) })
         .eq('id', id);
       if (error) throw error;
       load();

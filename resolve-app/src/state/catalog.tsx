@@ -45,6 +45,10 @@ export type Professional = {
   jobs: number;
   tags: string[];
   verified: boolean;
+  /** Bairro de onde sai ("Bela Vista, São Paulo"); vazio = área não informada. */
+  area: string;
+  /** Até onde atende, em km. */
+  radiusKm: number;
 };
 
 type Data = { services: Service[]; professionals: Professional[] };
@@ -62,7 +66,8 @@ type CatalogValue = Data & {
   getProfessionals: (serviceId: string | undefined) => Professional[];
 };
 
-const CACHE_KEY = 'resolve:catalog:v1';
+// v2: profissionais com área de atendimento.
+const CACHE_KEY = 'resolve:catalog:v2';
 const Ctx = createContext<CatalogValue | null>(null);
 
 const isIcon = (name: string): name is IconName => name in iconPaths;
@@ -76,7 +81,7 @@ async function fetchCatalog(): Promise<Data> {
     supabase
       .from('professionals')
       .select(
-        'id, role_title, bio, years_experience, reply_minutes, jobs_count, tags, verified, rating, review_count, profile:profiles!inner(full_name, avatar_url), professional_services(service_id)',
+        'id, role_title, bio, years_experience, reply_minutes, jobs_count, tags, verified, rating, review_count, base_area, service_radius_km, profile:profiles!inner(full_name, avatar_url), professional_services(service_id)',
       ),
   ]);
   if (svc.error) throw svc.error;
@@ -113,6 +118,8 @@ async function fetchCatalog(): Promise<Data> {
       jobs: p.jobs_count,
       tags: p.tags,
       verified: p.verified,
+      area: p.base_area,
+      radiusKm: p.service_radius_km,
     }))
     // Ficha incompleta (sem nome ou sem serviço) não aparece para o cliente.
     .filter((p) => p.name !== '' && p.serviceIds.length > 0);

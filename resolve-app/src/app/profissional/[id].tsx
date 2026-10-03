@@ -5,6 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Avatar, Button, CatalogFallback, EmptyState, Icon, Rating, SectionHeader, StickyFooter, Tag, Text, TopBar } from '@/components';
 import type { Database } from '@/lib/database.types';
+import { GENERIC_PLACE } from '@/lib/geo';
 import { supabase } from '@/lib/supabase';
 import { useApp } from '@/state/app';
 import { useAuth } from '@/state/auth';
@@ -83,6 +84,14 @@ export default function PerfilProfissional() {
             <Text variant="body" color={colors.inkMuted}>
               {pro.role}
             </Text>
+          ) : null}
+          {pro.area && pro.area !== GENERIC_PLACE ? (
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+              <Icon name="map-pin" size={14} color={colors.inkMuted} />
+              <Text variant="bodySm" color={colors.inkMuted}>
+                {`Atende ${pro.area.split(',')[0]} e até ${pro.radiusKm} km`}
+              </Text>
+            </View>
           ) : null}
         </View>
 

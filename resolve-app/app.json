@@ -35,6 +35,12 @@
         }
       ],
       [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "O Resolve usa sua localização para marcar de onde você atende (profissionais) e mostrar quem atende perto de você."
+        }
+      ],
+      [
         "expo-notifications",
         {
           "color": "#FFD900",

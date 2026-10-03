@@ -49,6 +49,7 @@ export default function Perfil() {
         !profile?.avatar_url && { label: 'Foto', onPress: () => changePhoto() },
         !profile?.phone && { label: 'Telefone', onPress: () => router.push('/telefone') },
         !me?.bio && { label: 'Apresentação', onPress: () => router.push('/profissional/ficha') },
+        !me?.area && { label: 'Onde atende', onPress: () => router.push('/profissional/ficha') },
       ].filter((x): x is { label: string; onPress: () => void } => !!x)
     : [];
 
