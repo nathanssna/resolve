@@ -1,0 +1,224 @@
+{
+ "v": 3,
+ "assetGroups": {
+  "Icons": {
+   "files": {
+    "armchair.svg": {
+     "blob": "d1dc820495f4eea28715555c8363bf1b",
+     "name": "armchair.svg",
+     "size": 425,
+     "type": "image/svg+xml"
+    },
+    "arrow-left.svg": {
+     "blob": "45ac9fe7d6927ce39fa7510485330b06",
+     "name": "arrow-left.svg",
+     "size": 244,
+     "type": "image/svg+xml"
+    },
+    "arrow-right.svg": {
+     "blob": "dee31d194803e6f8bb3f1825d619e3b6",
+     "name": "arrow-right.svg",
+     "size": 243,
+     "type": "image/svg+xml"
+    },
+    "check.svg": {
+     "blob": "644aa653c40e18ac64aad453aafdf5e7",
+     "name": "check.svg",
+     "size": 218,
+     "type": "image/svg+xml"
+    },
+    "chevron-right.svg": {
+     "blob": "142582d58b01619e21f2585e50b181c5",
+     "name": "chevron-right.svg",
+     "size": 216,
+     "type": "image/svg+xml"
+    },
+    "droplets.svg": {
+     "blob": "78e3745d8213d91e826db74d45d886c5",
+     "name": "droplets.svg",
+     "size": 454,
+     "type": "image/svg+xml"
+    },
+    "hammer.svg": {
+     "blob": "f1ac005976bd4deeb2efcd8fe1ce2472",
+     "name": "hammer.svg",
+     "size": 444,
+     "type": "image/svg+xml"
+    },
+    "heart.svg": {
+     "blob": "b3f7a2e7ef562a7a248e606b3e99aeca",
+     "name": "heart.svg",
+     "size": 339,
+     "type": "image/svg+xml"
+    },
+    "house.svg": {
+     "blob": "c9bb477ee98726526a4d316ca73bb35c",
+     "name": "house.svg",
+     "size": 373,
+     "type": "image/svg+xml"
+    },
+    "laptop.svg": {
+     "blob": "d934140fe25870fa817b44c84fde5485",
+     "name": "laptop.svg",
+     "size": 311,
+     "type": "image/svg+xml"
+    },
+    "map-pin.svg": {
+     "blob": "cf3dd62054a423ae8b6955bb938bebf1",
+     "name": "map-pin.svg",
+     "size": 343,
+     "type": "image/svg+xml"
+    },
+    "message-circle.svg": {
+     "blob": "547d7fac69f249f259e3c9ddf70e48a2",
+     "name": "message-circle.svg",
+     "size": 233,
+     "type": "image/svg+xml"
+    },
+    "search.svg": {
+     "blob": "3db70ec93159a7c9a59d0273a3203e04",
+     "name": "search.svg",
+     "size": 257,
+     "type": "image/svg+xml"
+    },
+    "share.svg": {
+     "blob": "9b012100cd333eaba3d8288f5e75d4af",
+     "name": "share.svg",
+     "size": 334,
+     "type": "image/svg+xml"
+    },
+    "shield-check.svg": {
+     "blob": "d69dc64de4c9f6ca72494911dd406c76",
+     "name": "shield-check.svg",
+     "size": 397,
+     "type": "image/svg+xml"
+    },
+    "star.svg": {
+     "blob": "3aa7747c485599591d6094ef2bcc4c16",
+     "name": "star.svg",
+     "size": 567,
+     "type": "image/svg+xml"
+    },
+    "user-round.svg": {
+     "blob": "20a761b6283d9758f79572339af7eec1",
+     "name": "user-round.svg",
+     "size": 263,
+     "type": "image/svg+xml"
+    },
+    "user.svg": {
+     "blob": "6cf7d437a97c165c34dbf3209bebe19b",
+     "name": "user.svg",
+     "size": 283,
+     "type": "image/svg+xml"
+    },
+    "wrench.svg": {
+     "blob": "c950fada1c147ce9cd5b677ed7e1fe2a",
+     "name": "wrench.svg",
+     "size": 355,
+     "type": "image/svg+xml"
+    },
+    "zap.svg": {
+     "blob": "2bf93c24aa3789229cf74c1f046f79fd",
+     "name": "zap.svg",
+     "size": 358,
+     "type": "image/svg+xml"
+    }
+   },
+   "name": "Icons",
+   "order": [
+    "armchair.svg",
+    "arrow-left.svg",
+    "arrow-right.svg",
+    "check.svg",
+    "chevron-right.svg",
+    "droplets.svg",
+    "hammer.svg",
+    "heart.svg",
+    "house.svg",
+    "laptop.svg",
+    "map-pin.svg",
+    "message-circle.svg",
+    "search.svg",
+    "share.svg",
+    "shield-check.svg",
+    "star.svg",
+    "user-round.svg",
+    "user.svg",
+    "wrench.svg",
+    "zap.svg"
+   ],
+   "tile": "s"
+  },
+  "Logos": {
+   "files": {
+    "resolve-wordmark-on-white.png": {
+     "blob": "0ee9f1505e0f39c94cc774d2f303f745",
+     "name": "resolve-wordmark-on-white.png",
+     "size": 7368,
+     "type": "image/png"
+    },
+    "resolve-wordmark-on-yellow.png": {
+     "blob": "dbb6b85afd97d68d8444b1ae14fec9b6",
+     "name": "resolve-wordmark-on-yellow.png",
+     "size": 21936,
+     "type": "image/png"
+    }
+   },
+   "name": "Logos",
+   "order": [
+    "resolve-wordmark-on-white.png",
+    "resolve-wordmark-on-yellow.png"
+   ],
+   "tile": "l"
+  },
+  "Referencia": {
+   "files": {
+    "mockup-telas.png": {
+     "blob": "fcbbd6c687df0e7e14a4fddfa8d097d6",
+     "name": "mockup-telas.png",
+     "size": 1264222,
+     "type": "image/png"
+    }
+   },
+   "name": "Referencia",
+   "order": [
+    "mockup-telas.png"
+   ],
+   "tile": "l"
+  }
+ },
+ "blobs": {},
+ "createdOnFiles": {
+  "at": "2026-10-01T19:24:43Z",
+  "v": 1
+ },
+ "docs": {
+  "readme": "project/README.md",
+  "sections": []
+ },
+ "groups": [
+  "Logos",
+  "Icons",
+  "Referencia"
+ ],
+ "lastChange": {
+  "by": "Desenvolvimento",
+  "via": "Claude (Cowork)",
+  "at": "2026-10-01T19:26:52Z",
+  "note": "Componentes de navegação aceitam href; seção Componentes no guia."
+ },
+ "layout": "files",
+ "libraries": [
+  {
+   "name": "react",
+   "version": "18"
+  },
+  {
+   "name": "react-dom",
+   "version": "18"
+  }
+ ],
+ "namespace": "Resolve",
+ "sections": {},
+ "title": "Resolve"
+}

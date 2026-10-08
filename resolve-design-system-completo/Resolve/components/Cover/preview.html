@@ -1,0 +1,60 @@
+<!-- @dsCard height=288 -->
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Resolve</title>
+<style>
+  html, body { margin:0; height:100%; }
+  body { background:var(--surface); color:var(--ink); font-family:var(--font-sans); overflow:hidden; }
+  .cover { position:relative; height:288px; overflow:hidden; }
+  .art { position:absolute; top:0; left:480px; width:480px; height:288px; overflow:hidden; }
+  .art svg { display:block; width:480px; height:288px; }
+  .brand { fill:var(--brand); }
+  .soft { fill:var(--brand-soft); }
+  .deep { fill:var(--ink); }
+  .slab { rx:var(--radius-xl); }
+  .blk { rx:var(--radius-lg); }
+  .dash { fill:var(--ink); }
+  .dot { fill:var(--brand); }
+  .words { position:absolute; left:var(--space-8); bottom:var(--space-8); max-width:440px; }
+  .name { margin:0; font-size:104px; line-height:.92; font-weight:800; letter-spacing:-.03em; color:var(--ink); }
+  .tag { margin:var(--space-3) 0 0 4px; font-size:14px; line-height:20px; color:var(--ink-muted); }
+</style>
+</head>
+<body>
+<div class="cover">
+<div class="art" aria-hidden="true">
+<svg viewBox="0 0 480 288" width="480" height="288">
+<!--
+  blocks      brand 296x248 slab bled off the top and right (the identity, largest) · brand-soft 136x96 · ink 136x136 — about 40% of 960x288
+  arrangement one tall yellow slab with satellites stacked on its left, bottoms aligned space-6 above the edge, space-4 gutters
+  pattern     the logo's triple spark ("Resolve" + three dashes): three pills of 80x20 fanned at -24/0/24 degrees cut into the slab in ink, and nine brand pills at a space-6 pitch on the ink block
+  scales      gutters space-4; pitch space-6; slab radius-xl, blocks radius-lg, pills rx half the short side (radius-pill)
+-->
+<rect class="brand slab" x="184" y="-24" width="320" height="288" rx="24"/>
+<rect class="soft blk" x="32" y="16" width="136" height="96" rx="16"/>
+<rect class="deep blk" x="32" y="128" width="136" height="136" rx="16"/>
+<g transform="translate(272 132)">
+  <rect class="dash" x="0" y="-10" width="96" height="20" rx="10" transform="rotate(-26) translate(0 -46)"/>
+  <rect class="dash" x="8" y="-10" width="96" height="20" rx="10"/>
+  <rect class="dash" x="0" y="-10" width="96" height="20" rx="10" transform="rotate(26) translate(0 46)"/>
+</g>
+<rect class="dot" x="56" y="160" width="24" height="8" rx="4"/>
+<rect class="dot" x="88" y="160" width="40" height="8" rx="4"/>
+<rect class="dot" x="136" y="160" width="8" height="8" rx="4"/>
+<rect class="dot" x="56" y="184" width="40" height="8" rx="4"/>
+<rect class="dot" x="104" y="184" width="16" height="8" rx="4"/>
+<rect class="dot" x="128" y="184" width="16" height="8" rx="4"/>
+<rect class="dot" x="56" y="208" width="16" height="8" rx="4"/>
+<rect class="dot" x="80" y="208" width="48" height="8" rx="4"/>
+<rect class="dot" x="56" y="232" width="32" height="8" rx="4"/>
+</svg>
+</div>
+<div class="words">
+  <h1 class="name">Resolve</h1>
+  <p class="tag">Serviços que facilitam sua vida.</p>
+</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,15 @@
+<!-- @dsCard group="Conteúdo" height=200 -->
+<!doctype html>
+<html lang="pt-BR">
+<head><meta charset="utf-8"></head>
+<body>
+<div id="root" class="rs-demo-col"></div>
+<script>
+var R = window.Resolve, h = React.createElement;
+ReactDOM.createRoot(document.getElementById('root')).render(h(React.Fragment, null,
+  h(R.ServiceCard, {icon:'wrench', title:'Encanador', subtitle:'Instalação e reparos em geral', rating:4.8, count:'1.245'}),
+  h(R.ServiceCard, {icon:'zap', title:'Eletricista', subtitle:'Instalação, manutenção e reparos', rating:4.7, count:982})
+));
+</script>
+</body>
+</html>

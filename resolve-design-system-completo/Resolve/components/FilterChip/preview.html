@@ -1,0 +1,16 @@
+<!-- @dsCard group="Formulários" height=64 -->
+<!doctype html>
+<html lang="pt-BR">
+<head><meta charset="utf-8"></head>
+<body>
+<div id="root" class="rs-demo"></div>
+<script>
+var R = window.Resolve, h = React.createElement;
+ReactDOM.createRoot(document.getElementById('root')).render(h(React.Fragment, null,
+  h(R.FilterChip, {active:true}, 'Todos'),
+  h(R.FilterChip, null, 'Mais bem avaliados'),
+  h(R.FilterChip, null, 'Mais próximos')
+));
+</script>
+</body>
+</html>
