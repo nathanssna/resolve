@@ -70,6 +70,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [userId, loaded?.uid]);
 
   const sendCode = useCallback(async (email: string) => {
+    // E-mail temporário: o banco nem cria a conta. Avisa antes, com uma mensagem clara.
+    const { data: disposable } = await supabase.rpc('is_disposable_email', { p_email: email });
+    if (disposable) throw Object.assign(new Error('Use um e-mail permanente: não aceitamos e-mails temporários.'), { code: 'P0001' });
     const { error } = await supabase.auth.signInWithOtp({ email, options: { shouldCreateUser: true } });
     if (error) throw error;
   }, []);

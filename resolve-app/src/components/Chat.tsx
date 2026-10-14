@@ -130,7 +130,7 @@ export function ProposalCard({
   amount: number;
   when: string;
   note?: string;
-  status: 'pending' | 'accepted' | 'declined';
+  status: 'pending' | 'accepted' | 'declined' | 'expired';
   at: number;
   onAccept?: () => void;
   onDecline?: () => void;
@@ -138,10 +138,13 @@ export function ProposalCard({
 }) {
   return (
     <View style={[styles.bubbleRow, mine && { justifyContent: 'flex-end' }]}>
-      <View style={[styles.card, styles.proposal, mine && styles.proposalMine, status === 'declined' && { opacity: 0.6 }]}>
+      <View style={[styles.card, styles.proposal, mine && styles.proposalMine, (status === 'declined' || status === 'expired') && { opacity: 0.6 }]}>
         <View style={styles.cardHead}>
-          <Badge tone={status === 'accepted' ? 'success' : status === 'declined' ? 'muted' : 'brand'} icon={status === 'accepted' ? 'check' : 'receipt'}>
-            {status === 'accepted' ? 'ACEITA' : status === 'declined' ? 'RECUSADA' : 'PROPOSTA'}
+          <Badge
+            tone={status === 'accepted' ? 'success' : status === 'pending' ? 'brand' : 'muted'}
+            icon={status === 'accepted' ? 'check' : status === 'expired' ? 'clock' : 'receipt'}
+          >
+            {status === 'accepted' ? 'ACEITA' : status === 'declined' ? 'RECUSADA' : status === 'expired' ? 'VENCIDA' : 'PROPOSTA'}
           </Badge>
           <Text variant="caption" color={colors.inkMuted}>
             {formatTime(at)}

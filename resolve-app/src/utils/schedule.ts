@@ -113,5 +113,8 @@ export function cancelIsLate(s: Schedule | undefined, now = Date.now()) {
   return !!s && daysFrom(s.day, now) >= 0 && now > scheduleAt(s).getTime() - CANCEL_NOTICE_HOURS * 3_600_000;
 }
 
+/** O período já terminou (dura umas 4 h; mesma regra do banco para propostas). */
+export const periodEnded = (s: Schedule, now = Date.now()) => scheduleAt(s).getTime() + 4 * 3_600_000 < now;
+
 /** Para ordenar a agenda: dia e depois período. */
 export const scheduleOrder = (s: Schedule) => scheduleAt(s).getTime();

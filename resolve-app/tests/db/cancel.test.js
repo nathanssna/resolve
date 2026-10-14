@@ -26,9 +26,11 @@ let pass = 0, fail = 0; const ok = (c, m) => { c ? pass++ : fail++; console.log(
   const deal = async (cli, hours) => {
     const conv = (await one(cli, 'select id from public.open_conversation($1)', [pro])).id;
     const req = (await one(cli, "select request_id from public.create_request($1, 'encanador', 'Torneira', 'Hoje')", [conv])).request_id;
+    // A proposta precisa de data futura; a data do serviço é movida depois (ex.: ontem).
     const prop = (await one(pro, `insert into public.proposals (conversation_id, request_id, amount, scheduled_label, scheduled_at)
-      values ($1, $2, 150, 'Sex 17/10, tarde', ${hours === null ? 'null' : `now() + make_interval(hours => ${hours})`}) returning id`, [conv, req])).id;
+      values ($1, $2, 150, 'Sex 17/10, tarde', ${hours === null ? 'null' : "now() + interval '1 day'"}) returning id`, [conv, req])).id;
     const order = await one(cli, 'select * from public.accept_proposal($1)', [prop]);
+    if (hours !== null) await db.query('update public.orders set scheduled_at = now() + make_interval(hours => $2) where id = $1', [order.id, hours]);
     return { order: order.id, conv };
   };
   const cancel = (uid, order, reason) => as(uid, 'select canceled_late, cancel_reason from public.cancel_order($1, $2)', [order, reason ?? null]);

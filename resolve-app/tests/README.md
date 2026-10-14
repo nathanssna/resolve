@@ -38,6 +38,7 @@ npm run db:stop
 | `pause` | profissional pausa os pedidos: some das listas, sem conversa/pedido novo, o resto continua |
 | `reminder` | lembrete no dia do serviço (push às 7h): quem recebe, texto, uma vez só, lotes de 100 |
 | `cancel` | cancelamento em cima da hora (12 h): motivo, pausa automática de 7 dias, histórico do cliente, taxa do profissional |
+| `limits` | proposta (teto, data), proposta vencida, pedido sem resposta fecha, limites de pedidos e mensagens, e-mail descartável |
 
 ## Ponta a ponta
 
@@ -67,6 +68,7 @@ npm run e2e:cleanup            # apaga as contas (sempre, no fim)
 | `busca` | busca por frase na tela Buscar, como visitante (não precisa das contas); sem internet, cai na busca local |
 | `pause` | pausar no painel do profissional; lista, perfil e pedido do lado do cliente |
 | `cancela` | cancelar no prazo e em cima da hora (motivo), histórico do cliente, pausa automática e taxa no perfil |
+| `limites` | e-mail descartável no login, folha de proposta (teto e períodos passados), proposta vencida |
 
 As contas de teste nunca tocam nos dados reais: são marcadas com `e2e=true` e o
 `e2e:cleanup` apaga tudo o que elas criaram. Capturas de tela vão para `e2e/shots/`.

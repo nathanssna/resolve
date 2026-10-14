@@ -271,7 +271,7 @@ export default function Chat() {
                   <RequestCard
                     key={m.id}
                     mine={m.from === 'me'}
-                    closed={job?.closedBy ? (job.closedBy === 'cliente' ? 'CANCELADO' : 'RECUSADO') : undefined}
+                    closed={job?.closedBy ? { cliente: 'CANCELADO', profissional: 'RECUSADO', sistema: 'SEM RESPOSTA' }[job.closedBy] : undefined}
                     action={open && !locked ? { label: isPro ? 'Recusar pedido' : 'Cancelar pedido', onPress: () => close(job.id) } : undefined}
                     serviceTitle={m.serviceTitle}
                     description={m.description}

@@ -52,7 +52,8 @@ export type ProposalMsg = Base & {
   when: string;
   schedule?: Schedule;
   note?: string;
-  status: 'pending' | 'accepted' | 'declined';
+  /** `expired`: a data passou sem resposta do cliente. */
+  status: 'pending' | 'accepted' | 'declined' | 'expired';
 };
 export type SystemMsg = Base & { kind: 'system'; text: string };
 export type Message = RequestMsg | TextMsg | ProposalMsg | SystemMsg;
@@ -77,7 +78,7 @@ export type Job = {
   pending?: ProposalMsg;
   orderId?: string;
   /** Encerrado sem serviço: quem encerrou (o cliente cancelou ou o profissional recusou). */
-  closedBy?: 'cliente' | 'profissional';
+  closedBy?: 'cliente' | 'profissional' | 'sistema';
   state: JobState;
 };
 
@@ -518,7 +519,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
             request: own.find((m): m is RequestMsg => m.kind === 'request'),
             pending,
             orderId: order?.id,
-            closedBy: r.closed_by ? (r.closed_by === c.client_id ? 'cliente' : 'profissional') : undefined,
+            // Sem closed_by: fechado sozinho, sem resposta do profissional a tempo.
+            closedBy: r.closed_at ? (r.closed_by ? (r.closed_by === c.client_id ? 'cliente' : 'profissional') : 'sistema') : undefined,
             state: order ? order.status : r.closed_at ? 'encerrado' : pending ? 'proposta' : proposals.length ? 'recusada' : 'novo',
           };
         });

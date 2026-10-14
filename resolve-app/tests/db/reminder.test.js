@@ -30,8 +30,10 @@ let pass = 0, fail = 0; const ok = (c, m) => { c ? pass++ : fail++; console.log(
   const deal = async (cli, service, days, hour, { createdToday = false } = {}) => {
     const conv = (await one(cli, 'select id from public.open_conversation($1)', [pro])).id;
     const req = (await one(cli, "select request_id from public.create_request($1, $2, 'Serviço', 'Hoje', $3)", [conv, service, { label: 'Casa', line: 'Rua A, 1', area: 'Bela Vista', city: 'São Paulo' }])).request_id;
-    const prop = (await one(pro, "insert into public.proposals (conversation_id, request_id, amount, scheduled_label, scheduled_at) values ($1, $2, 150, 'Sex 17/10, tarde', $3) returning id", [conv, req, await at(days, hour)])).id;
+    // Proposta com data futura (o banco recusa período que já passou); o serviço vai para o dia/hora do teste.
+    const prop = (await one(pro, "insert into public.proposals (conversation_id, request_id, amount, scheduled_label, scheduled_at) values ($1, $2, 150, 'Sex 17/10, tarde', now() + interval '1 day') returning id", [conv, req])).id;
     const order = await one(cli, 'select * from public.accept_proposal($1)', [prop]);
+    await db.query('update public.orders set scheduled_at = $2 where id = $1', [order.id, await at(days, hour)]);
     if (!createdToday) await db.query("update public.orders set created_at = now() - interval '1 day' where id = $1", [order.id]);
     return order.id;
   };

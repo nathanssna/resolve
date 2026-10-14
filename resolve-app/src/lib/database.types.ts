@@ -1139,6 +1139,7 @@ export type Database = {
           service_id: string
         }[]
       }
+      is_disposable_email: { Args: { p_email: string }; Returns: boolean }
       mark_conversation_read: {
         Args: { p_conversation_id: string }
         Returns: undefined
@@ -1211,7 +1212,12 @@ export type Database = {
     Enums: {
       message_kind: "text" | "request" | "proposal" | "system"
       order_status: "combinado" | "concluido" | "cancelado"
-      proposal_status: "pending" | "accepted" | "declined" | "superseded"
+      proposal_status:
+        | "pending"
+        | "accepted"
+        | "declined"
+        | "superseded"
+        | "expired"
       user_role: "cliente" | "profissional"
     }
     CompositeTypes: {
@@ -1345,7 +1351,13 @@ export const Constants = {
     Enums: {
       message_kind: ["text", "request", "proposal", "system"],
       order_status: ["combinado", "concluido", "cancelado"],
-      proposal_status: ["pending", "accepted", "declined", "superseded"],
+      proposal_status: [
+        "pending",
+        "accepted",
+        "declined",
+        "superseded",
+        "expired",
+      ],
       user_role: ["cliente", "profissional"],
     },
   },
