@@ -49,6 +49,8 @@ export type Professional = {
   area: string;
   /** Até onde atende, em km. */
   radiusKm: number;
+  /** Pausou o recebimento de pedidos: fora das listas, sem pedido novo. */
+  paused: boolean;
 };
 
 type Data = { services: Service[]; professionals: Professional[] };
@@ -58,11 +60,13 @@ type CatalogValue = Data & {
   /** 'loading' só enquanto não há nenhum dado (nem a cópia salva). */
   status: CatalogStatus;
   refreshing: boolean;
-  refresh: () => Promise<void>;
+  /** `silent`: atualiza sem acender o indicador de "puxar para atualizar". */
+  refresh: (opts?: { silent?: boolean }) => Promise<void>;
   /** Ids dos serviços em destaque ("Mais pedidos na sua região"). */
   popular: string[];
   getService: (id: string | undefined) => Service | undefined;
   getProfessional: (id: string | undefined) => Professional | undefined;
+  /** Quem atende o serviço e está recebendo pedidos. */
   getProfessionals: (serviceId: string | undefined) => Professional[];
 };
 
@@ -81,7 +85,7 @@ async function fetchCatalog(): Promise<Data> {
     supabase
       .from('professionals')
       .select(
-        'id, role_title, bio, years_experience, reply_minutes, jobs_count, tags, verified, rating, review_count, base_area, service_radius_km, profile:profiles!inner(full_name, avatar_url), professional_services(service_id)',
+        'id, role_title, bio, years_experience, reply_minutes, jobs_count, tags, verified, rating, review_count, base_area, service_radius_km, paused, profile:profiles!inner(full_name, avatar_url), professional_services(service_id)',
       ),
   ]);
   if (svc.error) throw svc.error;
@@ -120,6 +124,7 @@ async function fetchCatalog(): Promise<Data> {
       verified: p.verified,
       area: p.base_area,
       radiusKm: p.service_radius_km,
+      paused: p.paused,
     }))
     // Ficha incompleta (sem nome ou sem serviço) não aparece para o cliente.
     .filter((p) => p.name !== '' && p.serviceIds.length > 0);
@@ -138,8 +143,8 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
     AsyncStorage.setItem(CACHE_KEY, JSON.stringify(fresh)).catch(() => {});
   }, []);
 
-  const refresh = useCallback(async () => {
-    setRefreshing(true);
+  const refresh = useCallback(async (opts?: { silent?: boolean }) => {
+    if (!opts?.silent) setRefreshing(true);
     try {
       apply(await fetchCatalog());
     } catch {
@@ -180,7 +185,8 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
       popular: services.filter((s) => s.popular).map((s) => s.id),
       getService: (id) => (id ? serviceById.get(id) : undefined),
       getProfessional: (id) => (id ? proById.get(id) : undefined),
-      getProfessionals: (serviceId) => (serviceId ? professionals.filter((p) => p.serviceIds.includes(serviceId)) : []),
+      // Listas do cliente: quem pausou os pedidos não aparece (o perfil e o chat continuam).
+      getProfessionals: (serviceId) => (serviceId ? professionals.filter((p) => p.serviceIds.includes(serviceId) && !p.paused) : []),
     };
   }, [data, failed, refreshing, refresh]);
 

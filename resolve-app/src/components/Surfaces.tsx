@@ -85,6 +85,51 @@ export function ListRow({
   );
 }
 
+/** Linha com interruptor (liga/desliga): a linha inteira é o controle. */
+export function ToggleRow({
+  icon,
+  title,
+  description,
+  value,
+  onChange,
+  disabled,
+}: {
+  icon: IconName;
+  title: string;
+  description?: string;
+  value: boolean;
+  onChange: (next: boolean) => void;
+  disabled?: boolean;
+}) {
+  return (
+    <Pressable
+      accessibilityRole="switch"
+      accessibilityLabel={title}
+      accessibilityHint={description}
+      accessibilityState={{ checked: value, disabled: !!disabled }}
+      aria-checked={value}
+      disabled={disabled}
+      onPress={() => onChange(!value)}
+      style={({ pressed }) => [styles.row, pressed && { backgroundColor: colors.surfaceMuted }, disabled && { opacity: 0.5 }]}
+    >
+      <View style={styles.rowIcon}>
+        <Icon name={icon} size={20} strokeWidth={2} />
+      </View>
+      <View style={{ flex: 1, gap: 1 }}>
+        <Text variant="label">{title}</Text>
+        {description ? (
+          <Text variant="caption" color={colors.inkMuted}>
+            {description}
+          </Text>
+        ) : null}
+      </View>
+      <View style={[styles.track, value && styles.trackOn]}>
+        <View style={[styles.knob, value && styles.knobOn]} />
+      </View>
+    </Pressable>
+  );
+}
+
 type BadgeTone = 'brand' | 'ink' | 'success' | 'muted' | 'danger';
 const badgeTone: Record<BadgeTone, { bg: string; fg: string }> = {
   brand: { bg: colors.brand, fg: colors.onBrand },
@@ -229,6 +274,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  track: { width: 46, height: 28, borderRadius: radius.pill, backgroundColor: colors.surfaceStrong, padding: 3, justifyContent: 'center' },
+  trackOn: { backgroundColor: colors.ink },
+  knob: { width: 22, height: 22, borderRadius: radius.pill, backgroundColor: colors.surface, boxShadow: shadows.card },
+  knobOn: { alignSelf: 'flex-end' },
   badge: {
     flexDirection: 'row',
     alignItems: 'center',

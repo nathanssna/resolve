@@ -215,12 +215,12 @@ export default function Perfil() {
               onPress={() => router.push('/enderecos')}
             />
           ) : null}
-          <ListRow icon="bell" value="Notificações" onPress={() => notify('Configurações de notificação em breve.')} />
+          {session ? <ListRow icon="bell" value="Notificações" onPress={() => router.push('/notificacoes')} /> : null}
         </View>
 
         <View style={styles.group}>
           <ListRow icon="shield-check" value="Conta e privacidade" onPress={() => router.push('/conta')} />
-          <ListRow icon="circle-help" value="Ajuda" onPress={() => notify('Central de ajuda em breve.')} />
+          <ListRow icon="circle-help" value="Ajuda" onPress={() => router.push('/ajuda')} />
         </View>
 
         {!isPro ? (

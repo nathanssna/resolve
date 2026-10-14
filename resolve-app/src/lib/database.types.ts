@@ -283,6 +283,35 @@ export type Database = {
           },
         ]
       }
+      notification_prefs: {
+        Row: {
+          messages: boolean
+          updated_at: string
+          updates: boolean
+          user_id: string
+        }
+        Insert: {
+          messages?: boolean
+          updated_at?: string
+          updates?: boolean
+          user_id?: string
+        }
+        Update: {
+          messages?: boolean
+          updated_at?: string
+          updates?: boolean
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notification_prefs_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       orders: {
         Row: {
           address: Json | null
@@ -296,6 +325,7 @@ export type Database = {
           id: string
           professional_id: string
           proposal_id: string
+          reminded_at: string | null
           request_id: string
           scheduled_at: string | null
           scheduled_label: string
@@ -315,6 +345,7 @@ export type Database = {
           id?: string
           professional_id: string
           proposal_id: string
+          reminded_at?: string | null
           request_id: string
           scheduled_at?: string | null
           scheduled_label: string
@@ -334,6 +365,7 @@ export type Database = {
           id?: string
           professional_id?: string
           proposal_id?: string
+          reminded_at?: string | null
           request_id?: string
           scheduled_at?: string | null
           scheduled_label?: string
@@ -435,6 +467,7 @@ export type Database = {
           jobs_count: number
           latitude: number | null
           longitude: number | null
+          paused: boolean
           rating: number
           reply_minutes: number
           review_count: number
@@ -453,6 +486,7 @@ export type Database = {
           jobs_count?: number
           latitude?: number | null
           longitude?: number | null
+          paused?: boolean
           rating?: number
           reply_minutes?: number
           review_count?: number
@@ -471,6 +505,7 @@ export type Database = {
           jobs_count?: number
           latitude?: number | null
           longitude?: number | null
+          paused?: boolean
           rating?: number
           reply_minutes?: number
           review_count?: number
@@ -817,6 +852,7 @@ export type Database = {
           id: string
           includes: string[]
           is_popular: boolean
+          keywords: string[]
           rating: number
           review_count: number
           short_title: string
@@ -835,6 +871,7 @@ export type Database = {
           id: string
           includes?: string[]
           is_popular?: boolean
+          keywords?: string[]
           rating?: number
           review_count?: number
           short_title: string
@@ -853,6 +890,7 @@ export type Database = {
           id?: string
           includes?: string[]
           is_popular?: boolean
+          keywords?: string[]
           rating?: number
           review_count?: number
           short_title?: string
@@ -881,6 +919,7 @@ export type Database = {
           id: string
           professional_id: string
           proposal_id: string
+          reminded_at: string | null
           request_id: string
           scheduled_at: string | null
           scheduled_label: string
@@ -909,6 +948,7 @@ export type Database = {
           id: string
           professional_id: string
           proposal_id: string
+          reminded_at: string | null
           request_id: string
           scheduled_at: string | null
           scheduled_label: string
@@ -976,6 +1016,7 @@ export type Database = {
           id: string
           professional_id: string
           proposal_id: string
+          reminded_at: string | null
           request_id: string
           scheduled_at: string | null
           scheduled_label: string
@@ -1128,6 +1169,13 @@ export type Database = {
       register_push_token: {
         Args: { p_platform: string; p_token: string }
         Returns: undefined
+      }
+      search_services: {
+        Args: { p_query: string }
+        Returns: {
+          score: number
+          service_id: string
+        }[]
       }
     }
     Enums: {

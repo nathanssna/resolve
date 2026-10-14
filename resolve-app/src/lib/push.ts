@@ -71,6 +71,22 @@ export async function registerPush({ ask }: { ask: boolean }): Promise<'granted'
   }
 }
 
+/**
+ * Situação do push neste aparelho, para a tela de Notificações:
+ * `blocked` = a pessoa negou e o sistema não deixa perguntar de novo (só nos
+ * ajustes do celular); `unavailable` = web, simulador ou Expo Go.
+ */
+export async function pushStatus(): Promise<'granted' | 'denied' | 'blocked' | 'unavailable'> {
+  if (!pushSupported) return 'unavailable';
+  try {
+    const p = await Notifications.getPermissionsAsync();
+    if (p.granted) return (await registerPush({ ask: false })) === 'granted' ? 'granted' : 'unavailable';
+    return p.canAskAgain ? 'denied' : 'blocked';
+  } catch {
+    return 'unavailable';
+  }
+}
+
 /** Ao sair da conta: este aparelho para de receber o push dela. */
 export async function unregisterPush() {
   if (!registeredToken) return;

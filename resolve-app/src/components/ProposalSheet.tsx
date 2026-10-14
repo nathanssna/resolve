@@ -1,10 +1,11 @@
-import { useState } from 'react';
-import { Keyboard, KeyboardAvoidingView, Modal, Platform, Pressable, StyleSheet, View } from 'react-native';
+import { useRef, useState } from 'react';
+import { Keyboard, KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { authErrorMessage } from '@/lib/authErrors';
 import { colors, radius, spacing } from '@/theme/tokens';
 import { parseBRLInput } from '@/utils/format';
+import { nextDays, PERIODS, soonest, type Schedule } from '@/utils/schedule';
 import { Button } from './Button';
 import { Field } from './Fields';
 import { OptionChip } from './Surfaces';
@@ -14,9 +15,16 @@ export type ProposalJob = {
   id: string;
   /** Ex.: "Instalar chuveiro". */
   label: string;
-  /** Sugestão para "Quando" (o horário do pedido). */
+  /** Quando o cliente pediu, para mostrar ("Amanhã, à tarde", "O quanto antes"). */
   defaultWhen: string;
+  /** Dia e período pedidos: já vêm escolhidos. */
+  defaultSchedule?: Schedule;
 };
+
+/** Dias que dá para escolher na proposta. */
+const DAYS = 30;
+/** Largura aproximada de um dia na faixa (chip + espaço), para rolar até o escolhido. */
+const DAY_WIDTH = 72;
 
 /** Profissional monta a proposta: para qual pedido, valor, quando e observação. */
 export function ProposalSheet({
@@ -32,25 +40,30 @@ export function ProposalSheet({
   /** Pedidos em aberto da conversa; o último vem escolhido. Com mais de um, aparece a escolha. */
   jobs: ProposalJob[];
   onClose: () => void;
-  onSubmit: (jobId: string, input: { amount: number; when: string; note: string }) => Promise<void>;
+  onSubmit: (jobId: string, input: { amount: number; schedule: Schedule; note: string }) => Promise<void>;
 }) {
   const insets = useSafeAreaInsets();
   const [jobId, setJobId] = useState<string | null>(null);
   const job = jobs.find((j) => j.id === (jobId ?? initialJobId)) ?? jobs.at(-1);
-  const defaultWhen = job?.defaultWhen ?? '';
+  const days = nextDays(DAYS);
+  // O dia pedido pelo cliente, se ainda estiver na faixa; senão, o primeiro período que dá tempo.
+  const asked = job?.defaultSchedule;
+  const fallback = asked && days.some((d) => d.day === asked.day) ? asked : soonest();
+  const [picked, setPicked] = useState<Schedule | null>(null);
+  const schedule = picked ?? fallback;
+  const daysRef = useRef<ScrollView>(null);
   const [amount, setAmount] = useState('');
-  const [when, setWhen] = useState(defaultWhen);
   const [note, setNote] = useState('');
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const value = parseBRLInput(amount);
-  const canSend = !!job && value !== null && value > 0 && when.trim().length > 0 && !sending;
+  const canSend = !!job && value !== null && value > 0 && !sending;
 
   const reset = () => {
     setJobId(null);
+    setPicked(null);
     setAmount('');
-    setWhen('');
     setNote('');
     setError(null);
   };
@@ -61,7 +74,7 @@ export function ProposalSheet({
     setSending(true);
     setError(null);
     try {
-      await onSubmit(job.id, { amount: value, when: when.trim(), note });
+      await onSubmit(job.id, { amount: value, schedule, note });
       reset();
       onClose();
     } catch (e) {
@@ -72,7 +85,7 @@ export function ProposalSheet({
   };
 
   return (
-    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose} onShow={() => setWhen((w) => w || defaultWhen)}>
+    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
       <Pressable style={styles.backdrop} onPress={onClose} accessibilityLabel="Fechar" />
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         {/* No celular, tocar em qualquer área vazia da folha fecha o teclado (na web, o clique no campo cairia aqui também). */}
@@ -95,7 +108,7 @@ export function ProposalSheet({
                   active={j.id === job?.id}
                   onPress={() => {
                     setJobId(j.id);
-                    setWhen(j.defaultWhen);
+                    setPicked(null);
                   }}
                 />
               ))}
@@ -111,7 +124,37 @@ export function ProposalSheet({
             returnKeyType="done"
             onSubmitEditing={Keyboard.dismiss}
           />
-          <Field label="Quando" placeholder="Ex.: Amanhã, 14h" value={when} onChangeText={setWhen} maxLength={120} returnKeyType="done" onSubmitEditing={Keyboard.dismiss} />
+          <View style={{ gap: spacing[2] }}>
+            <Text variant="label">Quando</Text>
+            <ScrollView
+              ref={daysRef}
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              keyboardShouldPersistTaps="handled"
+              contentContainerStyle={{ gap: spacing[2] }}
+              onLayout={() => {
+                // Abre com o dia escolhido à vista.
+                const i = days.findIndex((d) => d.day === schedule.day);
+                if (i > 3) daysRef.current?.scrollTo({ x: (i - 1) * DAY_WIDTH, animated: false });
+              }}
+            >
+              {days.map((d) => (
+                <OptionChip key={d.day} label={d.label} sublabel={d.sub} active={d.day === schedule.day} onPress={() => setPicked({ ...schedule, day: d.day })} />
+              ))}
+            </ScrollView>
+            <View style={{ flexDirection: 'row', gap: spacing[2] }}>
+              {PERIODS.map((p) => (
+                <View key={p.id} style={{ flex: 1 }}>
+                  <OptionChip label={p.label} sublabel={p.hint} active={p.id === schedule.period} onPress={() => setPicked({ ...schedule, period: p.id })} />
+                </View>
+              ))}
+            </View>
+            {job?.defaultWhen ? (
+              <Text variant="caption" color={colors.inkMuted}>
+                {`O cliente pediu: ${job.defaultWhen.toLowerCase()}`}
+              </Text>
+            ) : null}
+          </View>
           <Field
             label="Observação (opcional)"
             placeholder="Ex.: materiais à parte"

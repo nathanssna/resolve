@@ -28,14 +28,9 @@ import { useAuth } from '@/state/auth';
 import { useCatalog } from '@/state/catalog';
 import { colors, radius, spacing } from '@/theme/tokens';
 import { firstName, formatDecimal } from '@/utils/format';
+import { formatSchedule, nextDays, PERIODS, scheduleLabel, type PeriodId } from '@/utils/schedule';
 import { notify } from '@/utils/dialog';
 
-const WEEK = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
-const PERIODS = [
-  { id: 'manha', label: 'Manhã', hint: '8h–12h' },
-  { id: 'tarde', label: 'Tarde', hint: '13h–17h' },
-  { id: 'noite', label: 'Noite', hint: '18h–20h' },
-];
 const MAX_PHOTOS = 4;
 
 const STEPS = [
@@ -44,17 +39,6 @@ const STEPS = [
   { title: 'Quer mandar fotos?', short: 'Fotos' },
 ] as const;
 
-function nextDays(n = 6) {
-  const out: { id: string; label: string; sub: string; long: string }[] = [];
-  const now = new Date();
-  for (let i = 0; i < n; i++) {
-    const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() + i);
-    const dd = `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}`;
-    const label = i === 0 ? 'Hoje' : i === 1 ? 'Amanhã' : WEEK[d.getDay()];
-    out.push({ id: String(i), label, sub: dd, long: i < 2 ? label : `${WEEK[d.getDay()]} ${dd}` });
-  }
-  return out;
-}
 
 /** Pedido de orçamento em 3 passos: o que precisa → quando e onde → fotos (opcional) e enviar. */
 export default function NovoPedido() {
@@ -70,9 +54,10 @@ export default function NovoPedido() {
   const [step, setStep] = useState(0);
   const [description, setDescription] = useState('');
   const [mode, setMode] = useState<'agora' | 'agendar'>('agendar');
-  const days = useMemo(() => nextDays(), []);
-  const [day, setDay] = useState('1');
-  const [period, setPeriod] = useState('tarde');
+  const days = useMemo(() => nextDays(6), []);
+  // Amanhã à tarde, até a pessoa escolher.
+  const [day, setDay] = useState(days[1].day);
+  const [period, setPeriod] = useState<PeriodId>('tarde');
   const [photos, setPhotos] = useState<LocalPhoto[]>([]);
   const [adding, setAdding] = useState(false);
   const [sending, setSending] = useState<{ sent: number; total: number } | null>(null);
@@ -114,10 +99,22 @@ export default function NovoPedido() {
     );
   }
 
+  if (pro.paused) {
+    return (
+      <SafeAreaView style={{ flex: 1, backgroundColor: colors.surface }}>
+        <TopBar title="Pedir orçamento" />
+        <View style={{ padding: spacing[5] }}>
+          <EmptyState icon="clock" title={`${firstName(pro.name)} não está recebendo pedidos agora`} description="Escolha outro profissional ou tente de novo mais tarde." />
+        </View>
+      </SafeAreaView>
+    );
+  }
+
   const when =
     mode === 'agora'
       ? 'O quanto antes'
-      : `${days.find((d) => d.id === day)?.long}, ${PERIODS.find((p) => p.id === period)?.label.toLowerCase()}`;
+      : // Texto absoluto ("Qua 15/10, tarde"): a tela mostra "Amanhã, à tarde" calculado na hora.
+        scheduleLabel({ day, period });
   const descriptionOk = description.trim().length >= 5;
 
   const addPhotos = async (source: 'library' | 'camera') => {
@@ -273,7 +270,7 @@ export default function NovoPedido() {
                   <>
                     <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: spacing[2] }}>
                       {days.map((d) => (
-                        <OptionChip key={d.id} label={d.label} sublabel={d.sub} active={d.id === day} onPress={() => setDay(d.id)} />
+                        <OptionChip key={d.day} label={d.label} sublabel={d.sub} active={d.day === day} onPress={() => setDay(d.day)} />
                       ))}
                     </ScrollView>
                     <View style={{ flexDirection: 'row', gap: spacing[2] }}>
@@ -397,7 +394,7 @@ export default function NovoPedido() {
                   <View style={styles.summaryRow}>
                     <Icon name="calendar-clock" size={16} strokeWidth={2} color={colors.inkMuted} />
                     <Text variant="bodySm" color={colors.inkBody}>
-                      {when}
+                      {mode === 'agora' ? when : formatSchedule({ day, period })}
                     </Text>
                   </View>
                   <View style={styles.summaryRow}>

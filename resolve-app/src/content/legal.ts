@@ -2,14 +2,12 @@
  * Termos de uso e Política de privacidade (mostrados em /legal/termos e /legal/privacidade).
  *
  * RASCUNHO: descreve o que o app faz hoje, mas precisa de revisão jurídica.
- * Complete os campos entre colchetes antes de publicar nas lojas. As lojas
+ * Complete os campos entre colchetes (aqui e em company.ts) antes de publicar nas lojas. As lojas
  * também pedem a política num endereço público (URL).
  */
-export type LegalDoc = { title: string; updated: string; intro: string; sections: { title: string; body: string[] }[] };
+import { CNPJ, COMPANY, CONTACT_EMAIL as EMAIL } from './company';
 
-const COMPANY = '[RAZÃO SOCIAL]';
-const CNPJ = '[CNPJ]';
-const EMAIL = '[E-MAIL DE CONTATO]';
+export type LegalDoc = { title: string; updated: string; intro: string; sections: { title: string; body: string[] }[] };
 
 export const LEGAL: Record<'termos' | 'privacidade', LegalDoc> = {
   termos: {

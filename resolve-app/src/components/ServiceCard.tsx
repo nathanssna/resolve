@@ -1,6 +1,6 @@
 import { StyleSheet, View } from 'react-native';
 
-import { colors, radius, spacing } from '@/theme/tokens';
+import { colors, spacing } from '@/theme/tokens';
 import { Card } from './Card';
 import { Icon, type IconName } from './Icon';
 import { Rating } from './Rating';

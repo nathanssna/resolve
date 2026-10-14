@@ -21,6 +21,7 @@ import { photoName, uploadPhoto, type LocalPhoto } from '@/lib/photos';
 import { supabase, type UserRole } from '@/lib/supabase';
 import { useAuth } from '@/state/auth';
 import { useCatalog } from '@/state/catalog';
+import { formatSchedule, fromScheduledAt, parseSchedule, scheduleAt, scheduleLabel, scheduleOrder, type Schedule } from '@/utils/schedule';
 
 export type Address = { label: string; line: string; area: string; complement?: string; city?: string; state?: string; postalCode?: string };
 
@@ -33,7 +34,10 @@ export type RequestMsg = Base & {
   kind: 'request';
   serviceTitle: string;
   description: string;
+  /** Na tela ("Hoje, à tarde" ou "O quanto antes"). */
   when: string;
+  /** Dia e período pedidos, quando o texto é uma data. */
+  schedule?: Schedule;
   address: Address;
   /** true: só bairro/cidade (profissional antes de combinar o serviço). */
   addressPartial: boolean;
@@ -46,6 +50,7 @@ export type ProposalMsg = Base & {
   proposalId: string;
   amount: number;
   when: string;
+  schedule?: Schedule;
   note?: string;
   status: 'pending' | 'accepted' | 'declined';
 };
@@ -101,7 +106,10 @@ export type Order = {
   other: Party;
   serviceId: string;
   amount: number;
+  /** Na tela ("Hoje, à tarde"); propostas antigas: o texto livre. */
   when: string;
+  /** Dia e período do serviço (para a agenda e o "Hoje"). */
+  schedule?: Schedule;
   address: Address;
   status: OrderStatus;
   rating?: number;
@@ -111,6 +119,10 @@ export type Order = {
   /** Quando foi concluído (resumo do mês do profissional). */
   completedAt?: number;
 };
+
+/** Agenda: o serviço mais próximo primeiro; sem data (propostas antigas), no fim, por ordem de combinado. */
+export const soonestFirst = (a: Order, b: Order) =>
+  (a.schedule ? scheduleOrder(a.schedule) : Infinity) - (b.schedule ? scheduleOrder(b.schedule) : Infinity) || a.createdAt - b.createdAt;
 
 type Tables = Database['public']['Tables'];
 type PartyRow = { full_name: string; avatar_url: string | null; deleted_at: string | null };
@@ -127,10 +139,10 @@ type MessageRow = Pick<
   Tables['messages']['Row'],
   'id' | 'conversation_id' | 'request_id' | 'sender_id' | 'kind' | 'body' | 'proposal_id' | 'request_when' | 'request_address' | 'photos' | 'created_at'
 >;
-type ProposalRow = Pick<Tables['proposals']['Row'], 'id' | 'conversation_id' | 'request_id' | 'amount' | 'scheduled_label' | 'note' | 'status'>;
+type ProposalRow = Pick<Tables['proposals']['Row'], 'id' | 'conversation_id' | 'request_id' | 'amount' | 'scheduled_label' | 'scheduled_at' | 'note' | 'status'>;
 type OrderRow = Pick<
   Tables['orders']['Row'],
-  'id' | 'conversation_id' | 'request_id' | 'professional_id' | 'service_id' | 'amount' | 'scheduled_label' | 'address' | 'status' | 'created_at' | 'completed_at'
+  'id' | 'conversation_id' | 'request_id' | 'professional_id' | 'service_id' | 'amount' | 'scheduled_label' | 'scheduled_at' | 'address' | 'status' | 'created_at' | 'completed_at'
 > & { rating?: number; comment?: string | null };
 
 type Store = {
@@ -142,7 +154,7 @@ type Store = {
 };
 const EMPTY: Store = { convs: {}, requests: {}, messages: {}, proposals: {}, orders: {} };
 
-const PROPOSAL_COLS = 'id, conversation_id, request_id, amount, scheduled_label, note, status';
+const PROPOSAL_COLS = 'id, conversation_id, request_id, amount, scheduled_label, scheduled_at, note, status';
 
 export type AppStatus = 'idle' | 'loading' | 'ready' | 'error';
 
@@ -170,7 +182,7 @@ type AppValue = {
   sendText: (conversationId: string, text: string) => Promise<void>;
   respondProposal: (conversationId: string, messageId: string, accept: boolean) => Promise<void>;
   /** Profissional: envia uma proposta para o pedido (substitui a pendente anterior dele). */
-  sendProposal: (conversationId: string, jobId: string, input: { amount: number; when: string; note?: string }) => Promise<void>;
+  sendProposal: (conversationId: string, jobId: string, input: { amount: number; schedule: Schedule; note?: string }) => Promise<void>;
   markRead: (conversationId: string) => void;
   completeOrder: (orderId: string) => Promise<void>;
   cancelOrder: (orderId: string) => Promise<void>;
@@ -190,6 +202,12 @@ const Ctx = createContext<AppValue | null>(null);
 
 const byId = <T extends { id: string }>(rows: T[]) => Object.fromEntries(rows.map((r) => [r.id, r]));
 const time = (iso: string) => Date.parse(iso);
+
+/** Quando, para a tela: da data gravada (`scheduled_at`) ou do texto, relativo a `ref` (quando foi escrito). */
+function whenOf(label: string, scheduledAt: string | null, ref: number): { when: string; schedule?: Schedule } {
+  const schedule = scheduledAt ? fromScheduledAt(time(scheduledAt)) : (parseSchedule(label, ref) ?? undefined);
+  return { when: schedule ? formatSchedule(schedule) : label, schedule };
+}
 const isTmp = (id: string) => id.startsWith('tmp:');
 
 function toAddress(value: Json | null): Address {
@@ -216,8 +234,8 @@ async function fetchStore(uid: string, role: UserRole): Promise<Store> {
       professional:professionals!conversations_professional_id_fkey(profile:profiles!professionals_id_fkey(full_name, avatar_url, deleted_at)),
       requests!requests_conversation_id_fkey(id, conversation_id, service_id, created_at, closed_at, closed_by, request_address:request_addresses(address)),
       messages!messages_conversation_id_fkey(id, conversation_id, request_id, sender_id, kind, body, proposal_id, request_when, request_address, photos, created_at),
-      proposals!proposals_conversation_id_fkey(id, conversation_id, request_id, amount, scheduled_label, note, status),
-      orders!orders_conversation_id_fkey(id, conversation_id, request_id, professional_id, service_id, amount, scheduled_label, address, status, created_at, completed_at, review:reviews(rating, comment))`,
+      proposals!proposals_conversation_id_fkey(id, conversation_id, request_id, amount, scheduled_label, scheduled_at, note, status),
+      orders!orders_conversation_id_fkey(id, conversation_id, request_id, professional_id, service_id, amount, scheduled_label, scheduled_at, address, status, created_at, completed_at, review:reviews(rating, comment))`,
     )
     .eq(role === 'profissional' ? 'professional_id' : 'client_id', uid);
   if (error) throw error;
@@ -443,7 +461,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
             kind: 'proposal',
             proposalId: p.id,
             amount: Number(p.amount),
-            when: p.scheduled_label,
+            ...whenOf(p.scheduled_label, p.scheduled_at, base.at),
             note: p.note ?? undefined,
             status: p.status === 'superseded' ? 'declined' : p.status,
           });
@@ -456,7 +474,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
             kind: 'request',
             serviceTitle: req ? (getService(req.service_id)?.title ?? '') : '',
             description: r.body ?? '',
-            when: r.request_when ?? '',
+            ...whenOf(r.request_when ?? '', null, base.at),
             address: toAddress(full ?? r.request_address),
             addressPartial: !full && !toAddress(r.request_address).line,
             photos: r.photos ?? [],
@@ -521,7 +539,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
           other: store.convs[o.conversation_id] ? otherOf(store.convs[o.conversation_id]) : { id: o.professional_id, name: '' },
           serviceId: o.service_id,
           amount: Number(o.amount),
-          when: o.scheduled_label,
+          ...whenOf(o.scheduled_label, o.scheduled_at, time(o.created_at)),
           address: toAddress(o.address),
           status: o.status,
           rating: o.rating,
@@ -684,10 +702,18 @@ export function AppProvider({ children }: { children: ReactNode }) {
   );
 
   const sendProposal: AppValue['sendProposal'] = useCallback(
-    async (conversationId, jobId, { amount, when, note }) => {
+    async (conversationId, jobId, { amount, schedule, note }) => {
       const { data: p, error } = await supabase
         .from('proposals')
-        .insert({ conversation_id: conversationId, request_id: jobId, amount, scheduled_label: when, note: note?.trim() || null })
+        .insert({
+          conversation_id: conversationId,
+          request_id: jobId,
+          amount,
+          // Texto absoluto para os avisos do chat e o push; a tela usa a data.
+          scheduled_label: scheduleLabel(schedule),
+          scheduled_at: scheduleAt(schedule).toISOString(),
+          note: note?.trim() || null,
+        })
         .select(PROPOSAL_COLS)
         .single();
       if (error) throw error;

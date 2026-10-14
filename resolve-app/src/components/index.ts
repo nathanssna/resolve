@@ -18,7 +18,7 @@ export { Rating } from './Rating';
 export { SearchField } from './SearchField';
 export { ServiceCard } from './ServiceCard';
 export { ActionSheet, type SheetAction } from './ActionSheet';
-export { ActionButton, Badge, ListRow, OptionChip, SectionHeader, Segmented, Sheet, StickyFooter } from './Surfaces';
+export { ActionButton, Badge, ListRow, OptionChip, SectionHeader, Segmented, Sheet, StickyFooter, ToggleRow } from './Surfaces';
 export { Text } from './Text';
 export { ProposalSheet } from './ProposalSheet';
 export { goBack, IconButton, TopBar, type TopBarAction } from './TopBar';

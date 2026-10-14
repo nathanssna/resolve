@@ -3,13 +3,14 @@ import { useEffect, useState } from 'react';
 import { Pressable, RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { Avatar, Badge, Button, CatalogFallback, Icon, Text } from '@/components';
+import { Avatar, Badge, Button, CatalogFallback, Icon, Text, ToggleRow } from '@/components';
 import type { Database } from '@/lib/database.types';
 import { supabase } from '@/lib/supabase';
-import { useApp, type Conversation, type Job, type Order } from '@/state/app';
+import { soonestFirst, useApp, type Conversation, type Job, type Order } from '@/state/app';
 import { useAuth } from '@/state/auth';
-import { useCatalog } from '@/state/catalog';
+import { useCatalog, type Professional } from '@/state/catalog';
 import { colors, fonts, radius, shadows, spacing } from '@/theme/tokens';
+import { confirm, notify } from '@/utils/dialog';
 import { firstName, formatBRL, formatCount, formatDecimal, timeAgo } from '@/utils/format';
 
 /*
@@ -283,6 +284,37 @@ function MonthCard({ orders, proId, rating, reviews }: { orders: Order[]; proId:
   );
 }
 
+/** Recebendo pedidos (liga/desliga): pausado, some das buscas e não recebe pedido novo. */
+function AcceptingCard({ me }: { me: Professional }) {
+  const { refresh } = useCatalog();
+  // Valor que está sendo gravado (o catálogo só muda depois).
+  const [saving, setSaving] = useState<boolean | null>(null);
+  const paused = saving ?? me.paused;
+
+  const save = async (next: boolean) => {
+    setSaving(next);
+    const { error } = await supabase.from('professionals').update({ paused: next }).eq('id', me.id);
+    if (error) notify('Não foi possível mudar agora. Tente de novo.');
+    else await refresh({ silent: true });
+    setSaving(null);
+  };
+
+  return (
+    <View style={styles.accepting}>
+      <ToggleRow
+        icon="briefcase"
+        title="Recebendo pedidos"
+        description={paused ? 'Pausado: você não aparece nas buscas e não recebe pedidos novos' : 'Clientes da sua região encontram você'}
+        value={!paused}
+        disabled={saving !== null}
+        onChange={(accepting) =>
+          accepting ? save(false) : confirm('Pausar os pedidos? Você some das buscas até voltar a receber. O que já está combinado continua.', () => save(true), { confirmLabel: 'Pausar' })
+        }
+      />
+    </View>
+  );
+}
+
 /** Início do profissional. */
 export function ProHome() {
   const insets = useSafeAreaInsets();
@@ -302,7 +334,7 @@ export function ProHome() {
   const active = (j: Job) => j.state === 'proposta' || j.state === 'recusada' || j.state === 'combinado';
   const unread = conversations.filter((c) => c.unread > 0 && !c.jobs.some((j) => j.state === 'novo') && c.jobs.some(active));
   const waiting = jobs.filter(({ job }) => job.state === 'proposta');
-  const agenda = orders.filter((o) => o.status === 'combinado').sort((a, b) => a.createdAt - b.createdAt);
+  const agenda = orders.filter((o) => o.status === 'combinado').sort(soonestFirst);
   const [showWaiting, setShowWaiting] = useState(false);
   const needs = toAnswer.length + unread.length;
   const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
@@ -353,7 +385,9 @@ export function ProHome() {
       </View>
 
       <View style={styles.body}>
-        {!me ? (
+        {me ? (
+          <AcceptingCard me={me} />
+        ) : (
           <View style={styles.setup}>
             <Badge tone="ink" icon="briefcase">
               FICHA INCOMPLETA
@@ -366,7 +400,7 @@ export function ProHome() {
               Completar ficha
             </Button>
           </View>
-        ) : null}
+        )}
 
         {status === 'loading' || status === 'error' ? <CatalogFallback status={status} onRetry={refresh} /> : null}
 
@@ -488,4 +522,5 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surfaceMuted,
   },
   setup: { padding: spacing[4], borderRadius: radius.xl, backgroundColor: colors.brandTint, gap: spacing[2], alignItems: 'flex-start' },
+  accepting: { paddingVertical: spacing[1], paddingHorizontal: spacing[2], borderRadius: radius.lg, backgroundColor: colors.surface, boxShadow: shadows.card },
 });

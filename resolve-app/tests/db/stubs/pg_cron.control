@@ -1,0 +1,5 @@
+# pg_cron falso (só para os testes): guarda os jobs em cron.job, não executa nada.
+comment = 'pg_cron falso dos testes'
+default_version = '1.0'
+relocatable = false
+schema = pg_catalog

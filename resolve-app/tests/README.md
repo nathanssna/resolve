@@ -5,7 +5,8 @@ Duas partes, fora do app (não entram no bundle):
 - **`db/`**: testes do banco. Cada suíte cria um banco do zero num Postgres 17 local,
   aplica todas as migrations de `supabase/migrations` e os seeds, e confere RLS, RPCs,
   triggers e regras de negócio como cliente, profissional, estranho e anônimo.
-  O `bootstrap.sql` imita o mínimo do Supabase (`auth`, `storage`, `net`, papéis).
+  O `bootstrap.sql` imita o mínimo do Supabase (`auth`, `storage`, `net`, papéis) e
+  `db/stubs` traz um `pg_cron` falso (o `db:start` instala no Postgres embutido).
 - **`e2e/`**: o app de verdade num Chrome sem janela, contra o **Supabase real** do projeto,
   com duas contas temporárias (`teste+cli` e `teste+pro` @exemplo.invalid).
 
@@ -32,6 +33,10 @@ npm run db:stop
 | `close` | cancelar/recusar pedido, avaliações no perfil, telefone, favoritos |
 | `account` | excluir conta, bloquear, denunciar |
 | `area` | área de atendimento e `professional_distances` |
+| `notif` | preferências de notificação e limpeza dos tokens de push inválidos (tickets e recibos da Expo) |
+| `search` | busca por frase (`search_services`): radicais, sem acento, começo de palavra, erro de digitação, ranking |
+| `pause` | profissional pausa os pedidos: some das listas, sem conversa/pedido novo, o resto continua |
+| `reminder` | lembrete no dia do serviço (push às 7h): quem recebe, texto, uma vez só, lotes de 100 |
 
 ## Ponta a ponta
 
@@ -56,6 +61,10 @@ npm run e2e:cleanup            # apaga as contas (sempre, no fim)
 | `block3` | termos, denunciar, bloquear, excluir conta |
 | `area` | lista por distância e área na ficha |
 | `alert` | quando uma mensagem deixa o painel do profissional em alerta |
+| `notif` | Notificações (preferências gravadas no banco) e Ajuda, para cliente e profissional |
+| `chat` | "Negociar" preenche o campo; "digitando…" com os pontos animados |
+| `busca` | busca por frase na tela Buscar, como visitante (não precisa das contas); sem internet, cai na busca local |
+| `pause` | pausar no painel do profissional; lista, perfil e pedido do lado do cliente |
 
 As contas de teste nunca tocam nos dados reais: são marcadas com `e2e=true` e o
 `e2e:cleanup` apaga tudo o que elas criaram. Capturas de tela vão para `e2e/shots/`.

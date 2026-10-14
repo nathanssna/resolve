@@ -140,8 +140,9 @@ export default function Chat() {
   const proposalJobs = openJobs.map((j) => ({
     id: j.id,
     label: getService(j.serviceId)?.title ?? 'Pedido',
-    // Sugestão de "Quando": o horário do pedido.
-    defaultWhen: j.request?.when === 'O quanto antes' ? 'Hoje' : (j.request?.when ?? ''),
+    // Sugestão de "Quando": o dia e o período do pedido.
+    defaultWhen: j.request?.when ?? '',
+    defaultSchedule: j.request?.schedule,
   }));
   const hasPending = openJobs.length === 1 && !!openJobs[0].pending;
   // Novo pedido ao mesmo profissional: começa no serviço do último pedido (se ele ainda fizer).

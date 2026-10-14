@@ -95,7 +95,7 @@ export default function PedidoDetalhe() {
             <ActionButton icon="message-circle" label="Mensagem" onPress={() => router.push({ pathname: '/chat/[id]', params: { id: order.conversationId } })} />
             <ActionButton icon="phone" label="Ligar" onPress={() => callOther(order.conversationId, name, !canceled)} />
             <ActionButton icon="share" label="Compartilhar" onPress={() => Share.share({ message: `${service?.title} com ${order.other.name} · ${order.when}` }).catch(() => {})} />
-            <ActionButton icon="circle-help" label="Ajuda" onPress={() => notify('Central de ajuda em breve.')} />
+            <ActionButton icon="circle-help" label="Ajuda" onPress={() => router.push('/ajuda')} />
           </View>
         </View>
 

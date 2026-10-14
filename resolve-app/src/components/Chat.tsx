@@ -194,7 +194,7 @@ export function SystemNote({ text, tone = 'muted' }: { text: string; tone?: 'mut
 
 /** "digitando…" com três pontos animados. */
 export function TypingBubble() {
-  const v = useRef([0, 1, 2].map(() => new Animated.Value(0.3))).current;
+  const [v] = useState(() => [0, 1, 2].map(() => new Animated.Value(0.3)));
   useEffect(() => {
     const loops = v.map((a, i) =>
       Animated.loop(
@@ -236,11 +236,14 @@ export function Composer({
 }) {
   const [text, setText] = useState('');
   const ref = useRef<TextInput>(null);
+  // Prefill novo (outra `key`) substitui o texto já no render; o foco vai no efeito.
+  const [prefilled, setPrefilled] = useState<number>();
+  if (prefill && prefill.key !== prefilled) {
+    setPrefilled(prefill.key);
+    setText(prefill.text);
+  }
   useEffect(() => {
-    if (prefill) {
-      setText(prefill.text);
-      ref.current?.focus();
-    }
+    if (prefill) ref.current?.focus();
   }, [prefill]);
   const send = (t = text) => {
     const v = t.trim();

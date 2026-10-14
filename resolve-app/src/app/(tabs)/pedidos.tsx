@@ -4,7 +4,7 @@ import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Badge, Button, CatalogFallback, EmptyState, Icon, Segmented, Text } from '@/components';
-import { useApp, type Order } from '@/state/app';
+import { soonestFirst, useApp, type Order } from '@/state/app';
 import { useCatalog } from '@/state/catalog';
 import { colors, radius, shadows, spacing } from '@/theme/tokens';
 import { formatBRL } from '@/utils/format';
@@ -51,7 +51,8 @@ function OrderCard({ order }: { order: Order }) {
 export default function Pedidos() {
   const { status, role, refresh, orders } = useApp();
   const [tab, setTab] = useState<'andamento' | 'historico'>('andamento');
-  const list = orders.filter((o) => (tab === 'andamento' ? o.status === 'combinado' : o.status !== 'combinado'));
+  // Em andamento: o próximo serviço primeiro. Histórico: o mais recente primeiro.
+  const list = tab === 'andamento' ? orders.filter((o) => o.status === 'combinado').sort(soonestFirst) : orders.filter((o) => o.status !== 'combinado');
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>

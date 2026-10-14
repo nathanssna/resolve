@@ -13,7 +13,10 @@ let pass = 0, fail = 0; const ok = (c, m) => { c ? pass++ : fail++; console.log(
   const migs = all.slice(0, at), last = all[at], later = all.slice(at + 1);
   ok(at > 0, `migration: ${last}`);
   for (const m of migs) await run(`${APP}/migrations/${m}`);
+  // O seed atual tem colunas que o banco antigo ainda não tinha (keywords): só para carregar o catálogo.
+  await db.query("alter table public.services add column keywords text[] not null default '{}'");
   await run(`${APP}/seed.sql`);
+  await db.query('alter table public.services drop column keywords');
 
   const as = async (uid, sql, params = []) => {
     await db.query('begin');

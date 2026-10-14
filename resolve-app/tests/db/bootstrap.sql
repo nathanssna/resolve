@@ -25,6 +25,9 @@ grant usage on schema auth to anon, authenticated;
 grant execute on function auth.uid() to anon, authenticated;
 
 grant usage on schema public to anon, authenticated, service_role;
+-- Extensões ficam no schema `extensions`, como no Supabase.
+create schema extensions;
+grant usage on schema extensions to anon, authenticated, service_role;
 alter default privileges in schema public grant all on tables to anon, authenticated, service_role;
 alter default privileges in schema public grant all on functions to anon, authenticated, service_role;
 alter default privileges in schema public grant all on sequences to anon, authenticated, service_role;
@@ -46,3 +49,5 @@ create schema net;
 create table net.calls (id bigserial primary key, url text, body jsonb, headers jsonb);
 create function net.http_post(url text, body jsonb default '{}', params jsonb default '{}', headers jsonb default '{}', timeout_milliseconds int default 5000)
 returns bigint language sql as $$ insert into net.calls (url, body, headers) values (url, body, headers) returning id $$;
+-- Respostas: o teste insere aqui o que a Expo "respondeu" (id = net.calls.id).
+create table net._http_response (id bigint, status_code int, content_type text, headers jsonb, content text, timed_out boolean, error_msg text, created timestamptz not null default now());

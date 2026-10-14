@@ -206,10 +206,11 @@ export default function PerfilProfissional() {
           <Button
             variant="primary"
             block
-            iconLeft="message-circle"
+            iconLeft={pro.paused ? 'clock' : 'message-circle'}
+            disabled={pro.paused}
             onPress={() => router.push({ pathname: '/pedido/novo', params: { serviceId: requestService, proId: pro.id } })}
           >
-            {`Pedir orçamento a ${firstName(pro.name)}`}
+            {pro.paused ? 'Não está recebendo pedidos agora' : `Pedir orçamento a ${firstName(pro.name)}`}
           </Button>
         </StickyFooter>
       ) : null}

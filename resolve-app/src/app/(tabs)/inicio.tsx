@@ -15,7 +15,7 @@ import {
   Text,
 } from '@/components';
 import { useAddresses } from '@/state/addresses';
-import { useApp } from '@/state/app';
+import { soonestFirst, useApp } from '@/state/app';
 import { useAuth } from '@/state/auth';
 import { useCatalog } from '@/state/catalog';
 import { ProHome } from '@/screens/ProHome';
@@ -39,7 +39,7 @@ function ClientHome() {
   // Card de destaque: proposta esperando resposta > serviço combinado
   const pendingJob = conversations.flatMap((c) => c.jobs).find((j) => j.state === 'proposta');
   const pendingConv = pendingJob && conversations.find((c) => c.id === pendingJob.conversationId);
-  const activeOrder = orders.find((o) => o.status === 'combinado');
+  const activeOrder = orders.filter((o) => o.status === 'combinado').sort(soonestFirst)[0];
   const lastDone = orders.find((o) => o.status === 'concluido');
 
   let highlight: { title: string; subtitle: string; progress: number; onPress: () => void } | null = null;

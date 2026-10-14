@@ -7,8 +7,8 @@ import { useApp } from '@/state/app';
 import { colors, fonts, radius } from '@/theme/tokens';
 
 /** Ícone da aba: a ativa ganha uma pílula amarela atrás. */
-function tabIcon(name: IconName) {
-  return ({ focused }: { focused: boolean }) => (
+function TabIcon({ name, focused }: { name: IconName; focused: boolean }) {
+  return (
     <View
       style={{
         width: 60,
@@ -22,6 +22,12 @@ function tabIcon(name: IconName) {
       <Icon name={name} size={22} strokeWidth={focused ? 2.25 : 2} color={focused ? colors.ink : colors.inkMuted} />
     </View>
   );
+}
+
+function tabIcon(name: IconName) {
+  return function renderTabIcon({ focused }: { focused: boolean }) {
+    return <TabIcon name={name} focused={focused} />;
+  };
 }
 
 export default function TabsLayout() {

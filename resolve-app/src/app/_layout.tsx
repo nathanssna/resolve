@@ -93,6 +93,8 @@ export default function RootLayout() {
                 <Stack.Screen name="conta/excluir" />
                 <Stack.Screen name="denunciar" options={{ animation: 'slide_from_bottom' }} />
                 <Stack.Screen name="legal/[doc]" />
+                <Stack.Screen name="notificacoes" />
+                <Stack.Screen name="ajuda" />
               </Stack>
               <DialogHost />
             </AppProvider>
