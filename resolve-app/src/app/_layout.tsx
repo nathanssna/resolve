@@ -97,6 +97,7 @@ export default function RootLayout() {
                 <Stack.Screen name="legal/[doc]" />
                 <Stack.Screen name="notificacoes" />
                 <Stack.Screen name="ajuda" />
+                <Stack.Screen name="admin" />
               </Stack>
               <DialogHost />
             </AppProvider>

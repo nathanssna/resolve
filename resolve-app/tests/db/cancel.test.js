@@ -75,14 +75,15 @@ let pass = 0, fail = 0; const ok = (c, m) => { c ? pass++ : fail++; console.log(
     d = await deal(bia, 3);
     await cancel(pro, d.order, `Imprevisto ${i}`);
   }
-  ok((await as(pro, 'select public.my_pause_until() t')).rows[0]?.t === null, 'dois em 30 dias: ainda recebe pedidos');
+  ok((await as(pro, 'select until from public.my_pause()')).rows.length === 0, 'dois em 30 dias: ainda recebe pedidos');
   ok((await lastNote(d.conv)) === 'Serviço cancelado em cima da hora pelo profissional: Imprevisto 2', 'aviso do profissional no chat');
   d = await deal(bia, 3);
   await cancel(pro, d.order, 'Imprevisto 3');
   const paused = (await db.query('select paused, paused_until from public.professionals where id = $1', [pro])).rows[0];
   const days = (Date.parse(paused.paused_until) - Date.now()) / 86400000;
   ok(paused.paused && days > 6.9 && days < 7.1, `terceiro em 30 dias: pausado por 7 dias (${days.toFixed(2)})`);
-  ok(!!(await as(pro, 'select public.my_pause_until() t')).rows[0]?.t, 'o profissional vê até quando');
+  const mine = (await as(pro, 'select until, suspended from public.my_pause()')).rows[0];
+  ok(!!mine?.until && mine.suspended === false, 'o profissional vê até quando (e que não é suspensão da moderação)');
   const unpause = await as(pro, 'update public.professionals set paused = false where id = $1', [pro]);
   ok(unpause.error?.includes('Sua conta está pausada até'), `não consegue voltar antes: ${unpause.error}`);
   ok(!!(await as(pro, 'update public.professionals set paused_until = null where id = $1', [pro])).error, 'nem apagar a data da pausa');

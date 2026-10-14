@@ -544,6 +544,7 @@ export type Database = {
           id: string
           phone: string | null
           role: Database["public"]["Enums"]["user_role"]
+          suspended_until: string | null
           updated_at: string
         }
         Insert: {
@@ -554,6 +555,7 @@ export type Database = {
           id: string
           phone?: string | null
           role?: Database["public"]["Enums"]["user_role"]
+          suspended_until?: string | null
           updated_at?: string
         }
         Update: {
@@ -564,6 +566,7 @@ export type Database = {
           id?: string
           phone?: string | null
           role?: Database["public"]["Enums"]["user_role"]
+          suspended_until?: string | null
           updated_at?: string
         }
         Relationships: []
@@ -676,7 +679,9 @@ export type Database = {
           reason: string
           reported_id: string
           reporter_id: string
+          resolution: string | null
           resolved_at: string | null
+          resolved_by: string | null
         }
         Insert: {
           conversation_id?: string | null
@@ -686,7 +691,9 @@ export type Database = {
           reason: string
           reported_id: string
           reporter_id?: string
+          resolution?: string | null
           resolved_at?: string | null
+          resolved_by?: string | null
         }
         Update: {
           conversation_id?: string | null
@@ -696,7 +703,9 @@ export type Database = {
           reason?: string
           reported_id?: string
           reporter_id?: string
+          resolution?: string | null
           resolved_at?: string | null
+          resolved_by?: string | null
         }
         Relationships: [
           {
@@ -716,6 +725,13 @@ export type Database = {
           {
             foreignKeyName: "reports_reporter_id_fkey"
             columns: ["reporter_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reports_resolved_by_fkey"
+            columns: ["resolved_by"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
@@ -992,6 +1008,103 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      admin_orders: {
+        Args: {
+          p_limit?: number
+          p_status?: Database["public"]["Enums"]["order_status"]
+        }
+        Returns: {
+          amount: number
+          cancel_reason: string
+          canceled_late: boolean
+          client_id: string
+          client_name: string
+          created_at: string
+          id: string
+          pro_name: string
+          professional_id: string
+          scheduled_at: string
+          scheduled_label: string
+          service: string
+          status: Database["public"]["Enums"]["order_status"]
+        }[]
+      }
+      admin_overview: { Args: { p_days?: number }; Returns: Json }
+      admin_people: {
+        Args: { p_filter?: string; p_limit?: number; p_query?: string }
+        Returns: {
+          avatar_url: string
+          created_at: string
+          deleted: boolean
+          email: string
+          id: string
+          name: string
+          paused: boolean
+          reports_received: number
+          role: Database["public"]["Enums"]["user_role"]
+          role_title: string
+          suspended_until: string
+          verified: boolean
+        }[]
+      }
+      admin_person: { Args: { p_id: string }; Returns: Json }
+      admin_report: { Args: { p_id: string }; Returns: Json }
+      admin_report_conversation: {
+        Args: { p_report_id: string }
+        Returns: {
+          body: string
+          created_at: string
+          from_reported: boolean
+          id: string
+          kind: string
+          sender_name: string
+        }[]
+      }
+      admin_reports: {
+        Args: { p_limit?: number; p_open?: boolean }
+        Returns: {
+          conversation_id: string
+          created_at: string
+          details: string
+          id: string
+          reason: string
+          reported_id: string
+          reported_name: string
+          reported_total: number
+          reporter_id: string
+          reporter_name: string
+          resolution: string
+          resolved_at: string
+        }[]
+      }
+      admin_resolve_report: {
+        Args: { p_id: string; p_resolution: string }
+        Returns: undefined
+      }
+      admin_review_verification: {
+        Args: { p_approve: boolean; p_id: string; p_reason?: string }
+        Returns: undefined
+      }
+      admin_suspend: {
+        Args: { p_days?: number; p_reason?: string; p_user: string }
+        Returns: string
+      }
+      admin_unsuspend: { Args: { p_user: string }; Returns: undefined }
+      admin_verifications: {
+        Args: never
+        Returns: {
+          created_at: string
+          document_path: string
+          email: string
+          id: string
+          name: string
+          professional_id: string
+          rejected_before: number
+          role_title: string
+          selfie_path: string
+        }[]
+      }
+      am_i_admin: { Args: never; Returns: boolean }
       cancel_order: {
         Args: { p_order_id: string; p_reason?: string }
         Returns: {
@@ -1060,6 +1173,7 @@ export type Database = {
           id: string
           phone: string | null
           role: Database["public"]["Enums"]["user_role"]
+          suspended_until: string | null
           updated_at: string
         }
         SetofOptions: {
@@ -1166,6 +1280,7 @@ export type Database = {
           id: string
           phone: string | null
           role: Database["public"]["Enums"]["user_role"]
+          suspended_until: string | null
           updated_at: string
         }
         SetofOptions: {
@@ -1191,7 +1306,13 @@ export type Database = {
         Args: { p_conversation_id: string }
         Returns: undefined
       }
-      my_pause_until: { Args: never; Returns: string }
+      my_pause: {
+        Args: never
+        Returns: {
+          suspended: boolean
+          until: string
+        }[]
+      }
       open_conversation: {
         Args: { p_professional_id: string }
         Returns: {

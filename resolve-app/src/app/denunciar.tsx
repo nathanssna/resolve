@@ -10,20 +10,14 @@ import { useApp } from '@/state/app';
 import { colors, spacing } from '@/theme/tokens';
 import { notify } from '@/utils/dialog';
 import { firstName } from '@/utils/format';
+import { REPORT_REASONS as REASONS, type ReportReason } from '@/content/reports';
 
-const REASONS = [
-  { id: 'golpe', label: 'Golpe ou fraude' },
-  { id: 'pagamento', label: 'Pediu pagamento fora do combinado' },
-  { id: 'assedio', label: 'Assédio, ameaça ou ofensa' },
-  { id: 'conteudo', label: 'Foto ou conteúdo impróprio' },
-  { id: 'outro', label: 'Outro motivo' },
-] as const;
 
 /** Denunciar alguém (do chat ou do perfil). Opcionalmente já bloqueia. */
 export default function Denunciar() {
   const { userId, name, conversationId } = useLocalSearchParams<{ userId: string; name?: string; conversationId?: string }>();
   const { blocked, block } = useApp();
-  const [reason, setReason] = useState<(typeof REASONS)[number]['id'] | null>(null);
+  const [reason, setReason] = useState<ReportReason | null>(null);
   const [details, setDetails] = useState('');
   const alreadyBlocked = blocked.includes(userId);
   const [alsoBlock, setAlsoBlock] = useState(true);

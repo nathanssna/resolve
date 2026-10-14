@@ -4,4 +4,4 @@
  */
 export const COMPANY = '[RAZÃO SOCIAL]';
 export const CNPJ = '[CNPJ]';
-export const CONTACT_EMAIL = 'chamaaresolve@gmail.com';
+export const CONTACT_EMAIL = 'rezolveae@gmail.com';

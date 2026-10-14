@@ -290,13 +290,16 @@ function AcceptingCard({ me }: { me: Professional }) {
   // Valor que está sendo gravado (o catálogo só muda depois).
   const [saving, setSaving] = useState<boolean | null>(null);
   const paused = saving ?? me.paused;
-  // Pausa automática por cancelamentos em cima da hora: até quando (não dá para voltar antes).
-  const [suspended, setSuspended] = useState<{ paused: boolean; until: number | null } | null>(null);
-  const until = suspended?.paused === me.paused ? suspended.until : null;
+  // Pausa que o profissional não desfaz: por cancelamentos em cima da hora ou suspensão da moderação.
+  const [lock, setLock] = useState<{ paused: boolean; until: number | null; byTeam: boolean } | null>(null);
+  const current = lock?.paused === me.paused ? lock : null;
+  const until = current?.until ?? null;
   useEffect(() => {
     let alive = true;
-    supabase.rpc('my_pause_until').then(({ data }) => {
-      if (alive) setSuspended({ paused: me.paused, until: data ? Date.parse(data) : null });
+    supabase.rpc('my_pause').then(({ data }) => {
+      const r = data?.[0];
+      // Suspensão sem prazo vem como "infinity".
+      if (alive) setLock({ paused: me.paused, until: r ? (r.until === 'infinity' ? Infinity : Date.parse(r.until)) : null, byTeam: !!r?.suspended });
     });
     return () => {
       alive = false;
@@ -318,7 +321,11 @@ function AcceptingCard({ me }: { me: Professional }) {
         title="Recebendo pedidos"
         description={
           until
-            ? `Pausado até ${formatDay(until)} por cancelamentos em cima da hora`
+            ? current?.byTeam
+              ? until === Infinity
+                ? 'Conta suspensa pela equipe do Resolve'
+                : `Conta suspensa até ${formatDay(until)}`
+              : `Pausado até ${formatDay(until)} por cancelamentos em cima da hora`
             : paused
               ? 'Pausado: você não aparece nas buscas e não recebe pedidos novos'
               : 'Clientes da sua região encontram você'

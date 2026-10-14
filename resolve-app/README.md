@@ -86,7 +86,22 @@ assets/logo/    logo em vetor (SVG) — o app usa src/components/Logo.tsx
 2. **Telas que faltam:** perfil público do profissional, login/cadastro, envio de fotos no pedido e área do profissional (receber pedidos e mandar propostas).
 3. **Publicar nas lojas** com o EAS: `npx eas-cli@latest build` gera os apps para iOS e Android na nuvem, sem precisar de Xcode ou Android Studio. Você vai precisar de uma conta Apple Developer e de uma conta Google Play.
 
-## Moderação no painel do Supabase
+## Painel de moderação (no app)
+
+Perfil → **Painel de moderação** (aparece só para administradores; no computador, abra a versão web).
+Mostra os números do período, pessoas, pedidos e serviços, denúncias (com a conversa denunciada) e os
+pedidos de selo Verificado, com as ações: aprovar/recusar o selo, resolver denúncia, suspender e reativar conta.
+
+- **Segundo fator:** além do código do e-mail, o painel pede o código de um app autenticador
+  (Google Authenticator, Microsoft Authenticator…). Na primeira entrada, o próprio painel ensina a cadastrar.
+  O banco confere administrador + segundo fator em toda leitura e ação, e registra tudo em `private.admin_log`.
+- **Novo administrador** (só pelo SQL Editor do Supabase, depois que a pessoa criar a conta no app):
+  `insert into private.admins (user_id) select id from auth.users where email = 'fulano@exemplo.com';`
+  Para tirar: `delete from private.admins where user_id = (select id from auth.users where email = 'fulano@exemplo.com');`
+- **Perdeu o celular do autenticador:** no painel do Supabase, Authentication → Users → a conta → apague o
+  fator de MFA. Na próxima entrada, o painel pede para cadastrar de novo.
+
+## Moderação pelo painel do Supabase (alternativa)
 
 - **Selo Verificado:** em Table Editor → `verifications`, os pedidos com `status = pending`.
   As fotos estão em Storage → `verification` → pasta com o id do profissional (`document_path` e `selfie_path`).

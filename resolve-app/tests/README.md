@@ -40,6 +40,7 @@ npm run db:stop
 | `cancel` | cancelamento em cima da hora (12 h): motivo, pausa automática de 7 dias, histórico do cliente, taxa do profissional |
 | `limits` | proposta (teto, data), proposta vencida, pedido sem resposta fecha, limites de pedidos e mensagens, e-mail descartável |
 | `verify` | selo Verificado: bucket privado, envio, revisão no painel (aprova/recusa + push), fotos apagadas, conta excluída |
+| `admin` | painel de moderação: só administrador com segundo fator; números, pessoas, serviços, denúncias, selo, suspensão, registro |
 
 ## Ponta a ponta
 
@@ -71,6 +72,7 @@ npm run e2e:cleanup            # apaga as contas (sempre, no fim)
 | `cancela` | cancelar no prazo e em cima da hora (motivo), histórico do cliente, pausa automática e taxa no perfil |
 | `limites` | e-mail descartável no login, folha de proposta (teto e períodos passados), proposta vencida |
 | `verifica` | profissional envia documento e selfie, aprovação no banco, selo no perfil e fotos apagadas |
+| `admin` | painel: acesso restrito, cadastro do autenticador (código gerado no teste), selo, denúncia, suspender/reativar, nova sessão |
 
 As contas de teste nunca tocam nos dados reais: são marcadas com `e2e=true` e o
 `e2e:cleanup` apaga tudo o que elas criaram. Capturas de tela vão para `e2e/shots/`.

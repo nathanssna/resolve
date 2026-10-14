@@ -5,6 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Avatar, Button, Icon, ListRow, Text, type IconName } from '@/components';
 import { AVATAR_SIDE, pickPhotos } from '@/lib/photos';
+import { supabase } from '@/lib/supabase';
 import { deleteReviewedPhotos, latestVerification, type Verification } from '@/lib/verification';
 import { useAddresses } from '@/state/addresses';
 import { useApp } from '@/state/app';
@@ -59,6 +60,16 @@ export default function Perfil() {
       alive = false;
     };
   }, [isPro, focused]);
+  // Equipe do Resolve: entrada do painel de moderação.
+  const [admin, setAdmin] = useState(false);
+  useEffect(() => {
+    if (!session || !focused) return;
+    let alive = true;
+    supabase.rpc('am_i_admin').then(({ data }) => alive && setAdmin(!!data));
+    return () => {
+      alive = false;
+    };
+  }, [session, focused]);
   const seal = me?.verified ? 'Verificado' : verification === 'pending' ? 'Em análise' : verification === 'rejected' ? 'Envie as fotos de novo' : 'Verificar identidade';
   const name = profile?.full_name.trim() || (session ? 'Sua conta' : 'Visitante');
 
@@ -237,6 +248,12 @@ export default function Perfil() {
           ) : null}
           {session ? <ListRow icon="bell" value="Notificações" onPress={() => router.push('/notificacoes')} /> : null}
         </View>
+
+        {admin ? (
+          <View style={styles.group}>
+            <ListRow icon="settings" value="Painel de moderação" onPress={() => router.push('/admin')} />
+          </View>
+        ) : null}
 
         <View style={styles.group}>
           <ListRow icon="shield-check" value="Conta e privacidade" onPress={() => router.push('/conta')} />
