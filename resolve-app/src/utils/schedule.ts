@@ -101,5 +101,17 @@ export function formatSchedule(s: Schedule, now = Date.now()) {
 
 export const isToday = (s: Schedule, now = Date.now()) => daysFrom(s.day, now) === 0;
 
+/** Prazo para cancelar sem consequência, antes do começo do período. */
+export const CANCEL_NOTICE_HOURS = 12;
+
+/**
+ * Cancelar agora é "em cima da hora"? Menos de 12 h para o começo do período,
+ * até o fim do dia do serviço (depois disso o serviço já passou). Mesma regra
+ * do banco (cancel_order).
+ */
+export function cancelIsLate(s: Schedule | undefined, now = Date.now()) {
+  return !!s && daysFrom(s.day, now) >= 0 && now > scheduleAt(s).getTime() - CANCEL_NOTICE_HOURS * 3_600_000;
+}
+
 /** Para ordenar a agenda: dia e depois período. */
 export const scheduleOrder = (s: Schedule) => scheduleAt(s).getTime();

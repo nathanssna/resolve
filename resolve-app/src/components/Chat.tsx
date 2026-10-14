@@ -27,11 +27,11 @@ export function Bubble({ mine, text, at }: { mine: boolean; text: string; at: nu
   );
 }
 
-function CardRow({ icon, text }: { icon: IconName; text: string }) {
+function CardRow({ icon, text, color }: { icon: IconName; text: string; color?: string }) {
   return (
     <View style={styles.cardRow}>
-      <Icon name={icon} size={16} strokeWidth={2.25} />
-      <Text variant="bodySm" color={colors.inkBody} style={{ flex: 1 }}>
+      <Icon name={icon} size={16} strokeWidth={2.25} color={color} />
+      <Text variant="bodySm" color={color ?? colors.inkBody} style={{ flex: 1 }}>
         {text}
       </Text>
     </View>
@@ -49,9 +49,12 @@ export function RequestCard({
   onOpenPhoto,
   mine = true,
   addressHint,
+  clientNote,
   closed,
   action,
 }: {
+  /** Para o profissional: histórico do cliente ("3 serviços concluídos"); `warn` com cancelamentos em cima da hora. */
+  clientNote?: { text: string; warn: boolean };
   /** Pedido encerrado sem serviço: o selo (ex.: "CANCELADO"). */
   closed?: string;
   /** Link no pé do card (ex.: "Cancelar pedido"). */
@@ -93,6 +96,7 @@ export function RequestCard({
               {addressHint}
             </Text>
           ) : null}
+          {clientNote ? <CardRow icon="user-round" text={clientNote.text} color={clientNote.warn ? colors.danger : undefined} /> : null}
         </View>
         {action ? (
           <Pressable accessibilityRole="button" onPress={action.onPress} hitSlop={8} style={({ pressed }) => [styles.cardAction, pressed && { opacity: 0.6 }]}>

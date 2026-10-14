@@ -80,6 +80,7 @@ export default function RootLayout() {
                 <Stack.Screen name="pedido/novo" options={{ animation: 'slide_from_bottom' }} />
                 <Stack.Screen name="chat/[id]" />
                 <Stack.Screen name="pedido/[id]" />
+                <Stack.Screen name="pedido/cancelar" options={{ animation: 'slide_from_bottom' }} />
                 <Stack.Screen name="entrar/index" />
                 <Stack.Screen name="entrar/codigo" />
                 {/* Sem voltar: o cadastro precisa ser concluído (ou trocar de conta) */}

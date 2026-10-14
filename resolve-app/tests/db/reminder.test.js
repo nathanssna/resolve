@@ -68,7 +68,7 @@ let pass = 0, fail = 0; const ok = (c, m) => { c ? pass++ : fail++; console.log(
   const dan = await signup('Dan Melo');
   await as(dan, "select public.register_push_token('ExponentPushToken[dan]', 'android')");
   const o4 = await deal(dan, 'encanador', 0, 8);
-  await as(dan, 'select public.cancel_order($1)', [o4]);
+  ok(!(await as(dan, "select public.cancel_order($1, 'Imprevisto')", [o4])).error, 'cancelado (em cima da hora, com motivo)');
   await db.query('delete from net.calls');
   ok((await remind()) === 0 && (await calls()).length === 0, 'amanhã, combinado hoje e cancelado: nenhum lembrete');
 

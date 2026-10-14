@@ -316,8 +316,10 @@ export type Database = {
         Row: {
           address: Json | null
           amount: number
+          cancel_reason: string | null
           canceled_at: string | null
           canceled_by: string | null
+          canceled_late: boolean
           client_id: string
           completed_at: string | null
           conversation_id: string
@@ -336,8 +338,10 @@ export type Database = {
         Insert: {
           address?: Json | null
           amount: number
+          cancel_reason?: string | null
           canceled_at?: string | null
           canceled_by?: string | null
+          canceled_late?: boolean
           client_id: string
           completed_at?: string | null
           conversation_id: string
@@ -356,8 +360,10 @@ export type Database = {
         Update: {
           address?: Json | null
           amount?: number
+          cancel_reason?: string | null
           canceled_at?: string | null
           canceled_by?: string | null
+          canceled_late?: boolean
           client_id?: string
           completed_at?: string | null
           conversation_id?: string
@@ -468,6 +474,7 @@ export type Database = {
           latitude: number | null
           longitude: number | null
           paused: boolean
+          paused_until: string | null
           rating: number
           reply_minutes: number
           review_count: number
@@ -487,6 +494,7 @@ export type Database = {
           latitude?: number | null
           longitude?: number | null
           paused?: boolean
+          paused_until?: string | null
           rating?: number
           reply_minutes?: number
           review_count?: number
@@ -506,6 +514,7 @@ export type Database = {
           latitude?: number | null
           longitude?: number | null
           paused?: boolean
+          paused_until?: string | null
           rating?: number
           reply_minutes?: number
           review_count?: number
@@ -910,8 +919,10 @@ export type Database = {
         Returns: {
           address: Json | null
           amount: number
+          cancel_reason: string | null
           canceled_at: string | null
           canceled_by: string | null
+          canceled_late: boolean
           client_id: string
           completed_at: string | null
           conversation_id: string
@@ -935,12 +946,14 @@ export type Database = {
         }
       }
       cancel_order: {
-        Args: { p_order_id: string }
+        Args: { p_order_id: string; p_reason?: string }
         Returns: {
           address: Json | null
           amount: number
+          cancel_reason: string | null
           canceled_at: string | null
           canceled_by: string | null
+          canceled_late: boolean
           client_id: string
           completed_at: string | null
           conversation_id: string
@@ -962,6 +975,13 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      client_track_record: {
+        Args: { p_client_id: string }
+        Returns: {
+          done: number
+          late_cancels: number
+        }[]
       }
       close_request: {
         Args: { p_request_id: string }
@@ -1007,8 +1027,10 @@ export type Database = {
         Returns: {
           address: Json | null
           amount: number
+          cancel_reason: string | null
           canceled_at: string | null
           canceled_by: string | null
+          canceled_late: boolean
           client_id: string
           completed_at: string | null
           conversation_id: string
@@ -1121,6 +1143,7 @@ export type Database = {
         Args: { p_conversation_id: string }
         Returns: undefined
       }
+      my_pause_until: { Args: never; Returns: string }
       open_conversation: {
         Args: { p_professional_id: string }
         Returns: {
@@ -1146,6 +1169,13 @@ export type Database = {
           distance_km: number
           in_range: boolean
           professional_id: string
+        }[]
+      }
+      professional_reliability: {
+        Args: { p_professional_id: string }
+        Returns: {
+          late_cancels_90d: number
+          orders_90d: number
         }[]
       }
       rate_order: {

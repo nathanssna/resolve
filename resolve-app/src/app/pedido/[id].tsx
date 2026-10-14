@@ -11,6 +11,7 @@ import { addressLine } from '@/state/addresses';
 import { useCatalog } from '@/state/catalog';
 import { colors, radius, spacing } from '@/theme/tokens';
 import { firstName, formatBRL, formatDecimal } from '@/utils/format';
+import { cancelIsLate } from '@/utils/schedule';
 import { notify, confirm } from '@/utils/dialog';
 
 export default function PedidoDetalhe() {
@@ -52,7 +53,11 @@ export default function PedidoDetalhe() {
     { label: 'Pedido enviado', detail: isPro ? `${name} pediu um orçamento` : `Você pediu um orçamento a ${name}`, state: 'done' },
     { label: 'Proposta aceita', detail: `${formatBRL(order.amount)} combinados no chat`, state: 'done' },
     { label: 'Dia do serviço', detail: order.when, state: done ? 'done' : canceled ? 'todo' : 'current' },
-    { label: canceled ? 'Cancelado' : 'Concluído', detail: done ? 'Tudo resolvido' : undefined, state: done ? 'done' : canceled ? 'current' : 'todo' },
+    {
+      label: canceled ? (order.canceledLate ? 'Cancelado em cima da hora' : 'Cancelado') : 'Concluído',
+      detail: done ? 'Tudo resolvido' : canceled ? order.cancelReason : undefined,
+      state: done ? 'done' : canceled ? 'current' : 'todo',
+    },
   ];
 
   const headline = canceled ? 'Serviço cancelado' : done ? 'Tudo resolvido!' : `Combinado para ${order.when.toLowerCase()}`;
@@ -178,7 +183,16 @@ export default function PedidoDetalhe() {
         ) : null}
 
         {!done && !canceled ? (
-          <Button variant="link" onPress={() => confirm(isPro ? 'Cancelar este serviço? Avise o cliente pelo chat.' : 'Cancelar este serviço? Avise o profissional pelo chat.', () => run(() => cancelOrder(order.id)), { confirmLabel: 'Cancelar', danger: true })} style={{ alignSelf: 'center' }}>
+          <Button
+            variant="link"
+            onPress={() =>
+              // Em cima da hora: tela própria, com motivo. No prazo: só confirma.
+              cancelIsLate(order.schedule)
+                ? router.push({ pathname: '/pedido/cancelar', params: { id: order.id } })
+                : confirm(isPro ? 'Cancelar este serviço? Avise o cliente pelo chat.' : 'Cancelar este serviço? Avise o profissional pelo chat.', () => run(() => cancelOrder(order.id)), { confirmLabel: 'Cancelar', danger: true })
+            }
+            style={{ alignSelf: 'center' }}
+          >
             Cancelar serviço
           </Button>
         ) : null}

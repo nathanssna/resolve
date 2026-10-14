@@ -15,6 +15,10 @@ import { firstName, formatCount, formatExperience } from '@/utils/format';
 
 type Review = Database['public']['Functions']['get_professional_reviews']['Returns'][number];
 
+/** Taxa alta de cancelamento em cima da hora (90 dias): pelo menos 2, e 10% dos serviços. */
+const LATE_MIN = 2;
+const LATE_RATE = 0.1;
+
 /** "12/03/2026". */
 const date = (iso: string) => {
   const d = new Date(iso);
@@ -51,6 +55,21 @@ export default function PerfilProfissional() {
       alive = false;
     };
   }, [id]);
+
+  // Cancelamentos em cima da hora nos últimos 90 dias: só aparece quando a taxa é alta.
+  const [reliability, setReliability] = useState<{ id: string; orders: number; late: number } | null>(null);
+  useEffect(() => {
+    if (!id) return;
+    let alive = true;
+    supabase.rpc('professional_reliability', { p_professional_id: id }).then(({ data }) => {
+      const r = data?.[0];
+      if (alive && r) setReliability({ id, orders: r.orders_90d, late: r.late_cancels_90d });
+    });
+    return () => {
+      alive = false;
+    };
+  }, [id]);
+  const lateRate = reliability?.id === id && reliability.late >= LATE_MIN && reliability.late / Math.max(reliability.orders, 1) >= LATE_RATE ? reliability : null;
 
   if (!pro) {
     return (
@@ -122,6 +141,15 @@ export default function PerfilProfissional() {
             </Text>
           </View>
         </View>
+
+        {lateRate ? (
+          <View style={styles.lateRate}>
+            <Icon name="info" size={18} color={colors.danger} />
+            <Text variant="bodySm" color={colors.inkBody} style={{ flex: 1 }}>
+              {`Cancelou ${lateRate.late} de ${lateRate.orders} serviços em cima da hora nos últimos 90 dias.`}
+            </Text>
+          </View>
+        ) : null}
 
         {pro.bio ? (
           <View style={styles.block}>
@@ -224,6 +252,7 @@ const styles = StyleSheet.create({
   head: { alignItems: 'center', gap: spacing[2] },
   stats: { flexDirection: 'row', gap: spacing[2] },
   stat: { flex: 1, padding: spacing[3], borderRadius: radius.lg, backgroundColor: colors.surfaceMuted, gap: 2, alignItems: 'center' },
+  lateRate: { flexDirection: 'row', alignItems: 'center', gap: spacing[2], padding: spacing[3], borderRadius: radius.lg, backgroundColor: colors.dangerTint },
   block: { gap: spacing[3] },
   tags: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing[2] },
   review: { padding: spacing[4], borderRadius: radius.lg, borderWidth: 1, borderColor: colors.line, gap: spacing[2] },

@@ -11,7 +11,7 @@ import { useAuth } from '@/state/auth';
 import { useCatalog, type Professional } from '@/state/catalog';
 import { colors, fonts, radius, shadows, spacing } from '@/theme/tokens';
 import { confirm, notify } from '@/utils/dialog';
-import { firstName, formatBRL, formatCount, formatDecimal, timeAgo } from '@/utils/format';
+import { firstName, formatBRL, formatCount, formatDay, formatDecimal, timeAgo } from '@/utils/format';
 
 /*
  * Painel do profissional, por urgência:
@@ -290,6 +290,18 @@ function AcceptingCard({ me }: { me: Professional }) {
   // Valor que está sendo gravado (o catálogo só muda depois).
   const [saving, setSaving] = useState<boolean | null>(null);
   const paused = saving ?? me.paused;
+  // Pausa automática por cancelamentos em cima da hora: até quando (não dá para voltar antes).
+  const [suspended, setSuspended] = useState<{ paused: boolean; until: number | null } | null>(null);
+  const until = suspended?.paused === me.paused ? suspended.until : null;
+  useEffect(() => {
+    let alive = true;
+    supabase.rpc('my_pause_until').then(({ data }) => {
+      if (alive) setSuspended({ paused: me.paused, until: data ? Date.parse(data) : null });
+    });
+    return () => {
+      alive = false;
+    };
+  }, [me.paused]);
 
   const save = async (next: boolean) => {
     setSaving(next);
@@ -304,9 +316,15 @@ function AcceptingCard({ me }: { me: Professional }) {
       <ToggleRow
         icon="briefcase"
         title="Recebendo pedidos"
-        description={paused ? 'Pausado: você não aparece nas buscas e não recebe pedidos novos' : 'Clientes da sua região encontram você'}
+        description={
+          until
+            ? `Pausado até ${formatDay(until)} por cancelamentos em cima da hora`
+            : paused
+              ? 'Pausado: você não aparece nas buscas e não recebe pedidos novos'
+              : 'Clientes da sua região encontram você'
+        }
         value={!paused}
-        disabled={saving !== null}
+        disabled={saving !== null || !!until}
         onChange={(accepting) =>
           accepting ? save(false) : confirm('Pausar os pedidos? Você some das buscas até voltar a receber. O que já está combinado continua.', () => save(true), { confirmLabel: 'Pausar' })
         }

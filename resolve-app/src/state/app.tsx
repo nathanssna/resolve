@@ -112,6 +112,9 @@ export type Order = {
   schedule?: Schedule;
   address: Address;
   status: OrderStatus;
+  /** Cancelado em cima da hora (menos de 12 h antes), e o motivo dado. */
+  canceledLate?: boolean;
+  cancelReason?: string;
   rating?: number;
   /** Comentário da avaliação, se houver. */
   comment?: string;
@@ -142,7 +145,20 @@ type MessageRow = Pick<
 type ProposalRow = Pick<Tables['proposals']['Row'], 'id' | 'conversation_id' | 'request_id' | 'amount' | 'scheduled_label' | 'scheduled_at' | 'note' | 'status'>;
 type OrderRow = Pick<
   Tables['orders']['Row'],
-  'id' | 'conversation_id' | 'request_id' | 'professional_id' | 'service_id' | 'amount' | 'scheduled_label' | 'scheduled_at' | 'address' | 'status' | 'created_at' | 'completed_at'
+  | 'id'
+  | 'conversation_id'
+  | 'request_id'
+  | 'professional_id'
+  | 'service_id'
+  | 'amount'
+  | 'scheduled_label'
+  | 'scheduled_at'
+  | 'address'
+  | 'status'
+  | 'created_at'
+  | 'completed_at'
+  | 'canceled_late'
+  | 'cancel_reason'
 > & { rating?: number; comment?: string | null };
 
 type Store = {
@@ -185,7 +201,8 @@ type AppValue = {
   sendProposal: (conversationId: string, jobId: string, input: { amount: number; schedule: Schedule; note?: string }) => Promise<void>;
   markRead: (conversationId: string) => void;
   completeOrder: (orderId: string) => Promise<void>;
-  cancelOrder: (orderId: string) => Promise<void>;
+  /** `reason`: obrigatório em cima da hora (ver cancelIsLate); vai para o chat. */
+  cancelOrder: (orderId: string, reason?: string) => Promise<void>;
   rateOrder: (orderId: string, stars: number, comment?: string) => Promise<void>;
   /** Cliente cancela / profissional recusa um pedido ainda sem serviço combinado. */
   closeRequest: (jobId: string) => Promise<void>;
@@ -235,7 +252,7 @@ async function fetchStore(uid: string, role: UserRole): Promise<Store> {
       requests!requests_conversation_id_fkey(id, conversation_id, service_id, created_at, closed_at, closed_by, request_address:request_addresses(address)),
       messages!messages_conversation_id_fkey(id, conversation_id, request_id, sender_id, kind, body, proposal_id, request_when, request_address, photos, created_at),
       proposals!proposals_conversation_id_fkey(id, conversation_id, request_id, amount, scheduled_label, scheduled_at, note, status),
-      orders!orders_conversation_id_fkey(id, conversation_id, request_id, professional_id, service_id, amount, scheduled_label, scheduled_at, address, status, created_at, completed_at, review:reviews(rating, comment))`,
+      orders!orders_conversation_id_fkey(id, conversation_id, request_id, professional_id, service_id, amount, scheduled_label, scheduled_at, address, status, created_at, completed_at, canceled_late, cancel_reason, review:reviews(rating, comment))`,
     )
     .eq(role === 'profissional' ? 'professional_id' : 'client_id', uid);
   if (error) throw error;
@@ -542,6 +559,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
           ...whenOf(o.scheduled_label, o.scheduled_at, time(o.created_at)),
           address: toAddress(o.address),
           status: o.status,
+          canceledLate: o.canceled_late,
+          cancelReason: o.cancel_reason ?? undefined,
           rating: o.rating,
           comment: o.comment ?? undefined,
           createdAt: time(o.created_at),
@@ -738,8 +757,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
   );
 
   const cancelOrder = useCallback(
-    async (orderId: string) => {
-      const { data: order, error } = await supabase.rpc('cancel_order', { p_order_id: orderId });
+    async (orderId: string, reason?: string) => {
+      const { data: order, error } = await supabase.rpc('cancel_order', { p_order_id: orderId, p_reason: reason?.trim() || undefined });
       if (error) throw error;
       applyOrder(order);
     },

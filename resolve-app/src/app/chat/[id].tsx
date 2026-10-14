@@ -34,6 +34,7 @@ import { useSignedUrls } from '@/state/photoUrls';
 import { useTyping } from '@/state/typing';
 import { colors, radius, shadows, spacing } from '@/theme/tokens';
 import { formatBRL } from '@/utils/format';
+import { supabase } from '@/lib/supabase';
 import { confirm, notify } from '@/utils/dialog';
 
 export default function Chat() {
@@ -89,6 +90,22 @@ export default function Chat() {
     const t = setTimeout(() => scroll.current?.scrollToEnd({ animated: true }), 60);
     return () => clearTimeout(t);
   }, [count, typing, focused, conv?.unread, conv?.id, markRead]);
+
+  // Profissional: histórico do cliente, no pedido em aberto (serviços concluídos, cancelamentos em cima da hora).
+  const clientId = isPro ? conv?.clientId : undefined;
+  const [record, setRecord] = useState<{ clientId: string; done: number; late: number } | null>(null);
+  useEffect(() => {
+    if (!clientId) return;
+    let alive = true;
+    supabase.rpc('client_track_record', { p_client_id: clientId }).then(({ data }) => {
+      const r = data?.[0];
+      if (alive && r) setRecord({ clientId, done: r.done, late: r.late_cancels });
+    });
+    return () => {
+      alive = false;
+    };
+  }, [clientId]);
+  const clientNote = record && record.clientId === clientId ? describeClient(record.done, record.late) : undefined;
 
   if (!conv) {
     return (
@@ -265,6 +282,7 @@ export default function Chat() {
                         : addressLine({ line: m.address.line, complement: m.address.complement ?? '', area: m.address.area })
                     }
                     addressHint={m.addressPartial ? 'Endereço completo depois de combinar' : undefined}
+                    clientNote={open ? clientNote : undefined}
                     at={m.at}
                     photos={m.photos.map((p) => photoUrls[p])}
                     onOpenPhoto={(index) => {
@@ -341,6 +359,14 @@ export default function Chat() {
       ) : null}
     </SafeAreaView>
   );
+}
+
+/** "Cliente novo no Resolve" ou "3 serviços concluídos · 1 cancelamento em cima da hora". */
+function describeClient(done: number, late: number) {
+  if (!done && !late) return { text: 'Cliente novo no Resolve', warn: false };
+  const parts = [`${done} ${done === 1 ? 'serviço concluído' : 'serviços concluídos'}`];
+  if (late) parts.push(`${late} ${late === 1 ? 'cancelamento' : 'cancelamentos'} em cima da hora`);
+  return { text: parts.join(' · '), warn: late > 0 };
 }
 
 const styles = StyleSheet.create({
