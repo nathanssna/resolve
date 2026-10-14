@@ -1,10 +1,11 @@
-import { router } from 'expo-router';
-import { useState } from 'react';
+import { router, useIsFocused } from 'expo-router';
+import { useEffect, useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Avatar, Button, Icon, ListRow, Text, type IconName } from '@/components';
 import { AVATAR_SIDE, pickPhotos } from '@/lib/photos';
+import { deleteReviewedPhotos, latestVerification, type Verification } from '@/lib/verification';
 import { useAddresses } from '@/state/addresses';
 import { useApp } from '@/state/app';
 import { useAuth } from '@/state/auth';
@@ -41,6 +42,24 @@ export default function Perfil() {
   const { primary, addresses } = useAddresses();
   const done = orders.filter((o) => o.status === 'concluido').length;
   const email = session?.user.email;
+
+  // Profissional: situação do selo Verificado (de novo a cada vez que a aba aparece).
+  const focused = useIsFocused();
+  const [verification, setVerification] = useState<Verification['status'] | null>(null);
+  useEffect(() => {
+    if (!isPro || !focused) return;
+    let alive = true;
+    latestVerification().then(
+      (v) => alive && setVerification(v?.status ?? null),
+      () => {},
+    );
+    // Análise terminada: as fotos saem do servidor.
+    deleteReviewedPhotos().catch(() => {});
+    return () => {
+      alive = false;
+    };
+  }, [isPro, focused]);
+  const seal = me?.verified ? 'Verificado' : verification === 'pending' ? 'Em análise' : verification === 'rejected' ? 'Envie as fotos de novo' : 'Verificar identidade';
   const name = profile?.full_name.trim() || (session ? 'Sua conta' : 'Visitante');
 
   // Profissional: o que falta para o perfil passar confiança.
@@ -207,6 +226,7 @@ export default function Perfil() {
               onPress={() => router.push('/telefone')}
             />
           ) : null}
+          {isPro ? <ListRow icon="badge-check" label="Selo Verificado" value={seal} onPress={() => router.push('/profissional/verificacao')} /> : null}
           {!isPro ? (
             <ListRow
               icon="map-pin"

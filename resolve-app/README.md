@@ -86,6 +86,18 @@ assets/logo/    logo em vetor (SVG) — o app usa src/components/Logo.tsx
 2. **Telas que faltam:** perfil público do profissional, login/cadastro, envio de fotos no pedido e área do profissional (receber pedidos e mandar propostas).
 3. **Publicar nas lojas** com o EAS: `npx eas-cli@latest build` gera os apps para iOS e Android na nuvem, sem precisar de Xcode ou Android Studio. Você vai precisar de uma conta Apple Developer e de uma conta Google Play.
 
+## Moderação no painel do Supabase
+
+- **Selo Verificado:** em Table Editor → `verifications`, os pedidos com `status = pending`.
+  As fotos estão em Storage → `verification` → pasta com o id do profissional (`document_path` e `selfie_path`).
+  Confira se o rosto da selfie é o do documento e se o nome bate com o do perfil. Depois mude `status` para
+  `approved` (liga o selo e avisa por push) ou `rejected`, escrevendo em `reason` o motivo que ele vai ver
+  (ex.: "A foto do documento ficou ilegível."). O app do profissional apaga as fotos depois da análise;
+  se quiser, apague a pasta na hora.
+- **Denúncias:** Table Editor → `reports`. Os termos prometem análise em até 24 horas.
+- **Automático (pg_cron):** lembrete no dia do serviço, fim da pausa por cancelamentos, propostas vencidas,
+  pedidos sem resposta e limpeza de tokens de push. Veja em Integrations → Cron.
+
 ## Comandos
 
 ```bash

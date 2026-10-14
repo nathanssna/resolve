@@ -33,6 +33,7 @@ export const LEGAL: Record<'termos' | 'privacidade', LegalDoc> = {
         title: 'Para profissionais',
         body: [
           'As informações da sua ficha (profissão, experiência, serviços) devem ser verdadeiras. Você é responsável pela qualidade e segurança do serviço, pelas habilitações exigidas por lei e pelos tributos sobre o que recebe.',
+          'O selo Verificado indica que nossa equipe conferiu um documento com foto e uma selfie sua. Ele confirma a identidade, não a qualidade do serviço.',
         ],
       },
       {
@@ -89,6 +90,7 @@ export const LEGAL: Record<'termos' | 'privacidade', LegalDoc> = {
           'Endereços que você salva (rua, número, complemento, bairro, cidade, UF e CEP).',
           'Pedidos e conversas: descrição do serviço, data desejada, fotos que você envia, mensagens, propostas, serviços combinados e avaliações.',
           'Profissionais: profissão, apresentação, tempo de experiência e serviços oferecidos.',
+          'Verificação de identidade (só profissionais que pedem o selo Verificado): foto de um documento com foto e uma selfie segurando o documento.',
           'Aparelho: o identificador para notificações (se você permitir) e registros técnicos de acesso.',
         ],
       },
@@ -97,6 +99,7 @@ export const LEGAL: Record<'termos' | 'privacidade', LegalDoc> = {
         body: [
           'Para fazer o app funcionar (contrato): entrar na conta, enviar pedidos, conversar, combinar e acompanhar serviços, avisar sobre mensagens.',
           'Para segurança (legítimo interesse): prevenir fraudes e abusos e analisar denúncias.',
+          'Para o selo Verificado (consentimento): confirmar a identidade do profissional. A selfie é um dado biométrico, sensível pela LGPD: só usamos com a sua autorização, só para isso, e as fotos são apagadas depois da análise.',
           'Para cumprir a lei: guardar registros de acesso pelo prazo do Marco Civil da Internet.',
           'Não vendemos seus dados nem os usamos para publicidade de terceiros.',
         ],
@@ -118,7 +121,7 @@ export const LEGAL: Record<'termos' | 'privacidade', LegalDoc> = {
       {
         title: 'Por quanto tempo',
         body: [
-          'Enquanto sua conta existir. Ao excluir a conta, apagamos seu login, nome, foto, telefone, endereços, favoritos e ficha de profissional. Conversas, serviços e avaliações continuam para a outra pessoa, sem seu nome (aparece "Conta excluída"). Registros de acesso e denúncias são guardados pelo tempo exigido por lei ou necessário à segurança.',
+          'Enquanto sua conta existir. Ao excluir a conta, apagamos seu login, nome, foto, telefone, endereços, favoritos e ficha de profissional. Conversas, serviços e avaliações continuam para a outra pessoa, sem seu nome (aparece "Conta excluída"). Registros de acesso e denúncias são guardados pelo tempo exigido por lei ou necessário à segurança. As fotos da verificação de identidade são apagadas logo depois da análise.',
         ],
       },
       {

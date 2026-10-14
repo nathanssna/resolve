@@ -33,6 +33,10 @@ const CLIENT: HelpSection = {
       a: 'Quando o serviço for marcado como concluído, abra-o em Pedidos e dê sua nota. A avaliação aparece no perfil do profissional com o seu primeiro nome.',
     },
     {
+      q: 'O que é o selo Verificado?',
+      a: 'O profissional enviou um documento com foto e uma selfie segurando o documento, e nossa equipe confirmou a identidade dele. O selo não garante a qualidade do serviço: veja também as avaliações.',
+    },
+    {
       q: 'Quero oferecer meus serviços',
       a: 'Crie uma conta de profissional: saia da sua conta e entre com outro e-mail, escolhendo Sou profissional.',
     },
@@ -57,6 +61,10 @@ const PRO: HelpSection = {
     {
       q: 'Quando vejo o endereço e o telefone do cliente?',
       a: 'Depois que o cliente aceita sua proposta. Antes disso, você vê só o bairro e a cidade.',
+    },
+    {
+      q: 'Como ganho o selo Verificado?',
+      a: 'Em Perfil → Selo Verificado, envie a foto de um documento com foto e uma selfie segurando o documento. Nossa equipe analisa e você recebe um aviso. As fotos são apagadas depois da análise.',
     },
     {
       q: 'Como recebo o pagamento?',

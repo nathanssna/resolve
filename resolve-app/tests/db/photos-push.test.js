@@ -28,7 +28,7 @@ let pass = 0, fail = 0; const ok = (c, m) => { c ? pass++ : fail++; console.log(
   const conv2 = await openConv(other, marcos);
 
   console.log('\nBuckets');
-  const b = (await db.query('select id, public, file_size_limit from storage.buckets order by id')).rows;
+  const b = (await db.query("select id, public, file_size_limit from storage.buckets where id in ('avatars', 'request-photos') order by id")).rows;
   ok(b.length === 2 && b[0].id === 'avatars' && b[0].public && b[1].id === 'request-photos' && !b[1].public, 'avatars público, request-photos privado');
 
   console.log('\nFotos do pedido (storage)');

@@ -909,6 +909,53 @@ export type Database = {
         }
         Relationships: []
       }
+      verifications: {
+        Row: {
+          consent_at: string
+          created_at: string
+          document_path: string
+          files_deleted_at: string | null
+          id: string
+          professional_id: string
+          reason: string | null
+          reviewed_at: string | null
+          selfie_path: string
+          status: Database["public"]["Enums"]["verification_status"]
+        }
+        Insert: {
+          consent_at?: string
+          created_at?: string
+          document_path: string
+          files_deleted_at?: string | null
+          id?: string
+          professional_id?: string
+          reason?: string | null
+          reviewed_at?: string | null
+          selfie_path: string
+          status?: Database["public"]["Enums"]["verification_status"]
+        }
+        Update: {
+          consent_at?: string
+          created_at?: string
+          document_path?: string
+          files_deleted_at?: string | null
+          id?: string
+          professional_id?: string
+          reason?: string | null
+          reviewed_at?: string | null
+          selfie_path?: string
+          status?: Database["public"]["Enums"]["verification_status"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "verifications_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -1219,6 +1266,7 @@ export type Database = {
         | "superseded"
         | "expired"
       user_role: "cliente" | "profissional"
+      verification_status: "pending" | "approved" | "rejected"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1359,6 +1407,7 @@ export const Constants = {
         "expired",
       ],
       user_role: ["cliente", "profissional"],
+      verification_status: ["pending", "approved", "rejected"],
     },
   },
 } as const

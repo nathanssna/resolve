@@ -6,6 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button, CheckItem, StickyFooter, Text, TopBar } from '@/components';
 import { authErrorMessage } from '@/lib/authErrors';
 import { supabase } from '@/lib/supabase';
+import { deleteAllVerificationPhotos } from '@/lib/verification';
 import { useApp } from '@/state/app';
 import { useAuth } from '@/state/auth';
 import { colors, spacing } from '@/theme/tokens';
@@ -27,6 +28,7 @@ export default function ExcluirConta() {
       const requestPhotos = conversations.flatMap((c) => c.messages.flatMap((m) => (m.kind === 'request' && m.from === 'me' ? m.photos : [])));
       if (requestPhotos.length) await supabase.storage.from('request-photos').remove(requestPhotos);
       await supabase.storage.from('avatars').remove([`${uid}/avatar.jpg`]);
+      await deleteAllVerificationPhotos();
 
       const { error } = await supabase.rpc('delete_my_account');
       if (error) throw error;
