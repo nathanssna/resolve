@@ -54,7 +54,7 @@ let pass = 0, fail = 0; const ok = (c, m) => { c ? pass++ : fail++; console.log(
   ok(rej?.status === 'rejected' && rej.reason === 'A foto do documento ficou ilegível.' && !!rej.reviewed_at, 'o profissional vê a recusa e o motivo');
   ok(!(await verified()), 'sem selo');
   const c1 = (await db.query('select body from net.calls')).rows.flatMap((r) => r.body);
-  ok(c1.length === 1 && c1[0].title === 'Não deu para confirmar sua identidade' && c1[0].body === 'A foto do documento ficou ilegível.' && c1[0].data.url === '/profissional/verificacao', 'push com o motivo');
+  ok(c1.length === 1 && c1[0].title === 'Não deu para confirmar sua identidade' && c1[0].body === 'A foto do documento ficou ilegível.' && c1[0].data.url === '/verificacao', 'push com o motivo');
 
   console.log('\nAprovada (no painel)');
   const v2 = await send(pro, `${pro}/doc3.jpg`, `${pro}/selfie3.jpg`);
@@ -74,7 +74,7 @@ let pass = 0, fail = 0; const ok = (c, m) => { c ? pass++ : fail++; console.log(
 
   console.log('\nConta excluída');
   ok(!(await as(pro, 'select public.delete_my_account()')).error, 'profissional exclui a conta');
-  ok((await db.query('select count(*)::int n from public.verifications where professional_id = $1', [pro])).rows[0].n === 0, 'os registros da verificação somem');
+  ok((await db.query('select count(*)::int n from public.verifications where user_id = $1', [pro])).rows[0].n === 0, 'os registros da verificação somem');
 
   console.log(`\n${pass} ok, ${fail} falhas`); await db.end(); process.exit(fail ? 1 : 0);
 })().catch((e) => { console.error('ERRO', e.message); process.exit(2); });

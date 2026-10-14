@@ -155,6 +155,8 @@ const REPORT_SLA = 24 * 3_600_000;
 export type QueueItem = {
   key: string;
   kind: 'denuncia' | 'selo';
+  /** Rótulo do tipo no cartão ("DENÚNCIA", "SELO VERIFICADO", "IDENTIDADE"). */
+  label: string;
   at: number;
   title: string;
   sub: string;
@@ -174,6 +176,7 @@ export function useQueue() {
       .map((r) => ({
         key: `d:${r.id}`,
         kind: 'denuncia' as const,
+        label: 'DENÚNCIA',
         at: Date.parse(r.created_at),
         title: reportReasonLabel(r.reason),
         sub: `${r.reporter_name} denunciou ${r.reported_name}`,
@@ -183,9 +186,10 @@ export function useQueue() {
     ...(seals.data ?? []).map((v) => ({
       key: `s:${v.id}`,
       kind: 'selo' as const,
+      label: v.role === 'profissional' ? 'SELO VERIFICADO' : 'IDENTIDADE',
       at: Date.parse(v.created_at),
-      title: `${v.name || 'Sem nome'} pediu o selo`,
-      sub: [v.role_title, 'documento e selfie'].filter(Boolean).join(' · '),
+      title: v.role === 'profissional' ? `${v.name || 'Sem nome'} pediu o selo` : `${v.name || 'Sem nome'} enviou a verificação`,
+      sub: [v.role === 'profissional' ? v.role_title : 'Cliente · verificação pedida', 'documento e selfie'].filter(Boolean).join(' · '),
       late: false,
       open: () => router.push({ pathname: '/admin/selo', params: { id: v.id } }),
     })),
@@ -210,7 +214,7 @@ export function QueueCard({ item }: { item: QueueItem }) {
       </View>
       <View style={{ flex: 1, gap: 2 }}>
         <Text variant="overline" color={report ? colors.danger : colors.inkMuted}>
-          {`${report ? 'DENÚNCIA' : 'SELO VERIFICADO'} · ${item.late ? 'ATRASADA, ' : ''}${timeAgo(item.at).toUpperCase()}`}
+          {`${item.label} · ${item.late ? 'ATRASADA, ' : ''}${timeAgo(item.at).toUpperCase()}`}
         </Text>
         <Text variant="labelLg" numberOfLines={2}>
           {item.title}

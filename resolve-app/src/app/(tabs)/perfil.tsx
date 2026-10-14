@@ -48,7 +48,7 @@ export default function Perfil() {
   const focused = useIsFocused();
   const [verification, setVerification] = useState<Verification['status'] | null>(null);
   useEffect(() => {
-    if (!isPro || !focused) return;
+    if (!session || !focused) return;
     let alive = true;
     latestVerification().then(
       (v) => alive && setVerification(v?.status ?? null),
@@ -59,13 +59,15 @@ export default function Perfil() {
     return () => {
       alive = false;
     };
-  }, [isPro, focused]);
-  // Equipe do Resolve: entrada do painel de moderação.
+  }, [session, focused]);
+  // Equipe do Resolve: entrada do painel de moderação. Cliente: verificação pedida pela moderação.
   const [admin, setAdmin] = useState(false);
+  const [identity, setIdentity] = useState<{ required: boolean; verified: boolean } | null>(null);
   useEffect(() => {
     if (!session || !focused) return;
     let alive = true;
     supabase.rpc('am_i_admin').then(({ data }) => alive && setAdmin(!!data));
+    supabase.rpc('my_verification').then(({ data }) => alive && setIdentity(data?.[0] ?? null));
     return () => {
       alive = false;
     };
@@ -237,7 +239,15 @@ export default function Perfil() {
               onPress={() => router.push('/telefone')}
             />
           ) : null}
-          {isPro ? <ListRow icon="badge-check" label="Selo Verificado" value={seal} onPress={() => router.push('/profissional/verificacao')} /> : null}
+          {isPro ? <ListRow icon="badge-check" label="Selo Verificado" value={seal} onPress={() => router.push('/verificacao')} /> : null}
+          {!isPro && (identity?.required || identity?.verified) ? (
+            <ListRow
+              icon="badge-check"
+              label="Verificação de identidade"
+              value={identity.verified ? 'Confirmada' : verification === 'pending' ? 'Em análise' : 'Necessária para fazer pedidos'}
+              onPress={() => router.push('/verificacao')}
+            />
+          ) : null}
           {!isPro ? (
             <ListRow
               icon="map-pin"

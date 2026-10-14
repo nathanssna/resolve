@@ -69,7 +69,7 @@ const login = async (email) => (await (await fetch(`${URL_}/auth/v1/token?grant_
   await rpc(cliS, 'create_request', { p_conversation_id: conv, p_service_id: 'encanador', p_description: 'Chuveiro queimado', p_when: 'Hoje', p_address: { label: 'Casa', line: 'Avenida Paulista, 1000', area: 'Bela Vista', city: 'São Paulo' } });
   const pro = await device(proS, 'profissional');
   await pro.page.goto(`${APP}/chat/${conv}`, { waitUntil: 'networkidle0' });
-  ok(await pro.waitText('Cliente novo no Resolve'), 'pedido mostra "Cliente novo no Resolve"');
+  ok(await pro.waitText('Sem telefone · cliente novo no Resolve'), 'pedido mostra "Sem telefone · cliente novo no Resolve"');
 
   console.log('\nNo prazo (faltam 30 h)');
   const d1 = await deal(30);

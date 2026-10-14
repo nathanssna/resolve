@@ -1,6 +1,6 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 
 import { Avatar, Badge, Button, Text } from '@/components';
 import { reportReasonLabel } from '@/content/reports';
@@ -21,6 +21,9 @@ type Person = {
   created_at: string;
   deleted_at: string | null;
   suspended_until: string | null;
+  identity_verified_at: string | null;
+  verification_required_at: string | null;
+  verification_pending: boolean;
   pro: { role_title: string; verified: boolean; rating: number; reviews: number } | null;
   stats: { orders: number; done: number; canceled_late: number; reports_received: number };
   reports: { id: string; reason: string; created_at: string; resolved_at: string | null; resolution: string | null; reporter: string }[];
@@ -43,6 +46,15 @@ export default function AdminPessoa() {
   const [suspending, setSuspending] = useState(false);
 
   const suspended = suspension(p?.suspended_until);
+  const act = (fn: 'admin_require_verification' | 'admin_waive_verification', question: string, label: string, done: string) =>
+    confirm(question, async () => {
+      const { error } = await supabase.rpc(fn, { p_user: id });
+      if (error) notify(authErrorMessage(error));
+      else {
+        notify(done, { tone: 'success' });
+        reload();
+      }
+    }, { confirmLabel: label });
   const unsuspend = () =>
     confirm(`Reativar a conta de ${p?.name}?`, async () => {
       const { error } = await supabase.rpc('admin_unsuspend', { p_user: id });
@@ -94,11 +106,36 @@ export default function AdminPessoa() {
             <Text variant="bodySm" color={colors.inkMuted} selectable>
               {[p.email, p.phone ? formatPhoneBR(p.phone) : null].filter(Boolean).join(' · ')}
             </Text>
-            {suspended || p.pro?.verified ? (
+            {suspended || p.pro?.verified || p.identity_verified_at || p.verification_required_at ? (
               <View style={styles.badges}>
                 {suspended ? <Badge tone="danger">{`SUSPENSA ${suspended.toUpperCase()}`}</Badge> : null}
-                {p.pro?.verified ? <Badge tone="success" icon="badge-check">VERIFICADO</Badge> : null}
+                {p.pro?.verified ? (
+                  <Badge tone="success" icon="badge-check">VERIFICADO</Badge>
+                ) : p.identity_verified_at ? (
+                  <Badge tone="success" icon="badge-check">IDENTIDADE CONFIRMADA</Badge>
+                ) : null}
+                {p.verification_required_at ? <Badge tone="brand">{p.verification_pending ? 'VERIFICAÇÃO EM ANÁLISE' : 'VERIFICAÇÃO PEDIDA'}</Badge> : null}
               </View>
+            ) : null}
+            {!p.deleted_at && !p.identity_verified_at ? (
+              <Pressable
+                accessibilityRole="button"
+                hitSlop={8}
+                onPress={() =>
+                  p.verification_required_at
+                    ? act('admin_waive_verification', `Dispensar a verificação de ${p.name}?`, 'Dispensar', 'Verificação dispensada.')
+                    : act(
+                        'admin_require_verification',
+                        `Pedir a verificação de identidade de ${p.name}? Até enviar documento e selfie e ser aprovada, a pessoa não faz pedidos nem propostas novos.`,
+                        'Pedir',
+                        'Verificação pedida. A pessoa foi avisada.',
+                      )
+                }
+              >
+                <Text variant="label" style={{ textDecorationLine: 'underline' }}>
+                  {p.verification_required_at ? 'Dispensar a verificação' : 'Pedir verificação de identidade'}
+                </Text>
+              </Pressable>
             ) : null}
           </View>
 

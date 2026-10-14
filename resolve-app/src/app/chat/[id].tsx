@@ -93,19 +93,19 @@ export default function Chat() {
 
   // Profissional: histórico do cliente, no pedido em aberto (serviços concluídos, cancelamentos em cima da hora).
   const clientId = isPro ? conv?.clientId : undefined;
-  const [record, setRecord] = useState<{ clientId: string; done: number; late: number } | null>(null);
+  const [record, setRecord] = useState<{ clientId: string; done: number; late: number; phone: boolean; verified: boolean } | null>(null);
   useEffect(() => {
     if (!clientId) return;
     let alive = true;
     supabase.rpc('client_track_record', { p_client_id: clientId }).then(({ data }) => {
       const r = data?.[0];
-      if (alive && r) setRecord({ clientId, done: r.done, late: r.late_cancels });
+      if (alive && r) setRecord({ clientId, done: r.done, late: r.late_cancels, phone: r.has_phone, verified: r.identity_verified });
     });
     return () => {
       alive = false;
     };
   }, [clientId]);
-  const clientNote = record && record.clientId === clientId ? describeClient(record.done, record.late) : undefined;
+  const clientNote = record && record.clientId === clientId ? describeClient(record) : undefined;
 
   if (!conv) {
     return (
@@ -361,12 +361,19 @@ export default function Chat() {
   );
 }
 
-/** "Cliente novo no Resolve" ou "3 serviços concluídos · 1 cancelamento em cima da hora". */
-function describeClient(done: number, late: number) {
-  if (!done && !late) return { text: 'Cliente novo no Resolve', warn: false };
-  const parts = [`${done} ${done === 1 ? 'serviço concluído' : 'serviços concluídos'}`];
-  if (late) parts.push(`${late} ${late === 1 ? 'cancelamento' : 'cancelamentos'} em cima da hora`);
-  return { text: parts.join(' · '), warn: late > 0 };
+/**
+ * O que se sabe do cliente: "Identidade confirmada · telefone informado · 3 serviços concluídos ·
+ * 1 cancelamento em cima da hora" (ou "Cliente novo no Resolve").
+ */
+function describeClient({ done, late, phone, verified }: { done: number; late: number; phone: boolean; verified: boolean }) {
+  const parts = [
+    verified ? 'Identidade confirmada' : null,
+    phone ? 'telefone informado' : 'sem telefone',
+    done || late ? `${done} ${done === 1 ? 'serviço concluído' : 'serviços concluídos'}` : 'cliente novo no Resolve',
+    late ? `${late} ${late === 1 ? 'cancelamento' : 'cancelamentos'} em cima da hora` : null,
+  ].filter(Boolean) as string[];
+  const text = parts.join(' · ');
+  return { text: text.charAt(0).toUpperCase() + text.slice(1), warn: late > 0 };
 }
 
 const styles = StyleSheet.create({

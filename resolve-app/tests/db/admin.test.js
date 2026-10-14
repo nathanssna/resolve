@@ -131,9 +131,39 @@ let pass = 0, fail = 0; const ok = (c, m) => { c ? pass++ : fail++; console.log(
   ok(!(await as(pro, "insert into public.messages (conversation_id, body) values ($1, 'voltei')", [conv])).error, 'manda mensagem de novo');
   ok((await adm('select public.admin_unsuspend($1)', [pro])).error?.includes('não está suspensa'), 'reativar quem não está suspenso: avisa');
 
+  console.log('\nVerificação pedida a um cliente');
+  const rec0 = (await as(pro, 'select * from public.client_track_record($1)', [bia])).rows[0];
+  ok(rec0 === undefined, 'profissional sem conversa com a cliente não vê o histórico dela');
+  const bconv2 = (await one(bia, 'select id from public.open_conversation($1)', [pro])).id;
+  let tr = (await as(pro, 'select * from public.client_track_record($1)', [bia])).rows[0];
+  ok(tr && tr.has_phone === false && tr.identity_verified === false, `profissional vê: sem telefone, identidade não confirmada (${JSON.stringify(tr)})`);
+  ok(!!(await as(bia, "insert into public.verifications (document_path, selfie_path) values ($1, $2)", [`${bia}/d.jpg`, `${bia}/s.jpg`])).error, 'cliente não manda verificação sem ter sido pedida');
+  await as(bia, "select public.register_push_token('ExponentPushToken[bia]', 'android')");
+  await db.query('delete from net.calls');
+  ok(!(await adm("select public.admin_require_verification($1, 'Denúncia de golpe')", [bia])).error, 'moderação pede a verificação');
+  ok((await db.query('select body from net.calls')).rows.flatMap((r) => r.body).some((m) => m.title === 'Precisamos confirmar sua identidade' && m.data.url === '/verificacao'), 'cliente avisada por push');
+  ok((await as(bia, 'select * from public.my_verification()')).rows[0]?.required === true, 'my_verification: pedida');
+  ok((await as(bia, "select public.create_request($1, 'encanador', 'Outro pedido', 'Amanhã, tarde')", [bconv2])).error?.includes('Confirme sua identidade'), 'sem verificar, não faz pedido novo');
+  ok(!(await as(bia, "insert into public.messages (conversation_id, body) values ($1, 'Oi')", [bconv2])).error, 'mas o chat continua');
+  const vb = (await one(bia, 'insert into public.verifications (document_path, selfie_path) values ($1, $2) returning id', [`${bia}/d.jpg`, `${bia}/s.jpg`])).id;
+  const queue = (await adm('select * from public.admin_verifications()')).rows.find((v) => v.id === vb);
+  ok(queue?.role === 'cliente' && queue.required === true, 'aparece na fila do painel como cliente com verificação pedida');
+  ok(!(await adm('select public.admin_review_verification($1, true, null)', [vb])).error, 'aprovada');
+  const vbRow = (await db.query('select identity_verified_at, verification_required_at from public.profiles where id = $1', [bia])).rows[0];
+  ok(!!vbRow.identity_verified_at && vbRow.verification_required_at === null, 'identidade confirmada, pedido encerrado');
+  ok(!(await as(bia, "select public.create_request($1, 'encanador', 'Outro pedido', 'Amanhã, tarde')", [bconv2])).error, 'volta a pedir');
+  tr = (await as(pro, 'select * from public.client_track_record($1)', [bia])).rows[0];
+  ok(tr?.identity_verified === true, 'profissional vê a identidade confirmada');
+  const pf = (await adm('select public.admin_person($1) p', [bia])).rows[0]?.p;
+  ok(!!pf?.identity_verified_at && pf.verification_pending === false, 'ficha mostra a identidade confirmada');
+  ok((await adm('select public.admin_require_verification($1)', [bia])).error?.includes('já está verificada'), 'não pede de quem já está verificado');
+  const cid = await signup('Cid Rocha', 'cliente', 'cid@exemplo.com');
+  await adm('select public.admin_require_verification($1)', [cid]);
+  ok(!(await adm('select public.admin_waive_verification($1)', [cid])).error && (await as(cid, 'select * from public.my_verification()')).rows[0]?.required === false, 'moderação pode dispensar o pedido');
+
   console.log('\nRegistro');
   const log = (await db.query('select action from private.admin_log order by id')).rows.map((r) => r.action);
-  ok(['ver_conversa', 'aprovar_selo', 'resolver_denuncia', 'suspender', 'reativar'].every((a) => log.includes(a)), `ações registradas: ${[...new Set(log)].join(', ')}`);
+  ok(['ver_conversa', 'aprovar_selo', 'resolver_denuncia', 'suspender', 'reativar', 'pedir_verificacao', 'dispensar_verificacao'].every((a) => log.includes(a)), `ações registradas: ${[...new Set(log)].join(', ')}`);
   ok(!!(await as(admin, 'select * from private.admin_log', [], 'aal2')).error, 'o registro não é legível pelo app');
 
   console.log(`\n${pass} ok, ${fail} falhas`); await db.end(); process.exit(fail ? 1 : 0);

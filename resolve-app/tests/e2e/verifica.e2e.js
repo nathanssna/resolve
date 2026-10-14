@@ -70,14 +70,14 @@ const login = async (email) => (await (await fetch(`${URL_}/auth/v1/token?grant_
   const docFile = png(SHOTS + 'verifica-documento.png', [200, 180, 40]);
   const selfieFile = png(SHOTS + 'verifica-selfie.png', [40, 120, 200]);
   const files = () => sql(`select count(*)::int as n from storage.objects where bucket_id = 'verification' and name like '${proId}/%'`)[0].n;
-  const row = () => sql(`select status, files_deleted_at from public.verifications where professional_id = '${proId}' order by created_at desc limit 1`)[0];
+  const row = () => sql(`select status, files_deleted_at from public.verifications where user_id = '${proId}' order by created_at desc limit 1`)[0];
 
   console.log('Pedir o selo (profissional)');
   const pro = await device(proS, 'profissional');
   await pro.page.goto(`${APP}/perfil`, { waitUntil: 'networkidle0' });
   ok(await pro.waitText('Selo Verificado') && await pro.waitText('Verificar identidade'), 'Perfil mostra "Selo Verificado · Verificar identidade"');
   await pro.page.evaluate(() => [...document.querySelectorAll('[role="button"]')].find((e) => e.innerText.includes('Selo Verificado'))?.click());
-  ok(await pro.waitPath(/^\/profissional\/verificacao$/) && await pro.waitText('Documento com foto') && await pro.waitText('Selfie com o documento'), 'abre a tela com as duas fotos');
+  ok(await pro.waitPath(/^\/verificacao$/) && await pro.waitText('Documento com foto') && await pro.waitText('Selfie com o documento'), 'abre a tela com as duas fotos');
   // Primeiro "Galeria" é o do documento; depois que ele vira "Trocar", sobra o da selfie.
   const gallery = async (file) => {
     const [chooser] = await Promise.all([
@@ -99,7 +99,7 @@ const login = async (email) => (await (await fetch(`${URL_}/auth/v1/token?grant_
   ok(row()?.status === 'pending' && files() === 2, 'pedido pendente no banco, com as 2 fotos no bucket');
 
   console.log('\nAprovar (painel)');
-  sql(`update public.verifications set status = 'approved' where professional_id = '${proId}' and status = 'pending'`);
+  sql(`update public.verifications set status = 'approved' where user_id = '${proId}' and status = 'pending'`);
   await pro.page.goto(`${APP}/profissional/verificacao`, { waitUntil: 'networkidle0' });
   ok(await pro.waitText('Perfil verificado'), 'tela mostra "Perfil verificado"');
   let cleaned = false;

@@ -88,6 +88,7 @@ export default function RootLayout() {
                 <Stack.Screen name="profissional/ficha" />
                 <Stack.Screen name="profissional/[id]" />
                 <Stack.Screen name="profissional/verificacao" />
+                <Stack.Screen name="verificacao" />
                 <Stack.Screen name="enderecos/index" />
                 <Stack.Screen name="enderecos/editar" />
                 <Stack.Screen name="telefone" />

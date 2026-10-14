@@ -542,10 +542,12 @@ export type Database = {
           deleted_at: string | null
           full_name: string
           id: string
+          identity_verified_at: string | null
           phone: string | null
           role: Database["public"]["Enums"]["user_role"]
           suspended_until: string | null
           updated_at: string
+          verification_required_at: string | null
         }
         Insert: {
           avatar_url?: string | null
@@ -553,10 +555,12 @@ export type Database = {
           deleted_at?: string | null
           full_name?: string
           id: string
+          identity_verified_at?: string | null
           phone?: string | null
           role?: Database["public"]["Enums"]["user_role"]
           suspended_until?: string | null
           updated_at?: string
+          verification_required_at?: string | null
         }
         Update: {
           avatar_url?: string | null
@@ -564,10 +568,12 @@ export type Database = {
           deleted_at?: string | null
           full_name?: string
           id?: string
+          identity_verified_at?: string | null
           phone?: string | null
           role?: Database["public"]["Enums"]["user_role"]
           suspended_until?: string | null
           updated_at?: string
+          verification_required_at?: string | null
         }
         Relationships: []
       }
@@ -932,11 +938,11 @@ export type Database = {
           document_path: string
           files_deleted_at: string | null
           id: string
-          professional_id: string
           reason: string | null
           reviewed_at: string | null
           selfie_path: string
           status: Database["public"]["Enums"]["verification_status"]
+          user_id: string
         }
         Insert: {
           consent_at?: string
@@ -944,11 +950,11 @@ export type Database = {
           document_path: string
           files_deleted_at?: string | null
           id?: string
-          professional_id?: string
           reason?: string | null
           reviewed_at?: string | null
           selfie_path: string
           status?: Database["public"]["Enums"]["verification_status"]
+          user_id?: string
         }
         Update: {
           consent_at?: string
@@ -956,18 +962,18 @@ export type Database = {
           document_path?: string
           files_deleted_at?: string | null
           id?: string
-          professional_id?: string
           reason?: string | null
           reviewed_at?: string | null
           selfie_path?: string
           status?: Database["public"]["Enums"]["verification_status"]
+          user_id?: string
         }
         Relationships: [
           {
-            foreignKeyName: "verifications_professional_id_fkey"
-            columns: ["professional_id"]
+            foreignKeyName: "verifications_user_id_fkey"
+            columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: "professionals"
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -1077,6 +1083,10 @@ export type Database = {
           resolved_at: string
         }[]
       }
+      admin_require_verification: {
+        Args: { p_reason?: string; p_user: string }
+        Returns: undefined
+      }
       admin_resolve_report: {
         Args: { p_id: string; p_resolution: string }
         Returns: undefined
@@ -1098,12 +1108,15 @@ export type Database = {
           email: string
           id: string
           name: string
-          professional_id: string
           rejected_before: number
+          required: boolean
+          role: Database["public"]["Enums"]["user_role"]
           role_title: string
           selfie_path: string
+          user_id: string
         }[]
       }
+      admin_waive_verification: { Args: { p_user: string }; Returns: undefined }
       am_i_admin: { Args: never; Returns: boolean }
       cancel_order: {
         Args: { p_order_id: string; p_reason?: string }
@@ -1140,6 +1153,8 @@ export type Database = {
         Args: { p_client_id: string }
         Returns: {
           done: number
+          has_phone: boolean
+          identity_verified: boolean
           late_cancels: number
         }[]
       }
@@ -1171,10 +1186,12 @@ export type Database = {
           deleted_at: string | null
           full_name: string
           id: string
+          identity_verified_at: string | null
           phone: string | null
           role: Database["public"]["Enums"]["user_role"]
           suspended_until: string | null
           updated_at: string
+          verification_required_at: string | null
         }
         SetofOptions: {
           from: "*"
@@ -1278,10 +1295,12 @@ export type Database = {
           deleted_at: string | null
           full_name: string
           id: string
+          identity_verified_at: string | null
           phone: string | null
           role: Database["public"]["Enums"]["user_role"]
           suspended_until: string | null
           updated_at: string
+          verification_required_at: string | null
         }
         SetofOptions: {
           from: "*"
@@ -1311,6 +1330,13 @@ export type Database = {
         Returns: {
           suspended: boolean
           until: string
+        }[]
+      }
+      my_verification: {
+        Args: never
+        Returns: {
+          required: boolean
+          verified: boolean
         }[]
       }
       open_conversation: {

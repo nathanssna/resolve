@@ -62,10 +62,11 @@ export default function AdminSelo() {
 
   const pics = v ? [urls[v.document_path], urls[v.selfie_path]] : [];
   const firstName = v?.name.trim().split(' ')[0] ?? '';
+  const pro = v?.role === 'profissional';
 
   return (
     <AdminPage
-      title="Selo Verificado"
+      title={v && !pro ? 'Verificação de identidade' : 'Selo Verificado'}
       right={list.length > 1 ? `${index + 1} de ${list.length}` : undefined}
       surface
       loading={!data && loading}
@@ -80,8 +81,14 @@ export default function AdminSelo() {
               </Button>
             </View>
             <View style={{ flex: 2 }}>
-              <Button variant="primary" block iconLeft="badge-check" disabled={busy} onPress={() => confirm(`Aprovar o selo de ${v.name}?`, () => review(true), { confirmLabel: 'Aprovar' })}>
-                Aprovar selo
+              <Button
+                variant="primary"
+                block
+                iconLeft="badge-check"
+                disabled={busy}
+                onPress={() => confirm(pro ? `Aprovar o selo de ${v.name}?` : `Confirmar a identidade de ${v.name}?`, () => review(true), { confirmLabel: pro ? 'Aprovar' : 'Confirmar' })}
+              >
+                {pro ? 'Aprovar selo' : 'Confirmar identidade'}
               </Button>
             </View>
           </View>
@@ -95,10 +102,10 @@ export default function AdminSelo() {
               {v.name || 'Sem nome'}
             </Text>
             <Text variant="bodySm" color={colors.inkBody} selectable>
-              {[v.role_title, v.email].filter(Boolean).join(' · ')}
+              {[pro ? v.role_title : 'Cliente · verificação pedida pela moderação', v.email].filter(Boolean).join(' · ')}
             </Text>
             <Text variant="caption" color={colors.inkMuted}>
-              {`Enviado ${timeAgo(Date.parse(v.created_at))} · ${Number(v.rejected_before) ? `recusado ${v.rejected_before}× antes` : 'primeiro pedido de selo'}`}
+              {`Enviado ${timeAgo(Date.parse(v.created_at))} · ${Number(v.rejected_before) ? `recusado ${v.rejected_before}× antes` : 'primeiro envio'}`}
             </Text>
           </View>
 
