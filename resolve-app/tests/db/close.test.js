@@ -52,6 +52,7 @@ let pass = 0, fail = 0; const ok = (c, m) => { c ? pass++ : fail++; console.log(
   ok((await as(cli, 'select closed_at from public.requests where id = $1', [r1])).rows[0].closed_at !== null && (await as(pro, 'select closed_by from public.requests where id = $1', [r1])).rows[0].closed_by === cli, 'os dois lados leem quem encerrou');
 
   console.log('\nAvaliações no perfil');
+  await one(pro, 'select 1 x from public.mark_order_done($1)', [o3.id]);
   await one(cli, 'select 1 x from public.complete_order($1)', [o3.id]);
   await one(cli, "select 1 x from public.rate_order($1, 4, '  Rápido e caprichoso  ')", [o3.id]);
   const revs = (await as(null, 'select * from public.get_professional_reviews($1)', [pro])).rows;

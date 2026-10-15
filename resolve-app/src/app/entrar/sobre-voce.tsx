@@ -79,7 +79,7 @@ export default function SobreVoce() {
       />
 
       <View style={{ gap: spacing[3] }}>
-        <Text variant="label">Como você vai usar o Resolve?</Text>
+        <Text variant="label">Como você vai usar a Rezolveaê?</Text>
         <View accessibilityRole="radiogroup" style={{ gap: spacing[2] }}>
           {ROLES.map((r) => {
             const on = r.id === role;

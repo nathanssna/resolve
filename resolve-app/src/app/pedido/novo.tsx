@@ -202,7 +202,7 @@ export default function NovoPedido() {
                   <View style={styles.proMeta}>
                     <Icon name={pro.reviews ? 'star' : 'sparkles'} size={13} fill={pro.reviews ? colors.star : 'none'} color={pro.reviews ? colors.star : colors.ink} strokeWidth={pro.reviews ? 1 : 2} />
                     <Text variant="bodySm">
-                      {pro.reviews ? formatDecimal(pro.rating) : 'Novo no Resolve'} · {service.short}
+                      {pro.reviews ? formatDecimal(pro.rating) : 'Novo na Rezolveaê'} · {service.short}
                     </Text>
                   </View>
                 </View>

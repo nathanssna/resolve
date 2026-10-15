@@ -2,14 +2,15 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
-import { ActionSheet, Button, Icon, Text } from '@/components';
+import { ActionSheet, Button, Icon, PhotoThumbs, PhotoViewer, Text } from '@/components';
 import { reportReasonLabel } from '@/content/reports';
 import { authErrorMessage } from '@/lib/authErrors';
 import { supabase } from '@/lib/supabase';
+import { useSignedUrls } from '@/state/photoUrls';
 import { AdminPage, dateBR, Section, suspension, SuspendSheet, useAdminRpc } from '@/screens/admin/shared';
 import { colors, radius, spacing } from '@/theme/tokens';
-import { notify } from '@/utils/dialog';
-import { firstName, formatTime } from '@/utils/format';
+import { confirm, notify } from '@/utils/dialog';
+import { firstName, formatBRL, formatTime } from '@/utils/format';
 
 type Report = {
   id: string;
@@ -22,6 +23,17 @@ type Report = {
   reported: { id: string; name: string; suspended_until: string | null };
   reported_total: number;
   previous: { reason: string; created_at: string; resolution: string | null } | null;
+  /** Denúncia de serviço (reason = servico): o serviço em disputa. */
+  order: {
+    id: string;
+    status: string;
+    service: string;
+    amount: number;
+    scheduled_label: string;
+    done_at: string | null;
+    done_photos: string[];
+    done_contested_at: string | null;
+  } | null;
   conversation_id: string | null;
   messages_total: number;
   messages: { id: string; created_at: string; sender_name: string; from_reported: boolean; kind: string; body: string | null }[];
@@ -38,6 +50,27 @@ export default function AdminDenuncia() {
   const r = data as Report | null;
   const [resolving, setResolving] = useState(false);
   const [suspending, setSuspending] = useState(false);
+  const [viewer, setViewer] = useState<number | null>(null);
+  const photoUrls = useSignedUrls(r?.order?.done_photos ?? [], 'done-photos');
+  const photoUris = (r?.order?.done_photos ?? []).map((p) => photoUrls[p]);
+  const service = r?.reason === 'servico' && r.order ? r.order : null;
+
+  // Disputa de serviço: a equipe decide se foi feito (conclui) ou não (segue combinado, para remarcar ou cancelar).
+  const decide = (done: boolean) =>
+    confirm(
+      done
+        ? 'Concluir o serviço? Conta como serviço feito para o profissional e, se o cliente disse que não foi feito, fica registrado como contestação indevida.'
+        : 'O serviço não foi feito? Ele segue combinado para os dois remarcarem ou cancelarem.',
+      async () => {
+        const { error } = await supabase.rpc('admin_resolve_service', { p_report_id: id, p_done: done });
+        if (error) notify(authErrorMessage(error));
+        else {
+          notify('Decisão registrada.', { tone: 'success' });
+          router.back();
+        }
+      },
+      { confirmLabel: done ? 'Concluir' : 'Confirmar' },
+    );
 
   const resolve = async (resolution: string) => {
     const { error } = await supabase.rpc('admin_resolve_report', { p_id: id, p_resolution: resolution });
@@ -60,7 +93,16 @@ export default function AdminDenuncia() {
       failed={!r && failed}
       onRetry={reload}
       footer={
-        r && !r.resolved_at ? (
+        r && !r.resolved_at && service ? (
+          <>
+            <Button variant="primary" block iconLeft="check" onPress={() => decide(true)}>
+              Foi feito: concluir
+            </Button>
+            <Pressable accessibilityRole="button" onPress={() => decide(false)} hitSlop={8} style={{ alignSelf: 'center' }}>
+              <Text variant="labelLg">Não foi feito</Text>
+            </Pressable>
+          </>
+        ) : r && !r.resolved_at ? (
           <>
             <Button variant="primary" block iconLeft="check" onPress={() => setResolving(true)}>
               Resolver denúncia
@@ -119,6 +161,33 @@ export default function AdminDenuncia() {
             </View>
           ) : null}
 
+          {service ? (
+            <Section title="Serviço">
+              <View style={{ gap: spacing[2] }}>
+                <Text variant="labelLg">{`${service.service} · ${formatBRL(Number(service.amount))}`}</Text>
+                <Text variant="bodySm" color={colors.inkBody}>
+                  {`Combinado para ${service.scheduled_label}`}
+                </Text>
+                <Text variant="bodySm" color={colors.inkBody}>
+                  {service.status !== 'combinado'
+                    ? `Situação: ${service.status}`
+                    : service.done_at
+                      ? `Marcado como feito em ${dateBR(service.done_at)}; o cliente não respondeu.`
+                      : service.done_contested_at
+                        ? `O cliente disse que não foi feito em ${dateBR(service.done_contested_at)}.`
+                        : 'Combinado.'}
+                </Text>
+                {photoUris.length ? (
+                  <PhotoThumbs uris={photoUris} size={84} onOpen={setViewer} />
+                ) : (
+                  <Text variant="caption" color={colors.inkMuted}>
+                    Sem fotos do trabalho pronto.
+                  </Text>
+                )}
+              </View>
+            </Section>
+          ) : null}
+
           <Section title="Conversa" action={r.conversation_id && r.messages_total > r.messages.length ? `Ver inteira (${r.messages_total})` : undefined} onAction={() => router.push({ pathname: '/admin/conversa/[id]', params: { id: r.id } })}>
             {r.messages.length ? (
               <View style={{ gap: spacing[3] }}>
@@ -151,6 +220,7 @@ export default function AdminDenuncia() {
             )}
           </Section>
 
+          <PhotoViewer uris={photoUris.filter((u): u is string => !!u)} index={viewer} onClose={() => setViewer(null)} />
           <ActionSheet visible={resolving} title="O que foi feito?" onClose={() => setResolving(false)} actions={OUTCOMES.map((o) => ({ icon: 'check', label: o, onPress: () => resolve(o) }))} />
           <SuspendSheet visible={suspending} user={r.reported.id} name={r.reported.name} onClose={() => setSuspending(false)} onDone={reload} />
         </>

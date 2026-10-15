@@ -26,8 +26,6 @@ export default function Favoritos() {
               icon={s.icon}
               title={s.title}
               subtitle={s.subtitle}
-              rating={s.rating}
-              count={s.reviews}
               onPress={() => router.push({ pathname: '/servico/[id]', params: { id: s.id } })}
             />
           ))

@@ -182,7 +182,7 @@ export function ProfessionalOption({
       accessibilityRole="radio"
       accessibilityState={{ checked: !!selected }}
       aria-checked={!!selected}
-      accessibilityLabel={`${name}, ${reviews ? `nota ${formatDecimal(rating)}` : 'novo no Resolve'}, ${aside} ${asideLabel ?? ''}`}
+      accessibilityLabel={`${name}, ${reviews ? `nota ${formatDecimal(rating)}` : 'novo na Rezolveaê'}, ${aside} ${asideLabel ?? ''}`}
       onPress={onPress}
       style={[styles.option, selected && styles.optionOn]}
     >
@@ -205,7 +205,7 @@ export function ProfessionalOption({
           <View style={styles.optionMeta}>
             <Icon name="sparkles" size={13} strokeWidth={2} />
             <Text variant="bodySm" style={{ fontFamily: fonts.bold }}>
-              Novo no Resolve
+              Novo na Rezolveaê
             </Text>
           </View>
         )}

@@ -60,7 +60,7 @@ const login = async (email) => (await (await fetch(`${URL_}/auth/v1/token?grant_
   console.log('Pausar (profissional)');
   const pro = await device(proS, 'profissional');
   await pro.page.goto(`${APP}/inicio`, { waitUntil: 'networkidle0' });
-  ok(await pro.waitText('Recebendo pedidos') && await pro.waitText('Clientes da sua região encontram você') && (await sw(pro)) === 'true', 'painel mostra "Recebendo pedidos" ligado');
+  ok(await pro.waitText('Recebendo pedidos') && await pro.waitText('Encanador e Eletricista ·') && (await sw(pro)) === 'true', 'painel mostra "Recebendo pedidos" ligado');
   await pro.press('Recebendo pedidos', 'switch');
   ok(await pro.waitText('Pausar os pedidos?'), 'pede confirmação para pausar');
   await pro.pressText('Pausar');
@@ -78,7 +78,7 @@ const login = async (email) => (await (await fetch(`${URL_}/auth/v1/token?grant_
   ok(disabled === 'true', 'botão desabilitado');
   await cli.page.screenshot({ path: SHOTS + 'pause-2-perfil.png' });
   await cli.page.goto(`${APP}/pedido/novo?serviceId=encanador&proId=${proId}`, { waitUntil: 'networkidle0' });
-  ok(await cli.waitText('Pro não está recebendo pedidos agora') && await cli.waitText('Escolha outro profissional'), 'pedido direto (ex.: "Peça de novo") avisa que pausou');
+  ok(await cli.waitText('Pro não está recebendo pedidos agora') && await cli.waitText('Escolha outro profissional'), 'pedido direto (ex.: "Novo pedido" no chat) avisa que pausou');
   const conv = await rpc(cliS, 'open_conversation', { p_professional_id: proId });
   ok(conv.message === 'Este profissional não está recebendo pedidos no momento', `API também recusa: ${conv.message ?? conv.id}`);
 
@@ -86,7 +86,7 @@ const login = async (email) => (await (await fetch(`${URL_}/auth/v1/token?grant_
   await pro.page.bringToFront();
   await pro.press('Recebendo pedidos', 'switch');
   ok(await until(async () => (await paused()) === false), 'religar não pede confirmação e grava');
-  ok(await pro.waitText('Clientes da sua região encontram você'), 'painel volta ao normal');
+  ok(await pro.waitText('Encanador e Eletricista ·'), 'painel volta ao normal');
   await cli.page.bringToFront();
   await cli.page.goto(`${APP}/profissionais/encanador`, { waitUntil: 'networkidle0' });
   ok(await cli.waitText('Pro Teste'), 'volta para a lista');

@@ -20,8 +20,6 @@ export type Service = {
   short: string;
   subtitle: string;
   area: string;
-  rating: number;
-  reviews: number;
   description: string;
   includes: string[];
   /** Sugestões de pedido mostradas na busca e no formulário. */
@@ -80,7 +78,7 @@ async function fetchCatalog(): Promise<Data> {
   const [svc, pros] = await Promise.all([
     supabase
       .from('services')
-      .select('id, icon, title, short_title, subtitle, area, description, includes, examples, badge, rating, review_count, is_popular')
+      .select('id, icon, title, short_title, subtitle, area, description, includes, examples, badge, is_popular')
       .order('sort_order'),
     supabase
       .from('professionals')
@@ -98,8 +96,6 @@ async function fetchCatalog(): Promise<Data> {
     short: s.short_title,
     subtitle: s.subtitle,
     area: s.area,
-    rating: Number(s.rating),
-    reviews: s.review_count,
     description: s.description,
     includes: s.includes,
     examples: s.examples,

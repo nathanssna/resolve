@@ -13,19 +13,19 @@ export const LEGAL: Record<'termos' | 'privacidade', LegalDoc> = {
   termos: {
     title: 'Termos de uso',
     updated: '[DATA]',
-    intro: `Estes termos valem para o uso do aplicativo Resolve, oferecido por ${COMPANY}, CNPJ ${CNPJ}. Ao criar uma conta, você concorda com eles.`,
+    intro: `Estes termos valem para o uso do aplicativo Rezolveaê, oferecido por ${COMPANY}, CNPJ ${CNPJ}. Ao criar uma conta, você concorda com eles.`,
     sections: [
       {
-        title: 'O que é o Resolve',
+        title: 'O que é a Rezolveaê',
         body: [
-          'O Resolve aproxima clientes e profissionais autônomos de serviços para casa. O cliente descreve o que precisa, o profissional envia uma proposta e os dois combinam tudo pelo chat.',
-          'O Resolve não presta os serviços, não é parte do acordo entre cliente e profissional e não intermedeia o pagamento: o valor é combinado e pago diretamente entre os dois.',
+          'A Rezolveaê aproxima clientes e profissionais autônomos de serviços para casa. O cliente descreve o que precisa, o profissional envia uma proposta e os dois combinam tudo pelo chat.',
+          'A Rezolveaê não presta os serviços, não é parte do acordo entre cliente e profissional e não intermedeia o pagamento: o valor é combinado e pago diretamente entre os dois.',
         ],
       },
       {
         title: 'Sua conta',
         body: [
-          'Para usar o Resolve você precisa ter 18 anos ou mais e informar dados verdadeiros. O acesso é feito por um código enviado ao seu e-mail; não compartilhe esse código com ninguém.',
+          'Para usar a Rezolveaê você precisa ter 18 anos ou mais e informar dados verdadeiros. O acesso é feito por um código enviado ao seu e-mail; não compartilhe esse código com ninguém.',
           'Você é responsável pelo que acontece na sua conta. Pode excluí-la a qualquer momento em Perfil → Conta e privacidade → Excluir conta.',
         ],
       },
@@ -65,7 +65,7 @@ export const LEGAL: Record<'termos' | 'privacidade', LegalDoc> = {
       {
         title: 'Responsabilidade',
         body: [
-          'O Resolve se esforça para manter o app funcionando e seguro, mas não garante a qualidade, a pontualidade ou o resultado dos serviços combinados entre usuários, nem responde por danos decorrentes deles, nos limites da lei.',
+          'A Rezolveaê se esforça para manter o app funcionando e seguro, mas não garante a qualidade, a pontualidade ou o resultado dos serviços combinados entre usuários, nem responde por danos decorrentes deles, nos limites da lei.',
         ],
       },
       {
@@ -81,7 +81,7 @@ export const LEGAL: Record<'termos' | 'privacidade', LegalDoc> = {
   privacidade: {
     title: 'Política de privacidade',
     updated: '[DATA]',
-    intro: `Esta política explica quais dados o Resolve trata, para quê e quais são os seus direitos, conforme a Lei Geral de Proteção de Dados (Lei 13.709/2018). O controlador é ${COMPANY}, CNPJ ${CNPJ}. Encarregado de dados: [NOME DO ENCARREGADO], ${EMAIL}.`,
+    intro: `Esta política explica quais dados a Rezolveaê trata, para quê e quais são os seus direitos, conforme a Lei Geral de Proteção de Dados (Lei 13.709/2018). O controlador é ${COMPANY}, CNPJ ${CNPJ}. Encarregado de dados: [NOME DO ENCARREGADO], ${EMAIL}.`,
     sections: [
       {
         title: 'Dados que coletamos',
@@ -138,7 +138,7 @@ export const LEGAL: Record<'termos' | 'privacidade', LegalDoc> = {
       },
       {
         title: 'Menores de idade',
-        body: ['O Resolve não é destinado a menores de 18 anos.'],
+        body: ['A Rezolveaê não é destinada a menores de 18 anos.'],
       },
       {
         title: 'Mudanças',

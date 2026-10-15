@@ -18,6 +18,7 @@ import { AddressProvider } from '@/state/addresses';
 import { AppProvider } from '@/state/app';
 import { AuthProvider, useAuth } from '@/state/auth';
 import { CatalogProvider } from '@/state/catalog';
+import { SupportProvider } from '@/state/support';
 import { colors } from '@/theme/tokens';
 
 /** Logado sem nome/papel (app reaberto no meio do cadastro) → "Sobre você". */
@@ -68,39 +69,42 @@ export default function RootLayout() {
         <CatalogProvider>
           <AddressProvider>
             <AppProvider>
-              <StatusBar style="dark" />
-              <OnboardingGate />
-              <PushGate />
-              <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.surface } }}>
-                <Stack.Screen name="index" />
-                <Stack.Screen name="(tabs)" />
-                <Stack.Screen name="buscar" options={{ animation: 'fade' }} />
-                <Stack.Screen name="servico/[id]" />
-                <Stack.Screen name="profissionais/[serviceId]" />
-                <Stack.Screen name="pedido/novo" options={{ animation: 'slide_from_bottom' }} />
-                <Stack.Screen name="chat/[id]" />
-                <Stack.Screen name="pedido/[id]" />
-                <Stack.Screen name="pedido/cancelar" options={{ animation: 'slide_from_bottom' }} />
-                <Stack.Screen name="entrar/index" />
-                <Stack.Screen name="entrar/codigo" />
-                {/* Sem voltar: o cadastro precisa ser concluído (ou trocar de conta) */}
-                <Stack.Screen name="entrar/sobre-voce" options={{ gestureEnabled: false }} />
-                <Stack.Screen name="profissional/ficha" />
-                <Stack.Screen name="profissional/[id]" />
-                <Stack.Screen name="profissional/verificacao" />
-                <Stack.Screen name="verificacao" />
-                <Stack.Screen name="enderecos/index" />
-                <Stack.Screen name="enderecos/editar" />
-                <Stack.Screen name="telefone" />
-                <Stack.Screen name="conta/index" />
-                <Stack.Screen name="conta/excluir" />
-                <Stack.Screen name="denunciar" options={{ animation: 'slide_from_bottom' }} />
-                <Stack.Screen name="legal/[doc]" />
-                <Stack.Screen name="notificacoes" />
-                <Stack.Screen name="ajuda" />
-                <Stack.Screen name="admin" />
-              </Stack>
-              <DialogHost />
+              <SupportProvider>
+                <StatusBar style="dark" />
+                <OnboardingGate />
+                <PushGate />
+                <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.surface } }}>
+                  <Stack.Screen name="index" />
+                  <Stack.Screen name="(tabs)" />
+                  <Stack.Screen name="buscar" options={{ animation: 'fade' }} />
+                  <Stack.Screen name="servico/[id]" />
+                  <Stack.Screen name="profissionais/[serviceId]" />
+                  <Stack.Screen name="pedido/novo" options={{ animation: 'slide_from_bottom' }} />
+                  <Stack.Screen name="chat/[id]" />
+                  <Stack.Screen name="pedido/[id]" />
+                  <Stack.Screen name="pedido/cancelar" options={{ animation: 'slide_from_bottom' }} />
+                  <Stack.Screen name="entrar/index" />
+                  <Stack.Screen name="entrar/codigo" />
+                  {/* Sem voltar: o cadastro precisa ser concluído (ou trocar de conta) */}
+                  <Stack.Screen name="entrar/sobre-voce" options={{ gestureEnabled: false }} />
+                  <Stack.Screen name="profissional/ficha" />
+                  <Stack.Screen name="profissional/[id]" />
+                  <Stack.Screen name="profissional/verificacao" />
+                  <Stack.Screen name="verificacao" />
+                  <Stack.Screen name="enderecos/index" />
+                  <Stack.Screen name="enderecos/editar" />
+                  <Stack.Screen name="telefone" />
+                  <Stack.Screen name="conta/index" />
+                  <Stack.Screen name="conta/excluir" />
+                  <Stack.Screen name="denunciar" options={{ animation: 'slide_from_bottom' }} />
+                  <Stack.Screen name="legal/[doc]" />
+                  <Stack.Screen name="notificacoes" />
+                  <Stack.Screen name="ajuda" />
+                  <Stack.Screen name="suporte" />
+                  <Stack.Screen name="admin" />
+                </Stack>
+                <DialogHost />
+              </SupportProvider>
             </AppProvider>
           </AddressProvider>
         </CatalogProvider>

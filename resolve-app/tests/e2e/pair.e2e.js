@@ -81,7 +81,7 @@ const login = async (email) => (await (await fetch(`${URL_}/auth/v1/token?grant_
   console.log('\nProfissional');
   const pro = await device(proS, 'pro');
   await pro.page.goto(`${APP}/inicio`, { waitUntil: 'networkidle0' });
-  ok(await pro.waitText('2 pedidos esperando resposta'), 'painel conta os 2 pedidos');
+  ok(await pro.waitText('Enviar proposta') && (await pro.text()).split('Enviar proposta').length === 3, 'painel mostra os 2 pedidos');
   ok(await pro.waitText('Torneira da cozinha pingando') && await pro.waitText('Trocar duas tomadas da sala'), 'cada pedido aparece no painel');
   await pro.page.goto(`${APP}/chat/${conv1}`, { waitUntil: 'networkidle0' });
   await pro.press('Enviar proposta');

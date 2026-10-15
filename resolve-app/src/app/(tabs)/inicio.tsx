@@ -1,26 +1,30 @@
 import { router } from 'expo-router';
+import { useMemo } from 'react';
 import { Pressable, RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import {
   ActiveOrderCard,
+  Avatar,
   CatalogFallback,
   Icon,
   IconButton,
   PromoCard,
   SearchTrigger,
   SectionHeader,
-  ServiceCard,
+  serviceStage,
   ServiceTile,
   Text,
 } from '@/components';
 import { useAddresses } from '@/state/addresses';
 import { soonestFirst, useApp } from '@/state/app';
 import { useAuth } from '@/state/auth';
-import { useCatalog } from '@/state/catalog';
+import { useCatalog, type Professional } from '@/state/catalog';
+import { useDistances } from '@/state/distances';
 import { ProHome } from '@/screens/ProHome';
-import { colors, radius, shadows, spacing } from '@/theme/tokens';
-import { firstName, formatBRL } from '@/utils/format';
+import { colors, fonts, radius, spacing } from '@/theme/tokens';
+import { firstName, formatBRL, formatDecimal } from '@/utils/format';
+import { sortProfessionals } from '@/utils/rankProfessionals';
 import { notify } from '@/utils/dialog';
 
 /** Profissional vê o painel dele; cliente, o catálogo. */
@@ -29,21 +33,78 @@ export default function Inicio() {
   return profile?.role === 'profissional' ? <ProHome /> : <ClientHome />;
 }
 
+/** Cartão de "Perto de você": toque abre o perfil. */
+function NearbyPro({ pro, km, service }: { pro: Professional; km: number; service?: { id: string; short: string } }) {
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={`${pro.name}${service ? `, ${service.short}` : ''}, ${pro.reviews ? `nota ${formatDecimal(pro.rating)}` : 'novo na Rezolveaê'}, a ${km} km`}
+      onPress={() => router.push({ pathname: '/profissional/[id]', params: { id: pro.id, serviceId: service?.id } })}
+      style={({ pressed }) => [styles.near, pressed && { opacity: 0.9 }]}
+    >
+      <View>
+        <Avatar size={56} uri={pro.avatarUrl} />
+        {pro.verified ? (
+          <View style={styles.nearSeal}>
+            <Icon name="badge-check" size={20} strokeWidth={2.25} fill={colors.brand} />
+          </View>
+        ) : null}
+      </View>
+      <Text variant="label" numberOfLines={1} style={{ marginTop: spacing[1] }}>
+        {firstName(pro.name)}
+      </Text>
+      {service ? (
+        <Text variant="caption" color={colors.inkMuted} numberOfLines={1}>
+          {service.short}
+        </Text>
+      ) : null}
+      <View style={styles.nearMeta}>
+        {pro.reviews ? (
+          <>
+            <Icon name="star" size={12} fill={colors.star} color={colors.star} strokeWidth={1} />
+            <Text variant="caption" style={{ fontFamily: fonts.bold }}>
+              {formatDecimal(pro.rating)}
+            </Text>
+          </>
+        ) : (
+          <Text variant="caption" style={{ fontFamily: fonts.bold }}>
+            Novo
+          </Text>
+        )}
+        <Text variant="caption" color={colors.inkMuted}>{`· ${km} km`}</Text>
+      </View>
+    </Pressable>
+  );
+}
+
 function ClientHome() {
   const { primary } = useAddresses();
   const addressText = primary ? `${primary.label} · ${primary.line}` : 'Adicionar endereço';
   const insets = useSafeAreaInsets();
-  const { conversations, orders } = useApp();
-  const { services, popular, getService, getProfessional, status, refresh, refreshing } = useCatalog();
+  const { conversations, orders, blocked } = useApp();
+  const { services, professionals, getService, getProfessional, status, refresh, refreshing } = useCatalog();
 
   // Card de destaque: proposta esperando resposta > serviço combinado
   const pendingJob = conversations.flatMap((c) => c.jobs).find((j) => j.state === 'proposta');
   const pendingConv = pendingJob && conversations.find((c) => c.id === pendingJob.conversationId);
   const activeOrder = orders.filter((o) => o.status === 'combinado').sort(soonestFirst)[0];
-  const lastDone = orders.find((o) => o.status === 'concluido');
+
+  // Serviço que pede resposta do cliente (confirmar se foi feito, nova data…) vem primeiro.
+  const toAnswer = orders
+    .filter((o) => o.status === 'combinado')
+    .map((o) => ({ o, stage: serviceStage(o, false, firstName(getProfessional(o.proId)?.name ?? o.other.name)) }))
+    .find((x) => x.stage?.tone === 'action');
 
   let highlight: { title: string; subtitle: string; progress: number; onPress: () => void } | null = null;
-  if (pendingConv && pendingJob?.pending) {
+  if (toAnswer?.stage) {
+    const { o, stage } = toAnswer;
+    highlight = {
+      title: stage.title,
+      subtitle: `${getService(o.serviceId)?.title} · Toque para responder`,
+      progress: 0.9,
+      onPress: () => router.push({ pathname: '/pedido/[id]', params: { id: o.id } }),
+    };
+  } else if (pendingConv && pendingJob?.pending) {
     const pro = getProfessional(pendingConv.proId);
     const p = pendingJob.pending;
     highlight = {
@@ -61,6 +122,14 @@ function ClientHome() {
       onPress: () => router.push({ pathname: '/pedido/[id]', params: { id: activeOrder.id } }),
     };
   }
+
+  // Perto de você: quem tem o endereço principal dentro do raio de atendimento, do mais perto ao mais longe.
+  const dist = useDistances(primary?.coords);
+  const nearby = useMemo(() => {
+    if (!dist) return [];
+    const inRange = professionals.filter((p) => !p.paused && !blocked.includes(p.id) && dist.get(p.id)?.inRange);
+    return sortProfessionals(inRange, 'proximos', dist).slice(0, 8);
+  }, [professionals, blocked, dist]);
 
   const openService = (id: string) => router.push({ pathname: '/servico/[id]', params: { id } });
 
@@ -89,7 +158,7 @@ function ClientHome() {
           <IconButton icon="bell" label="Notificações" floating onPress={() => notify('Sem notificações novas.')} />
         </View>
         <Text variant="display" accessibilityRole="header" style={styles.greeting}>
-          Olá! O que vamos resolver hoje?
+          O que vamos resolver hoje?
         </Text>
       </View>
 
@@ -112,6 +181,32 @@ function ClientHome() {
             <CatalogFallback status={status} onRetry={refresh} />
           )}
         </View>
+
+        <View style={{ gap: spacing[3] }}>
+          <SectionHeader title="Perto de você" />
+          {!primary?.coords ? (
+            <Pressable accessibilityRole="button" onPress={() => router.push('/enderecos')} style={({ pressed }) => [styles.invite, pressed && { opacity: 0.85 }]}>
+              <View style={styles.inviteIcon}>
+                <Icon name="map-pin" size={18} strokeWidth={2.25} />
+              </View>
+              <Text variant="label" style={{ flex: 1 }}>
+                {primary ? 'Confira seu endereço para ver quem atende perto de você' : 'Adicione seu endereço para ver quem atende perto de você'}
+              </Text>
+              <Icon name="chevron-right" size={18} strokeWidth={2} />
+            </Pressable>
+          ) : !dist ? null : nearby.length ? (
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.nearScroll} contentContainerStyle={styles.nearList}>
+              {nearby.map((p) => {
+                const svc = getService(p.serviceIds[0]);
+                return <NearbyPro key={p.id} pro={p} km={dist.get(p.id)!.km} service={svc && { id: svc.id, short: svc.short }} />;
+              })}
+            </ScrollView>
+          ) : (
+            <Text variant="bodySm" color={colors.inkMuted}>
+              · ainda não há profissionais perto de você
+            </Text>
+          )}
+        </View>
       </View>
 
       <ScrollView
@@ -127,14 +222,14 @@ function ClientHome() {
           title="Combine direto com o profissional"
           text="Peça orçamentos e negocie o valor pelo chat."
           cta="Como funciona"
-          onPress={() => openService('informatica')}
+          onPress={() => router.push('/ajuda')}
         />
         <PromoCard
           tone="brand"
           icon="shield-check"
-          title="Profissionais verificados"
-          text="Documentos e avaliações conferidos."
-          onPress={() => openService('encanador')}
+          title="Selo Verificado"
+          text="Quem tem o selo teve documento e selfie conferidos."
+          onPress={() => router.push({ pathname: '/ajuda', params: { abrir: 'selo' } })}
         />
         <PromoCard
           tone="tint"
@@ -145,52 +240,6 @@ function ClientHome() {
         />
       </ScrollView>
 
-      <View style={styles.body}>
-        {lastDone ? (
-          <View style={{ gap: spacing[3] }}>
-            <SectionHeader title="Peça de novo" />
-            <Pressable
-              accessibilityRole="button"
-              onPress={() => router.push({ pathname: '/pedido/novo', params: { serviceId: lastDone.serviceId, proId: lastDone.proId } })}
-              style={({ pressed }) => [styles.again, pressed && { opacity: 0.92 }]}
-            >
-              <View style={styles.againIcon}>
-                <Icon name={getService(lastDone.serviceId)?.icon ?? 'wrench'} size={26} duotone />
-              </View>
-              <View style={{ flex: 1, gap: 2 }}>
-                <Text variant="labelLg">{getService(lastDone.serviceId)?.title}</Text>
-                <Text variant="bodySm" color={colors.inkMuted}>
-                  com {getProfessional(lastDone.proId)?.name}
-                </Text>
-              </View>
-              <View style={styles.againCta}>
-                <Text variant="label">Pedir</Text>
-              </View>
-            </Pressable>
-          </View>
-        ) : null}
-
-        {popular.length > 0 ? (
-          <View style={{ gap: spacing[3] }}>
-            <SectionHeader title="Mais pedidos na sua região" />
-            {popular.map((id) => {
-              const s = getService(id);
-              if (!s) return null;
-              return (
-                <ServiceCard
-                  key={s.id}
-                  icon={s.icon}
-                  title={s.title}
-                  subtitle={s.subtitle}
-                  rating={s.rating}
-                  count={s.reviews}
-                  onPress={() => openService(s.id)}
-                />
-              );
-            })}
-          </View>
-        ) : null}
-      </View>
     </ScrollView>
   );
 }
@@ -220,16 +269,21 @@ const styles = StyleSheet.create({
   searchWrap: { marginTop: -30, paddingHorizontal: spacing[5] },
   body: { paddingHorizontal: spacing[5], paddingTop: spacing[6], gap: spacing[6] },
   grid: { flexDirection: 'row', flexWrap: 'wrap', marginHorizontal: -spacing[1], rowGap: spacing[3] },
-  promos: { paddingHorizontal: spacing[5], paddingTop: spacing[6], gap: spacing[3] },
-  again: {
-    flexDirection: 'row',
+  nearScroll: { marginHorizontal: -spacing[5] },
+  nearList: { paddingHorizontal: spacing[5], gap: spacing[3] },
+  near: {
+    width: 124,
     alignItems: 'center',
-    gap: spacing[3],
-    padding: spacing[3],
+    gap: 2,
+    paddingVertical: spacing[3],
+    paddingHorizontal: spacing[2],
     borderRadius: radius.lg,
-    backgroundColor: colors.surface,
-    boxShadow: shadows.card,
+    // Cinza dos blocos de serviço, sem sombra: a sombra fica só na busca.
+    backgroundColor: colors.surfaceMuted,
   },
-  againIcon: { width: 52, height: 52, borderRadius: 16, backgroundColor: colors.surfaceMuted, alignItems: 'center', justifyContent: 'center' },
-  againCta: { height: 36, paddingHorizontal: spacing[4], borderRadius: radius.pill, backgroundColor: colors.brand, justifyContent: 'center' },
+  nearSeal: { position: 'absolute', right: -4, bottom: -4 },
+  nearMeta: { flexDirection: 'row', alignItems: 'center', gap: 3, marginTop: 2 },
+  invite: { flexDirection: 'row', alignItems: 'center', gap: spacing[3], padding: spacing[3], borderRadius: radius.lg, backgroundColor: colors.surfaceMuted },
+  inviteIcon: { width: 36, height: 36, borderRadius: radius.md, backgroundColor: colors.surface, alignItems: 'center', justifyContent: 'center' },
+  promos: { paddingHorizontal: spacing[5], paddingTop: spacing[6], gap: spacing[3] },
 });

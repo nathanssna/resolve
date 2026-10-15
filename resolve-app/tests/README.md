@@ -40,6 +40,8 @@ npm run db:stop
 | `cancel` | cancelamento em cima da hora (12 h): motivo, pausa automática de 7 dias, histórico do cliente, taxa do profissional |
 | `limits` | proposta (teto, data), proposta vencida, pedido sem resposta fecha, limites de pedidos e mensagens, e-mail descartável |
 | `verify` | selo Verificado: bucket privado, envio, revisão no painel (aprova/recusa + push), fotos apagadas, conta excluída |
+| `done` | concluir o serviço: "feito" do profissional, confirmação do cliente, remarcar, cancelar depois do dia, lembretes, automático com foto, disputa e decisão da equipe |
+| `support` | canal oficial: a pessoa escreve para a equipe, a equipe responde pelo painel (segundo fator), push, registro, limite |
 | `admin` | painel de moderação: só administrador com segundo fator; números, pessoas, serviços, denúncias, selo, suspensão, registro |
 
 ## Ponta a ponta

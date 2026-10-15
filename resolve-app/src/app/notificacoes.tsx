@@ -16,7 +16,7 @@ type Device = Awaited<ReturnType<typeof pushStatus>>;
 const DEVICE: Record<Device, { value: string; hint: string }> = {
   granted: { value: 'Ativadas', hint: 'Você recebe os avisos escolhidos abaixo.' },
   denied: { value: 'Desativadas', hint: 'Ative para saber na hora de novas mensagens e propostas.' },
-  blocked: { value: 'Desativadas', hint: 'As notificações estão bloqueadas. Ative o Resolve nos ajustes do celular.' },
+  blocked: { value: 'Desativadas', hint: 'As notificações estão bloqueadas. Ative a Rezolveaê nos ajustes do celular.' },
   unavailable: { value: 'Indisponíveis aqui', hint: 'As notificações funcionam no app instalado no celular.' },
 };
 
@@ -72,7 +72,7 @@ export default function Notificacoes() {
 
   const enable = async () => {
     if (device === 'blocked') {
-      Linking.openSettings().catch(() => notify('Abra os ajustes do celular e ative as notificações do Resolve.'));
+      Linking.openSettings().catch(() => notify('Abra os ajustes do celular e ative as notificações da Rezolveaê.'));
       return;
     }
     const r = await registerPush({ ask: true });

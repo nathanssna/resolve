@@ -3,10 +3,30 @@ import { useState } from 'react';
 import { Pressable, ScrollView, Share, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { ActionButton, Avatar, Badge, Button, EmptyState, Field, Icon, ListRow, StickyFooter, Text, Timeline, TopBar, type TimelineStep } from '@/components';
+import {
+  ActionButton,
+  Avatar,
+  Badge,
+  Button,
+  DoneSheet,
+  EmptyState,
+  Field,
+  Icon,
+  ListRow,
+  PhotoViewer,
+  RescheduleSheet,
+  ServicePanel,
+  serviceStage,
+  Text,
+  Timeline,
+  TopBar,
+  type ServiceAction,
+  type TimelineStep,
+} from '@/components';
 import { authErrorMessage } from '@/lib/authErrors';
 import { callOther } from '@/lib/contact';
 import { useApp } from '@/state/app';
+import { useSignedUrls } from '@/state/photoUrls';
 import { addressLine } from '@/state/addresses';
 import { useCatalog } from '@/state/catalog';
 import { colors, radius, spacing } from '@/theme/tokens';
@@ -16,13 +36,17 @@ import { notify, confirm } from '@/utils/dialog';
 
 export default function PedidoDetalhe() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { role, orders, completeOrder, cancelOrder, rateOrder } = useApp();
+  const { role, orders, markDone, confirmDone, requestReschedule, respondReschedule, disputeOrder, askTeam, cancelOrder, rateOrder } = useApp();
   const isPro = role === 'profissional';
   const { getProfessional, getService } = useCatalog();
   const order = orders.find((o) => o.id === id);
   const [stars, setStars] = useState(0);
   const [comment, setComment] = useState('');
   const [busy, setBusy] = useState(false);
+  const [doneOpen, setDoneOpen] = useState(false);
+  const [rescheduleOpen, setRescheduleOpen] = useState(false);
+  const [viewer, setViewer] = useState<number | null>(null);
+  const donePhotos = useSignedUrls(order?.donePhotos ?? [], 'done-photos');
   const run = (action: () => Promise<void>) => {
     if (busy) return;
     setBusy(true);
@@ -55,10 +79,31 @@ export default function PedidoDetalhe() {
     { label: 'Dia do serviço', detail: order.when, state: done ? 'done' : canceled ? 'todo' : 'current' },
     {
       label: canceled ? (order.canceledLate ? 'Cancelado em cima da hora' : 'Cancelado') : 'Concluído',
-      detail: done ? 'Tudo resolvido' : canceled ? order.cancelReason : undefined,
+      detail: done ? 'Tudo resolvido' : canceled ? order.cancelReason : order.doneAt ? 'Aguardando a confirmação do cliente' : undefined,
       state: done ? 'done' : canceled ? 'current' : 'todo',
     },
   ];
+
+  const stage = serviceStage(order, isPro, name);
+  const photoUris = order.donePhotos.map((p) => donePhotos[p]);
+  // Remarcar e cancelar ficam embaixo enquanto o serviço está só combinado (sem esperar resposta nem análise).
+  const open = !done && !canceled && !order.doneAt && !order.disputed;
+  const act = (a: ServiceAction) => {
+    const id = order.id;
+    if (a === 'done') return setDoneOpen(true);
+    if (a === 'reschedule') return setRescheduleOpen(true);
+    if (a === 'confirm') return run(() => confirmDone(id, true));
+    if (a === 'deny')
+      return confirm(`O serviço não foi feito? ${name} será avisado e vocês poderão remarcar ou cancelar.`, () => run(() => confirmDone(id, false)), {
+        confirmLabel: 'Confirmar',
+      });
+    if (a === 'acceptReschedule') return run(() => respondReschedule(id, true));
+    if (a === 'declineReschedule' || a === 'withdrawReschedule') return run(() => respondReschedule(id, false));
+    if (a === 'dispute')
+      return confirm('Discordar? A equipe da Rezolveaê vai ler a conversa, ver as fotos e decidir.', () => run(() => disputeOrder(id)), { confirmLabel: 'Discordar' });
+    if (a === 'askTeam')
+      return confirm(`Pedir ajuda à equipe? Ela vai ler a conversa e pode concluir o serviço por ${name}.`, () => run(() => askTeam(id)), { confirmLabel: 'Pedir' });
+  };
 
   const headline = canceled ? 'Serviço cancelado' : done ? 'Tudo resolvido!' : `Combinado para ${order.when.toLowerCase()}`;
 
@@ -75,6 +120,8 @@ export default function PedidoDetalhe() {
             {service?.title} · {order.address.line}
           </Text>
         </View>
+
+        {stage ? <ServicePanel stage={stage} photoUris={photoUris} busy={busy} onAction={act} onOpenPhoto={setViewer} /> : null}
 
         <View style={styles.proCard}>
           <View style={styles.proTop}>
@@ -182,29 +229,45 @@ export default function PedidoDetalhe() {
           </View>
         ) : null}
 
-        {!done && !canceled ? (
-          <Button
-            variant="link"
-            onPress={() =>
-              // Em cima da hora: tela própria, com motivo. No prazo: só confirma.
-              cancelIsLate(order.schedule)
-                ? router.push({ pathname: '/pedido/cancelar', params: { id: order.id } })
-                : confirm(isPro ? 'Cancelar este serviço? Avise o cliente pelo chat.' : 'Cancelar este serviço? Avise o profissional pelo chat.', () => run(() => cancelOrder(order.id)), { confirmLabel: 'Cancelar', danger: true })
-            }
-            style={{ alignSelf: 'center' }}
-          >
-            Cancelar serviço
-          </Button>
+        {open ? (
+          <View style={styles.links}>
+            {stage?.primary !== 'reschedule' && stage?.secondary !== 'reschedule' && !order.reschedule ? (
+              <Button variant="link" onPress={() => setRescheduleOpen(true)}>
+                Remarcar
+              </Button>
+            ) : null}
+            <Button
+              variant="link"
+              onPress={() =>
+                // Em cima da hora: tela própria, com motivo. No prazo: só confirma.
+                cancelIsLate(order.schedule, { pro: isPro, contested: order.doneBlocked })
+                  ? router.push({ pathname: '/pedido/cancelar', params: { id: order.id } })
+                  : confirm(isPro ? 'Cancelar este serviço? Avise o cliente pelo chat.' : 'Cancelar este serviço? Avise o profissional pelo chat.', () => run(() => cancelOrder(order.id)), {
+                      confirmLabel: 'Cancelar',
+                      danger: true,
+                    })
+              }
+            >
+              Cancelar serviço
+            </Button>
+          </View>
         ) : null}
       </ScrollView>
 
-      {!done && !canceled ? (
-        <StickyFooter>
-          <Button variant="primary" block iconLeft="check" disabled={busy} onPress={() => run(() => completeOrder(order.id))}>
-            Serviço concluído
-          </Button>
-        </StickyFooter>
-      ) : null}
+      <DoneSheet
+        visible={doneOpen}
+        client={name}
+        onClose={() => setDoneOpen(false)}
+        onSubmit={(photos, onProgress) => markDone(order.id, photos, onProgress)}
+      />
+      <RescheduleSheet
+        visible={rescheduleOpen}
+        other={name}
+        current={order.schedule}
+        onClose={() => setRescheduleOpen(false)}
+        onSubmit={(schedule) => requestReschedule(order.id, schedule)}
+      />
+      <PhotoViewer uris={photoUris.filter((u): u is string => !!u)} index={viewer} onClose={() => setViewer(null)} />
     </SafeAreaView>
   );
 }
@@ -220,4 +283,5 @@ const styles = StyleSheet.create({
   rate: { padding: spacing[4], borderRadius: radius.xl, backgroundColor: colors.brandTint, alignItems: 'center' },
   stars: { flexDirection: 'row', gap: spacing[2], paddingVertical: spacing[2] },
   quote: { textAlign: 'center', fontStyle: 'italic' },
+  links: { flexDirection: 'row', justifyContent: 'center', gap: spacing[6] },
 });

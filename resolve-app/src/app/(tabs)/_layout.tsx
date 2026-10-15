@@ -4,6 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Icon, type IconName } from '@/components';
 import { useApp } from '@/state/app';
+import { useSupport } from '@/state/support';
 import { colors, fonts, radius } from '@/theme/tokens';
 
 /** Ícone da aba: a ativa ganha uma pílula amarela atrás. */
@@ -33,6 +34,8 @@ function tabIcon(name: IconName) {
 export default function TabsLayout() {
   const insets = useSafeAreaInsets();
   const { unreadTotal, orders } = useApp();
+  // Respostas da Rezolveaê também contam no número de Mensagens.
+  const { unread: supportUnread } = useSupport();
   const activeOrders = orders.filter((o) => o.status === 'combinado').length;
 
   return (
@@ -61,7 +64,7 @@ export default function TabsLayout() {
       <Tabs.Screen name="inicio" options={{ title: 'Início', tabBarIcon: tabIcon('house') }} />
       <Tabs.Screen
         name="mensagens"
-        options={{ title: 'Mensagens', tabBarIcon: tabIcon('message-circle'), tabBarBadge: unreadTotal || undefined }}
+        options={{ title: 'Mensagens', tabBarIcon: tabIcon('message-circle'), tabBarBadge: unreadTotal + supportUnread || undefined }}
       />
       <Tabs.Screen
         name="pedidos"

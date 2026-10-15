@@ -6,32 +6,19 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button, CatalogFallback, EmptyState, FilterChip, Icon, ProfessionalOption, StickyFooter, Text, TopBar } from '@/components';
 import { useAddresses } from '@/state/addresses';
 import { useApp } from '@/state/app';
-import { useDistances, type Distance } from '@/state/distances';
-import { useCatalog, type Professional } from '@/state/catalog';
+import { useDistances } from '@/state/distances';
+import { useCatalog } from '@/state/catalog';
 import { colors, radius, spacing } from '@/theme/tokens';
 import { firstName, formatCount, formatExperience } from '@/utils/format';
+import { sortProfessionals, type ProSort } from '@/utils/rankProfessionals';
 
-type Sort = 'recomendados' | 'proximos' | 'avaliados' | 'rapidos';
-
-const FILTERS: { id: Sort; label: string }[] = [
+const FILTERS: { id: ProSort; label: string }[] = [
   { id: 'recomendados', label: 'Recomendados' },
   // Só com o endereço do cliente localizado.
   { id: 'proximos', label: 'Mais próximos' },
   { id: 'avaliados', label: 'Mais bem avaliados' },
   { id: 'rapidos', label: 'Respondem rápido' },
 ];
-
-/** Recomendação simples: nota, volume e rapidez. */
-const score = (p: Professional) => p.rating * 20 + Math.min(p.jobs, 500) / 50 - p.replyMin / 5;
-
-function sortList(list: Professional[], sort: Sort, dist?: Map<string, Distance> | null) {
-  const copy = [...list];
-  if (sort === 'recomendados') copy.sort((a, b) => score(b) - score(a));
-  if (sort === 'proximos') copy.sort((a, b) => (dist?.get(a.id)?.km ?? 999) - (dist?.get(b.id)?.km ?? 999));
-  if (sort === 'avaliados') copy.sort((a, b) => b.rating - a.rating || b.reviews - a.reviews);
-  if (sort === 'rapidos') copy.sort((a, b) => a.replyMin - b.replyMin);
-  return copy;
-}
 
 export default function Profissionais() {
   const { serviceId } = useLocalSearchParams<{ serviceId: string }>();
@@ -45,11 +32,11 @@ export default function Profissionais() {
   const everyone = useMemo(() => getProfessionals(serviceId).filter((p) => !blocked.includes(p.id)), [getProfessionals, serviceId, blocked]);
   const all = useMemo(() => (dist ? everyone.filter((p) => dist.get(p.id)?.inRange) : everyone), [everyone, dist]);
   const noArea = useMemo(() => (dist ? everyone.filter((p) => !dist.has(p.id)) : []), [everyone, dist]);
-  const [picked, setSort] = useState<Sort>('recomendados');
+  const [picked, setSort] = useState<ProSort>('recomendados');
   const sort = picked === 'proximos' && !dist ? 'recomendados' : picked;
-  const list = useMemo(() => [...sortList(all, sort, dist), ...sortList(noArea, sort === 'proximos' ? 'recomendados' : sort)], [all, noArea, sort, dist]);
-  const best = useMemo(() => sortList(all, 'recomendados')[0]?.id, [all]);
-  const fastest = useMemo(() => sortList(all, 'rapidos')[0]?.id, [all]);
+  const list = useMemo(() => [...sortProfessionals(all, sort, dist), ...sortProfessionals(noArea, sort === 'proximos' ? 'recomendados' : sort)], [all, noArea, sort, dist]);
+  const best = useMemo(() => sortProfessionals(all, 'recomendados')[0]?.id, [all]);
+  const fastest = useMemo(() => sortProfessionals(all, 'rapidos')[0]?.id, [all]);
   // Começa no recomendado (também quando a lista chega depois de abrir a tela).
   const [pickedPro, setSelected] = useState<string>();
   const selected = pickedPro ?? best ?? list[0]?.id;

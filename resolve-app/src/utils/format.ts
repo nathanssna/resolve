@@ -41,6 +41,19 @@ export function formatDay(ts: number) {
   return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}`;
 }
 
+const WEEKDAYS = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+
+/** Separador de dia no chat: "Hoje", "Ontem", "Sex, 10/10" (com o ano se não for o atual). */
+export function formatDayDivider(ts: number) {
+  const label = formatDay(ts);
+  if (label === 'Ontem') return label;
+  const d = new Date(ts);
+  const today = new Date();
+  if (d.toDateString() === today.toDateString()) return 'Hoje';
+  const year = d.getFullYear() === today.getFullYear() ? '' : `/${d.getFullYear()}`;
+  return `${WEEKDAYS[d.getDay()]}, ${label}${year}`;
+}
+
 /** Primeiro nome. */
 export function firstName(name: string) {
   return name.split(' ')[0];

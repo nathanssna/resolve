@@ -125,7 +125,7 @@ export default function PerfilProfissional() {
               </View>
             )}
             <Text variant="caption" color={colors.inkMuted}>
-              {pro.reviews === 1 ? '1 avaliação' : pro.reviews ? `${formatCount(pro.reviews)} avaliações` : 'no Resolve'}
+              {pro.reviews === 1 ? '1 avaliação' : pro.reviews ? `${formatCount(pro.reviews)} avaliações` : 'na Rezolveaê'}
             </Text>
           </View>
           <View style={styles.stat}>
@@ -187,7 +187,7 @@ export default function PerfilProfissional() {
             </Text>
           ) : list.length === 0 ? (
             <Text variant="bodySm" color={colors.inkMuted}>
-              {`${firstName(pro.name)} ainda não recebeu avaliações no Resolve.`}
+              {`${firstName(pro.name)} ainda não recebeu avaliações na Rezolveaê.`}
             </Text>
           ) : (
             <>

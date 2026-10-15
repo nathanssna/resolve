@@ -1,25 +1,66 @@
 import { router, useLocalSearchParams } from 'expo-router';
-import { ScrollView, Share, StyleSheet, View } from 'react-native';
+import { useMemo } from 'react';
+import { Pressable, ScrollView, Share, StyleSheet, View } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { Button, CatalogFallback, CheckItem, EmptyState, Icon, InfoBanner, Rating, SectionHeader, StickyFooter, Text, TopBar } from '@/components';
+import { Avatar, Button, CatalogFallback, CheckItem, EmptyState, Icon, Rating, SectionHeader, StickyFooter, Text, TopBar } from '@/components';
 import { authErrorMessage } from '@/lib/authErrors';
+import { useAddresses } from '@/state/addresses';
 import { useApp } from '@/state/app';
-import { useCatalog } from '@/state/catalog';
-import { colors, radius, shadows, spacing } from '@/theme/tokens';
+import { useCatalog, type Professional } from '@/state/catalog';
+import { useDistances } from '@/state/distances';
+import { colors, fonts, radius, shadows, spacing } from '@/theme/tokens';
 import { notify } from '@/utils/dialog';
+import { formatDecimal } from '@/utils/format';
+import { sortProfessionals } from '@/utils/rankProfessionals';
 
-const howItWorks = [
-  { n: '1', title: 'Conte o que precisa', text: 'Descreva o problema e quando quer o serviço.' },
-  { n: '2', title: 'Converse e receba propostas', text: 'O profissional responde pelo chat com valor e horário.' },
-  { n: '3', title: 'Combine e pronto', text: 'Aceite a proposta e acompanhe tudo por aqui.' },
-];
+/** Linha de "Quem atende": toque abre o perfil. */
+function ProRow({ pro, serviceId }: { pro: Professional; serviceId: string }) {
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={`${pro.name}${pro.verified ? ', verificado' : ''}, ${pro.reviews ? `nota ${formatDecimal(pro.rating)}` : 'novo na Rezolveaê'}, responde em cerca de ${pro.replyMin} minutos`}
+      onPress={() => router.push({ pathname: '/profissional/[id]', params: { id: pro.id, serviceId } })}
+      style={({ pressed }) => [styles.pro, pressed && { opacity: 0.7 }]}
+    >
+      <Avatar size={44} uri={pro.avatarUrl} />
+      <View style={{ flex: 1, gap: 2 }}>
+        <View style={styles.proName}>
+          <Text variant="label" numberOfLines={1} style={{ flexShrink: 1 }}>
+            {pro.name}
+          </Text>
+          {pro.verified ? <Icon name="badge-check" size={16} strokeWidth={2.25} fill={colors.brand} /> : null}
+        </View>
+        <View style={styles.proName}>
+          {/* Sem avaliações ainda: "Novo" em vez de uma nota 0,0. */}
+          {pro.reviews ? <Rating value={pro.rating} count={pro.reviews} size={13} /> : <Text variant="bodySm" style={{ fontFamily: fonts.bold }}>Novo</Text>}
+          <Text variant="bodySm" color={colors.inkMuted}>
+            {`· responde em ~${pro.replyMin} min`}
+          </Text>
+        </View>
+      </View>
+      <Icon name="chevron-right" size={18} strokeWidth={2} />
+    </Pressable>
+  );
+}
 
 export default function ServicoDetalhe() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { getService, getProfessionals, status, refresh } = useCatalog();
   const service = getService(id);
-  const { status: appStatus, isFavorite, toggleFavorite } = useApp();
+  const { status: appStatus, isFavorite, toggleFavorite, blocked } = useApp();
+  const { primary } = useAddresses();
+  const dist = useDistances(primary?.coords);
+  // Mesmo critério da lista de profissionais: sem bloqueados; com distância, quem atende o endereço
+  // (recomendados primeiro) e, no fim, quem não informou a área.
+  const pros = useMemo(() => {
+    const everyone = getProfessionals(id).filter((p) => !blocked.includes(p.id));
+    if (!dist) return sortProfessionals(everyone, 'recomendados');
+    return [
+      ...sortProfessionals(everyone.filter((p) => dist.get(p.id)?.inRange), 'recomendados'),
+      ...sortProfessionals(everyone.filter((p) => !dist.has(p.id)), 'recomendados'),
+    ];
+  }, [getProfessionals, id, blocked, dist]);
   // Favoritos ficam na conta: sem login, entra primeiro.
   const favorite = (sid: string) =>
     appStatus === 'idle' ? router.push('/entrar') : toggleFavorite(sid).catch((e) => notify(`Não foi possível salvar o favorito. ${authErrorMessage(e)}`));
@@ -37,7 +78,6 @@ export default function ServicoDetalhe() {
   }
 
   const fav = isFavorite(service.id);
-  const pros = getProfessionals(service.id);
 
   return (
     <View style={styles.root}>
@@ -47,7 +87,7 @@ export default function ServicoDetalhe() {
             floating
             actions={[
               { icon: 'heart', label: fav ? 'Remover dos favoritos' : 'Favoritar', filled: fav, onPress: () => favorite(service.id) },
-              { icon: 'share', label: 'Compartilhar', onPress: () => Share.share({ message: `${service.title} no Resolve` }).catch(() => {}) },
+              { icon: 'share', label: 'Compartilhar', onPress: () => Share.share({ message: `${service.title} na Rezolveaê` }).catch(() => {}) },
             ]}
           />
           <View style={styles.heroBody}>
@@ -58,9 +98,11 @@ export default function ServicoDetalhe() {
               {service.title}
             </Text>
             <View style={styles.heroMeta}>
-              <Rating value={service.rating} count={service.reviews} suffix="avaliações" size={16} onBrand />
-              <View style={styles.dotSep} />
               <Text variant="label">{service.area}</Text>
+              <View style={styles.dotSep} />
+              <Text variant="label">
+                {pros.length === 0 ? 'nenhum profissional ainda' : pros.length === 1 ? '1 profissional' : `${pros.length} profissionais`}
+              </Text>
             </View>
           </View>
         </View>
@@ -73,28 +115,22 @@ export default function ServicoDetalhe() {
           <View style={{ gap: 14 }}>
             <SectionHeader title="O que dá pra resolver" />
             {service.includes.map((item) => (
-              <CheckItem key={item}>{item}</CheckItem>
+              <CheckItem key={item} tone="success">
+                {item}
+              </CheckItem>
             ))}
           </View>
 
-          <View style={styles.how}>
-            <Text variant="titleSm">Como funciona</Text>
-            {howItWorks.map((s) => (
-              <View key={s.n} style={styles.howRow}>
-                <View style={styles.howN}>
-                  <Text variant="labelLg">{s.n}</Text>
-                </View>
-                <View style={{ flex: 1, gap: 2 }}>
-                  <Text variant="label">{s.title}</Text>
-                  <Text variant="bodySm" color={colors.inkMuted}>
-                    {s.text}
-                  </Text>
-                </View>
-              </View>
-            ))}
+          <View style={{ gap: spacing[2] }}>
+            <SectionHeader title="Quem atende" />
+            {pros.length ? (
+              pros.slice(0, 3).map((p) => <ProRow key={p.id} pro={p} serviceId={service.id} />)
+            ) : (
+              <Text variant="bodySm" color={colors.inkMuted}>
+                · nenhum ainda na sua região
+              </Text>
+            )}
           </View>
-
-          <InfoBanner title="Profissionais verificados" description="Documentos e avaliações conferidos." />
         </View>
       </ScrollView>
 
@@ -139,7 +175,6 @@ const styles = StyleSheet.create({
     paddingTop: spacing[6],
     gap: spacing[6],
   },
-  how: { gap: spacing[4], padding: spacing[4], borderRadius: radius.xl, backgroundColor: colors.brandTint },
-  howRow: { flexDirection: 'row', gap: spacing[3], alignItems: 'flex-start' },
-  howN: { width: 32, height: 32, borderRadius: 16, backgroundColor: colors.brand, alignItems: 'center', justifyContent: 'center' },
+  pro: { flexDirection: 'row', alignItems: 'center', gap: spacing[3], paddingVertical: spacing[2] },
+  proName: { flexDirection: 'row', alignItems: 'center', gap: spacing[1] },
 });

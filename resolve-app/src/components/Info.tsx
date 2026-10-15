@@ -5,11 +5,13 @@ import { Icon, type IconName } from './Icon';
 import { Text } from './Text';
 
 /** Item da lista "Serviços disponíveis". */
-export function CheckItem({ children }: { children: string }) {
+/** `success`: check verde, para o que está incluído (ex.: "O que dá pra resolver"). */
+export function CheckItem({ children, tone = 'brand' }: { children: string; tone?: 'brand' | 'success' }) {
+  const ok = tone === 'success';
   return (
     <View style={styles.check}>
-      <View style={styles.dot}>
-        <Icon name="check" size={13} strokeWidth={3} color={colors.onBrand} />
+      <View style={[styles.dot, ok && { backgroundColor: colors.successTint }]}>
+        <Icon name="check" size={13} strokeWidth={3} color={ok ? colors.success : colors.onBrand} />
       </View>
       <Text variant="body" color={colors.inkBody} style={styles.checkText}>
         {children}

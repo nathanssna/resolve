@@ -75,7 +75,7 @@ async function readBytes(uri: string): Promise<ArrayBuffer> {
 }
 
 /** Envia a foto para `bucket/path`. */
-export async function uploadPhoto(bucket: 'request-photos' | 'avatars' | 'verification', path: string, uri: string, upsert = false) {
+export async function uploadPhoto(bucket: 'request-photos' | 'avatars' | 'verification' | 'done-photos', path: string, uri: string, upsert = false) {
   const body = await readBytes(uri);
   const { error } = await supabase.storage.from(bucket).upload(path, body, { contentType: 'image/jpeg', upsert, cacheControl: '3600' });
   if (error) throw error;

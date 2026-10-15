@@ -56,17 +56,7 @@ export const Field = forwardRef<TextInput, FieldProps>(function Field({ icon, la
 });
 
 /** Campo de busca usado como botão (abre a tela de busca). Fica sobre o topo amarelo. */
-export function SearchTrigger({
-  placeholder = 'O que você precisa?',
-  onPress,
-  onPressWhen,
-  whenLabel = 'Agora',
-}: {
-  placeholder?: string;
-  onPress?: () => void;
-  onPressWhen?: () => void;
-  whenLabel?: string;
-}) {
+export function SearchTrigger({ placeholder = 'O que você precisa?', onPress }: { placeholder?: string; onPress?: () => void }) {
   return (
     <View style={styles.trigger}>
       <Pressable accessibilityRole="search" accessibilityLabel={placeholder} onPress={onPress} style={styles.triggerMain}>
@@ -74,16 +64,6 @@ export function SearchTrigger({
         <Text variant="labelLg" style={{ flex: 1, fontSize: 16 }} numberOfLines={1}>
           {placeholder}
         </Text>
-      </Pressable>
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel={`Quando: ${whenLabel}`}
-        onPress={onPressWhen ?? onPress}
-        style={({ pressed }) => [styles.when, pressed && { opacity: 0.8 }]}
-      >
-        <Icon name="clock" size={16} strokeWidth={2.25} />
-        <Text variant="label">{whenLabel}</Text>
-        <Icon name="chevron-down" size={14} strokeWidth={2.5} />
       </Pressable>
     </View>
   );
@@ -119,19 +99,10 @@ const styles = StyleSheet.create({
     gap: spacing[2],
     height: 60,
     paddingLeft: spacing[5],
-    paddingRight: spacing[2],
+    paddingRight: spacing[5],
     backgroundColor: colors.surface,
     borderRadius: radius.pill,
     boxShadow: shadows.float,
   },
   triggerMain: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: spacing[3], height: '100%' },
-  when: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    height: 44,
-    paddingHorizontal: spacing[3],
-    borderRadius: radius.pill,
-    backgroundColor: colors.surfaceMuted,
-  },
 });

@@ -1,9 +1,9 @@
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { Badge, Button, CatalogFallback, EmptyState, Icon, Segmented, Text } from '@/components';
+import { Badge, Button, CatalogFallback, EmptyState, Icon, Segmented, serviceStage, Text } from '@/components';
 import { soonestFirst, useApp, type Order } from '@/state/app';
 import { useCatalog } from '@/state/catalog';
 import { colors, radius, shadows, spacing } from '@/theme/tokens';
@@ -15,10 +15,12 @@ const statusBadge: Record<Order['status'], { tone: 'brand' | 'success' | 'muted'
   cancelado: { tone: 'muted', label: 'CANCELADO' },
 };
 
-function OrderCard({ order }: { order: Order }) {
+function OrderCard({ order, isPro }: { order: Order; isPro: boolean }) {
   const { getService } = useCatalog();
   const service = getService(order.serviceId);
-  const b = statusBadge[order.status];
+  // Combinado com algo a decidir: a etiqueta diz de quem é a vez.
+  const stage = serviceStage(order, isPro, '');
+  const b = stage ? (stage.tone === 'action' ? { tone: 'brand' as const, label: 'RESPONDER' } : { tone: 'muted' as const, label: 'AGUARDANDO' }) : statusBadge[order.status];
   return (
     <Pressable
       accessibilityRole="button"
@@ -50,7 +52,14 @@ function OrderCard({ order }: { order: Order }) {
 
 export default function Pedidos() {
   const { status, role, refresh, orders } = useApp();
-  const [tab, setTab] = useState<'andamento' | 'historico'>('andamento');
+  // `aba=historico`: o resumo do mês, no painel do profissional, abre direto no histórico.
+  const { aba } = useLocalSearchParams<{ aba?: string }>();
+  const [tab, setTab] = useState<'andamento' | 'historico'>(aba === 'historico' ? 'historico' : 'andamento');
+  const [lastAba, setLastAba] = useState(aba);
+  if (aba !== lastAba) {
+    setLastAba(aba);
+    if (aba === 'historico') setTab('historico');
+  }
   // Em andamento: o próximo serviço primeiro. Histórico: o mais recente primeiro.
   const list = tab === 'andamento' ? orders.filter((o) => o.status === 'combinado').sort(soonestFirst) : orders.filter((o) => o.status !== 'combinado');
 
@@ -69,9 +78,9 @@ export default function Pedidos() {
           ]}
         />
       </View>
-      <ScrollView contentContainerStyle={styles.list}>
+      <ScrollView style={styles.scroll} contentContainerStyle={styles.list}>
         {list.map((o) => (
-          <OrderCard key={o.id} order={o} />
+          <OrderCard key={o.id} order={o} isPro={role === 'profissional'} />
         ))}
         {status === 'idle' ? (
           <View style={{ gap: spacing[4] }}>
@@ -108,7 +117,9 @@ export default function Pedidos() {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: colors.canvas },
+  // Branco atrás da barra de status, como o cabeçalho; o cinza fica só na lista.
+  safe: { flex: 1, backgroundColor: colors.surface },
+  scroll: { flex: 1, backgroundColor: colors.canvas },
   head: { paddingHorizontal: spacing[5], paddingTop: spacing[4], paddingBottom: spacing[4], gap: spacing[4], backgroundColor: colors.surface },
   list: { padding: spacing[5], gap: spacing[3] },
   card: { backgroundColor: colors.surface, borderRadius: radius.xl, padding: spacing[4], gap: spacing[4], boxShadow: shadows.card },

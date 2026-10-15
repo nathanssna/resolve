@@ -50,7 +50,7 @@ export default function ExcluirConta() {
           Tem certeza?
         </Text>
         <Text variant="body" color={colors.inkBody}>
-          A exclusão é definitiva. Para usar o Resolve de novo, você vai precisar criar outra conta.
+          A exclusão é definitiva. Para usar a Rezolveaê de novo, você vai precisar criar outra conta.
         </Text>
         <View style={{ gap: spacing[2] }}>
           <Text variant="label">O que é apagado</Text>

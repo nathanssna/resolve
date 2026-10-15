@@ -227,13 +227,15 @@ export function TypingBubble() {
   );
 }
 
-/** Campo de mensagem com respostas rápidas. */
+/** Campo de mensagem com respostas rápidas (o toque preenche o campo; enviar é com o botão). */
 export function Composer({
   onSend,
   onTyping,
   quickReplies = [],
   prefill,
+  placeholder = 'Escreva uma mensagem',
 }: {
+  placeholder?: string;
   onSend: (text: string) => void;
   /** Chamado enquanto a pessoa digita (para o "digitando…" do outro lado). */
   onTyping?: () => void;
@@ -252,8 +254,8 @@ export function Composer({
   useEffect(() => {
     if (prefill) ref.current?.focus();
   }, [prefill]);
-  const send = (t = text) => {
-    const v = t.trim();
+  const send = () => {
+    const v = text.trim();
     if (!v) return;
     onSend(v);
     setText('');
@@ -263,7 +265,16 @@ export function Composer({
       {quickReplies.length ? (
         <ScrollView horizontal showsHorizontalScrollIndicator={false} keyboardShouldPersistTaps="handled" contentContainerStyle={styles.quick}>
           {quickReplies.map((q) => (
-            <Pressable key={q} accessibilityRole="button" onPress={() => send(q)} style={({ pressed }) => [styles.quickChip, pressed && { backgroundColor: colors.surfaceStrong }]}>
+            <Pressable
+              key={q}
+              accessibilityRole="button"
+              accessibilityHint="Coloca o texto no campo para você revisar e enviar"
+              // Só preenche o campo: um toque sem querer não manda nada.
+              onPress={() => {
+                setText(q);
+                ref.current?.focus();
+              }}
+              style={({ pressed }) => [styles.quickChip, pressed && { backgroundColor: colors.surfaceStrong }]}>
               <Text variant="caption" style={{ fontFamily: fonts.semibold }}>
                 {q}
               </Text>
@@ -279,9 +290,9 @@ export function Composer({
             setText(t);
             if (t.trim()) onTyping?.();
           }}
-          placeholder="Escreva uma mensagem"
+          placeholder={placeholder}
           placeholderTextColor={colors.inkMuted}
-          accessibilityLabel="Escreva uma mensagem"
+          accessibilityLabel={placeholder}
           onSubmitEditing={() => send()}
           returnKeyType="send"
           style={[styles.composerInput, webNoOutline]}
@@ -309,12 +320,16 @@ export function ConversationRow({
   unread,
   typing,
   done,
+  verified,
   onPress,
   avatarUrl,
 }: {
   avatarUrl?: string;
   name: string;
-  service: string;
+  /** Profissional com o selo Verificado: selo ao lado do nome. */
+  verified?: boolean;
+  /** Linha embaixo do nome (sem = sem linha). */
+  service?: string;
   preview: string;
   time: string;
   unread: number;
@@ -334,16 +349,21 @@ export function ConversationRow({
       </View>
       <View style={{ flex: 1, gap: 2 }}>
         <View style={styles.convTop}>
-          <Text variant="labelLg" numberOfLines={1} style={{ flex: 1 }}>
-            {name}
-          </Text>
+          <View style={styles.convName}>
+            <Text variant="labelLg" numberOfLines={1} style={{ flexShrink: 1 }}>
+              {name}
+            </Text>
+            {verified ? <Icon name="badge-check" size={16} strokeWidth={2.25} fill={colors.brand} label="Verificado" /> : null}
+          </View>
           <Text variant="caption" color={unread ? colors.ink : colors.inkMuted}>
             {time}
           </Text>
         </View>
-        <Text variant="caption" color={colors.inkMuted}>
-          {service}
-        </Text>
+        {service ? (
+          <Text variant="caption" color={colors.inkMuted} numberOfLines={1}>
+            {service}
+          </Text>
+        ) : null}
         <View style={styles.convTop}>
           <Text variant="bodySm" color={typing ? colors.success : unread ? colors.ink : colors.inkMuted} numberOfLines={1} style={[{ flex: 1 }, unread ? { fontFamily: fonts.semibold } : null]}>
             {typing ? 'digitando…' : preview}
@@ -362,6 +382,7 @@ export function ConversationRow({
 }
 
 const styles = StyleSheet.create({
+  convName: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 4 },
   cardAction: { alignSelf: 'flex-start', paddingTop: spacing[1] },
   bubbleRow: { flexDirection: 'row', paddingHorizontal: spacing[4] },
   bubble: { maxWidth: '80%', paddingHorizontal: spacing[4], paddingTop: 10, paddingBottom: 6, borderRadius: 20, gap: 2 },

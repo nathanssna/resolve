@@ -320,15 +320,29 @@ export type Database = {
           canceled_at: string | null
           canceled_by: string | null
           canceled_late: boolean
+          client_contest_wrong: boolean
           client_id: string
           completed_at: string | null
+          completed_by: string | null
+          confirm_reminders: number
           conversation_id: string
           created_at: string
+          disputed_at: string | null
+          done_at: string | null
+          done_blocked: boolean
+          done_contested_at: string | null
+          done_photos: string[]
+          followup_at: string | null
+          help_requested_at: string | null
           id: string
           professional_id: string
           proposal_id: string
           reminded_at: string | null
           request_id: string
+          reschedule_at: string | null
+          reschedule_by: string | null
+          reschedule_label: string | null
+          reschedule_requested_at: string | null
           scheduled_at: string | null
           scheduled_label: string
           service_id: string
@@ -342,15 +356,29 @@ export type Database = {
           canceled_at?: string | null
           canceled_by?: string | null
           canceled_late?: boolean
+          client_contest_wrong?: boolean
           client_id: string
           completed_at?: string | null
+          completed_by?: string | null
+          confirm_reminders?: number
           conversation_id: string
           created_at?: string
+          disputed_at?: string | null
+          done_at?: string | null
+          done_blocked?: boolean
+          done_contested_at?: string | null
+          done_photos?: string[]
+          followup_at?: string | null
+          help_requested_at?: string | null
           id?: string
           professional_id: string
           proposal_id: string
           reminded_at?: string | null
           request_id: string
+          reschedule_at?: string | null
+          reschedule_by?: string | null
+          reschedule_label?: string | null
+          reschedule_requested_at?: string | null
           scheduled_at?: string | null
           scheduled_label: string
           service_id: string
@@ -364,15 +392,29 @@ export type Database = {
           canceled_at?: string | null
           canceled_by?: string | null
           canceled_late?: boolean
+          client_contest_wrong?: boolean
           client_id?: string
           completed_at?: string | null
+          completed_by?: string | null
+          confirm_reminders?: number
           conversation_id?: string
           created_at?: string
+          disputed_at?: string | null
+          done_at?: string | null
+          done_blocked?: boolean
+          done_contested_at?: string | null
+          done_photos?: string[]
+          followup_at?: string | null
+          help_requested_at?: string | null
           id?: string
           professional_id?: string
           proposal_id?: string
           reminded_at?: string | null
           request_id?: string
+          reschedule_at?: string | null
+          reschedule_by?: string | null
+          reschedule_label?: string | null
+          reschedule_requested_at?: string | null
           scheduled_at?: string | null
           scheduled_label?: string
           service_id?: string
@@ -420,6 +462,13 @@ export type Database = {
             columns: ["request_id"]
             isOneToOne: true
             referencedRelation: "requests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_reschedule_by_fkey"
+            columns: ["reschedule_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
           {
@@ -682,6 +731,7 @@ export type Database = {
           created_at: string
           details: string | null
           id: string
+          order_id: string | null
           reason: string
           reported_id: string
           reporter_id: string
@@ -694,6 +744,7 @@ export type Database = {
           created_at?: string
           details?: string | null
           id?: string
+          order_id?: string | null
           reason: string
           reported_id: string
           reporter_id?: string
@@ -706,6 +757,7 @@ export type Database = {
           created_at?: string
           details?: string | null
           id?: string
+          order_id?: string | null
           reason?: string
           reported_id?: string
           reporter_id?: string
@@ -719,6 +771,13 @@ export type Database = {
             columns: ["conversation_id"]
             isOneToOne: false
             referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reports_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
             referencedColumns: ["id"]
           },
           {
@@ -931,6 +990,73 @@ export type Database = {
         }
         Relationships: []
       }
+      support_messages: {
+        Row: {
+          body: string
+          created_at: string
+          from_team: boolean
+          id: string
+          user_id: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          from_team: boolean
+          id?: string
+          user_id: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          from_team?: boolean
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "support_messages_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "support_threads"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      support_threads: {
+        Row: {
+          created_at: string
+          last_message_at: string
+          team_last_read_at: string | null
+          user_id: string
+          user_last_read_at: string | null
+          waiting_team: boolean
+        }
+        Insert: {
+          created_at?: string
+          last_message_at?: string
+          team_last_read_at?: string | null
+          user_id: string
+          user_last_read_at?: string | null
+          waiting_team?: boolean
+        }
+        Update: {
+          created_at?: string
+          last_message_at?: string
+          team_last_read_at?: string | null
+          user_id?: string
+          user_last_read_at?: string | null
+          waiting_team?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "support_threads_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       verifications: {
         Row: {
           consent_at: string
@@ -992,15 +1118,29 @@ export type Database = {
           canceled_at: string | null
           canceled_by: string | null
           canceled_late: boolean
+          client_contest_wrong: boolean
           client_id: string
           completed_at: string | null
+          completed_by: string | null
+          confirm_reminders: number
           conversation_id: string
           created_at: string
+          disputed_at: string | null
+          done_at: string | null
+          done_blocked: boolean
+          done_contested_at: string | null
+          done_photos: string[]
+          followup_at: string | null
+          help_requested_at: string | null
           id: string
           professional_id: string
           proposal_id: string
           reminded_at: string | null
           request_id: string
+          reschedule_at: string | null
+          reschedule_by: string | null
+          reschedule_label: string | null
+          reschedule_requested_at: string | null
           scheduled_at: string | null
           scheduled_label: string
           service_id: string
@@ -1091,9 +1231,45 @@ export type Database = {
         Args: { p_id: string; p_resolution: string }
         Returns: undefined
       }
+      admin_resolve_service: {
+        Args: { p_done: boolean; p_report_id: string }
+        Returns: undefined
+      }
       admin_review_verification: {
         Args: { p_approve: boolean; p_id: string; p_reason?: string }
         Returns: undefined
+      }
+      admin_send_support: {
+        Args: { p_body: string; p_user: string }
+        Returns: {
+          body: string
+          created_at: string
+          from_team: boolean
+          id: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "support_messages"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      admin_support_messages: { Args: { p_user: string }; Returns: Json }
+      admin_support_threads: {
+        Args: { p_limit?: number; p_waiting?: boolean }
+        Returns: {
+          avatar_url: string
+          deleted: boolean
+          last_body: string
+          last_from_team: boolean
+          last_message_at: string
+          name: string
+          role: Database["public"]["Enums"]["user_role"]
+          unread: number
+          user_id: string
+          waiting_team: boolean
+        }[]
       }
       admin_suspend: {
         Args: { p_days?: number; p_reason?: string; p_user: string }
@@ -1118,6 +1294,51 @@ export type Database = {
       }
       admin_waive_verification: { Args: { p_user: string }; Returns: undefined }
       am_i_admin: { Args: never; Returns: boolean }
+      ask_team_order: {
+        Args: { p_order_id: string }
+        Returns: {
+          address: Json | null
+          amount: number
+          cancel_reason: string | null
+          canceled_at: string | null
+          canceled_by: string | null
+          canceled_late: boolean
+          client_contest_wrong: boolean
+          client_id: string
+          completed_at: string | null
+          completed_by: string | null
+          confirm_reminders: number
+          conversation_id: string
+          created_at: string
+          disputed_at: string | null
+          done_at: string | null
+          done_blocked: boolean
+          done_contested_at: string | null
+          done_photos: string[]
+          followup_at: string | null
+          help_requested_at: string | null
+          id: string
+          professional_id: string
+          proposal_id: string
+          reminded_at: string | null
+          request_id: string
+          reschedule_at: string | null
+          reschedule_by: string | null
+          reschedule_label: string | null
+          reschedule_requested_at: string | null
+          scheduled_at: string | null
+          scheduled_label: string
+          service_id: string
+          status: Database["public"]["Enums"]["order_status"]
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "orders"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       cancel_order: {
         Args: { p_order_id: string; p_reason?: string }
         Returns: {
@@ -1127,15 +1348,29 @@ export type Database = {
           canceled_at: string | null
           canceled_by: string | null
           canceled_late: boolean
+          client_contest_wrong: boolean
           client_id: string
           completed_at: string | null
+          completed_by: string | null
+          confirm_reminders: number
           conversation_id: string
           created_at: string
+          disputed_at: string | null
+          done_at: string | null
+          done_blocked: boolean
+          done_contested_at: string | null
+          done_photos: string[]
+          followup_at: string | null
+          help_requested_at: string | null
           id: string
           professional_id: string
           proposal_id: string
           reminded_at: string | null
           request_id: string
+          reschedule_at: string | null
+          reschedule_by: string | null
+          reschedule_label: string | null
+          reschedule_requested_at: string | null
           scheduled_at: string | null
           scheduled_label: string
           service_id: string
@@ -1156,6 +1391,7 @@ export type Database = {
           has_phone: boolean
           identity_verified: boolean
           late_cancels: number
+          wrong_contests: number
         }[]
       }
       close_request: {
@@ -1209,15 +1445,74 @@ export type Database = {
           canceled_at: string | null
           canceled_by: string | null
           canceled_late: boolean
+          client_contest_wrong: boolean
           client_id: string
           completed_at: string | null
+          completed_by: string | null
+          confirm_reminders: number
           conversation_id: string
           created_at: string
+          disputed_at: string | null
+          done_at: string | null
+          done_blocked: boolean
+          done_contested_at: string | null
+          done_photos: string[]
+          followup_at: string | null
+          help_requested_at: string | null
           id: string
           professional_id: string
           proposal_id: string
           reminded_at: string | null
           request_id: string
+          reschedule_at: string | null
+          reschedule_by: string | null
+          reschedule_label: string | null
+          reschedule_requested_at: string | null
+          scheduled_at: string | null
+          scheduled_label: string
+          service_id: string
+          status: Database["public"]["Enums"]["order_status"]
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "orders"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      confirm_order_done: {
+        Args: { p_done: boolean; p_order_id: string }
+        Returns: {
+          address: Json | null
+          amount: number
+          cancel_reason: string | null
+          canceled_at: string | null
+          canceled_by: string | null
+          canceled_late: boolean
+          client_contest_wrong: boolean
+          client_id: string
+          completed_at: string | null
+          completed_by: string | null
+          confirm_reminders: number
+          conversation_id: string
+          created_at: string
+          disputed_at: string | null
+          done_at: string | null
+          done_blocked: boolean
+          done_contested_at: string | null
+          done_photos: string[]
+          followup_at: string | null
+          help_requested_at: string | null
+          id: string
+          professional_id: string
+          proposal_id: string
+          reminded_at: string | null
+          request_id: string
+          reschedule_at: string | null
+          reschedule_by: string | null
+          reschedule_label: string | null
+          reschedule_requested_at: string | null
           scheduled_at: string | null
           scheduled_label: string
           service_id: string
@@ -1283,6 +1578,51 @@ export type Database = {
         }
       }
       delete_my_account: { Args: never; Returns: undefined }
+      dispute_order: {
+        Args: { p_order_id: string }
+        Returns: {
+          address: Json | null
+          amount: number
+          cancel_reason: string | null
+          canceled_at: string | null
+          canceled_by: string | null
+          canceled_late: boolean
+          client_contest_wrong: boolean
+          client_id: string
+          completed_at: string | null
+          completed_by: string | null
+          confirm_reminders: number
+          conversation_id: string
+          created_at: string
+          disputed_at: string | null
+          done_at: string | null
+          done_blocked: boolean
+          done_contested_at: string | null
+          done_photos: string[]
+          followup_at: string | null
+          help_requested_at: string | null
+          id: string
+          professional_id: string
+          proposal_id: string
+          reminded_at: string | null
+          request_id: string
+          reschedule_at: string | null
+          reschedule_by: string | null
+          reschedule_label: string | null
+          reschedule_requested_at: string | null
+          scheduled_at: string | null
+          scheduled_label: string
+          service_id: string
+          status: Database["public"]["Enums"]["order_status"]
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "orders"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       get_contact_phone: {
         Args: { p_conversation_id: string }
         Returns: string
@@ -1325,6 +1665,52 @@ export type Database = {
         Args: { p_conversation_id: string }
         Returns: undefined
       }
+      mark_order_done: {
+        Args: { p_order_id: string; p_photos?: string[] }
+        Returns: {
+          address: Json | null
+          amount: number
+          cancel_reason: string | null
+          canceled_at: string | null
+          canceled_by: string | null
+          canceled_late: boolean
+          client_contest_wrong: boolean
+          client_id: string
+          completed_at: string | null
+          completed_by: string | null
+          confirm_reminders: number
+          conversation_id: string
+          created_at: string
+          disputed_at: string | null
+          done_at: string | null
+          done_blocked: boolean
+          done_contested_at: string | null
+          done_photos: string[]
+          followup_at: string | null
+          help_requested_at: string | null
+          id: string
+          professional_id: string
+          proposal_id: string
+          reminded_at: string | null
+          request_id: string
+          reschedule_at: string | null
+          reschedule_by: string | null
+          reschedule_label: string | null
+          reschedule_requested_at: string | null
+          scheduled_at: string | null
+          scheduled_label: string
+          service_id: string
+          status: Database["public"]["Enums"]["order_status"]
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "orders"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      mark_support_read: { Args: never; Returns: undefined }
       my_pause: {
         Args: never
         Returns: {
@@ -1395,6 +1781,96 @@ export type Database = {
         Args: { p_platform: string; p_token: string }
         Returns: undefined
       }
+      request_reschedule: {
+        Args: { p_label: string; p_order_id: string; p_scheduled_at: string }
+        Returns: {
+          address: Json | null
+          amount: number
+          cancel_reason: string | null
+          canceled_at: string | null
+          canceled_by: string | null
+          canceled_late: boolean
+          client_contest_wrong: boolean
+          client_id: string
+          completed_at: string | null
+          completed_by: string | null
+          confirm_reminders: number
+          conversation_id: string
+          created_at: string
+          disputed_at: string | null
+          done_at: string | null
+          done_blocked: boolean
+          done_contested_at: string | null
+          done_photos: string[]
+          followup_at: string | null
+          help_requested_at: string | null
+          id: string
+          professional_id: string
+          proposal_id: string
+          reminded_at: string | null
+          request_id: string
+          reschedule_at: string | null
+          reschedule_by: string | null
+          reschedule_label: string | null
+          reschedule_requested_at: string | null
+          scheduled_at: string | null
+          scheduled_label: string
+          service_id: string
+          status: Database["public"]["Enums"]["order_status"]
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "orders"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      respond_reschedule: {
+        Args: { p_accept: boolean; p_order_id: string }
+        Returns: {
+          address: Json | null
+          amount: number
+          cancel_reason: string | null
+          canceled_at: string | null
+          canceled_by: string | null
+          canceled_late: boolean
+          client_contest_wrong: boolean
+          client_id: string
+          completed_at: string | null
+          completed_by: string | null
+          confirm_reminders: number
+          conversation_id: string
+          created_at: string
+          disputed_at: string | null
+          done_at: string | null
+          done_blocked: boolean
+          done_contested_at: string | null
+          done_photos: string[]
+          followup_at: string | null
+          help_requested_at: string | null
+          id: string
+          professional_id: string
+          proposal_id: string
+          reminded_at: string | null
+          request_id: string
+          reschedule_at: string | null
+          reschedule_by: string | null
+          reschedule_label: string | null
+          reschedule_requested_at: string | null
+          scheduled_at: string | null
+          scheduled_label: string
+          service_id: string
+          status: Database["public"]["Enums"]["order_status"]
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "orders"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       search_services: {
         Args: { p_query: string }
         Returns: {
@@ -1402,6 +1878,23 @@ export type Database = {
           service_id: string
         }[]
       }
+      send_support_message: {
+        Args: { p_body: string }
+        Returns: {
+          body: string
+          created_at: string
+          from_team: boolean
+          id: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "support_messages"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      support_team_avatar: { Args: never; Returns: string }
     }
     Enums: {
       message_kind: "text" | "request" | "proposal" | "system"

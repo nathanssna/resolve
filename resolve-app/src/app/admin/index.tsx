@@ -82,7 +82,7 @@ function Home() {
           {queue.items.slice(0, QUEUE_MAX).map((item) => (
             <QueueCard key={item.key} item={item} />
           ))}
-          {!queue.loading && !pending ? <Empty text="Nenhuma denúncia nem pedido de selo esperando." /> : null}
+          {!queue.loading && !pending ? <Empty text="Nenhuma denúncia, pedido de selo ou mensagem esperando." /> : null}
         </Section>
 
         <Section title={`Últimos ${days} dias`} action={days === 7 ? 'Ver o mês' : 'Ver a semana'} onAction={() => setDays(days === 7 ? 30 : 7)}>
@@ -123,6 +123,7 @@ function Home() {
             </Panel>
           ) : null}
           <Panel>
+            <Row title="Atendimento (canal oficial)" onPress={() => router.push('/admin/atendimento')} />
             <Row title="Todos os serviços combinados" last onPress={() => router.push('/admin/pedidos')} />
           </Panel>
         </Section>

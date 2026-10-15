@@ -154,7 +154,7 @@ const REPORT_SLA = 24 * 3_600_000;
 
 export type QueueItem = {
   key: string;
-  kind: 'denuncia' | 'selo';
+  kind: 'denuncia' | 'selo' | 'atendimento';
   /** Rótulo do tipo no cartão ("DENÚNCIA", "SELO VERIFICADO", "IDENTIDADE"). */
   label: string;
   at: number;
@@ -168,6 +168,7 @@ export type QueueItem = {
 export function useQueue() {
   const reports = useAdminRpc('admin_reports', { p_open: true, p_limit: 200 });
   const seals = useAdminRpc('admin_verifications');
+  const support = useAdminRpc('admin_support_threads', { p_waiting: true });
   // Hora de referência para "atrasada" (fixa enquanto a tela está aberta).
   const [now] = useState(() => Date.now());
   const items: QueueItem[] = [
@@ -193,14 +194,26 @@ export function useQueue() {
       late: false,
       open: () => router.push({ pathname: '/admin/selo', params: { id: v.id } }),
     })),
+    // Mensagens no canal oficial esperando resposta da equipe.
+    ...(support.data ?? []).map((t) => ({
+      key: `a:${t.user_id}`,
+      kind: 'atendimento' as const,
+      label: 'ATENDIMENTO',
+      at: Date.parse(t.last_message_at),
+      title: `${t.name || 'Sem nome'} escreveu para a Rezolveaê`,
+      sub: `“${t.last_body}”`,
+      late: false,
+      open: () => router.push({ pathname: '/admin/atendimento/[id]', params: { id: t.user_id } }),
+    })),
   ];
   return {
     items,
-    loading: !reports.data || !seals.data,
-    failed: reports.failed || seals.failed,
+    loading: !reports.data || !seals.data || !support.data,
+    failed: reports.failed || seals.failed || support.failed,
     reload: () => {
       reports.reload();
       seals.reload();
+      support.reload();
     },
   };
 }
@@ -210,7 +223,7 @@ export function QueueCard({ item }: { item: QueueItem }) {
   return (
     <Pressable accessibilityRole="button" onPress={item.open} style={({ pressed }) => [styles.card, styles.queue, pressed && { opacity: 0.92 }]}>
       <View style={[styles.queueIcon, { backgroundColor: report ? colors.dangerTint : colors.brandTint }]}>
-        <Icon name={report ? 'flag' : 'badge-check'} size={22} color={report ? colors.danger : colors.ink} />
+        <Icon name={report ? 'flag' : item.kind === 'atendimento' ? 'message-circle' : 'badge-check'} size={22} color={report ? colors.danger : colors.ink} />
       </View>
       <View style={{ flex: 1, gap: 2 }}>
         <Text variant="overline" color={report ? colors.danger : colors.inkMuted}>

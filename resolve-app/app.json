@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "Resolve",
+    "name": "Rezolveaê",
     "slug": "resolve",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -30,14 +30,14 @@
       [
         "expo-image-picker",
         {
-          "photosPermission": "O Resolve usa suas fotos para você mostrar o problema ao profissional e escolher sua foto de perfil.",
-          "cameraPermission": "O Resolve usa a câmera para você fotografar o problema e enviar ao profissional."
+          "photosPermission": "A Rezolveaê usa suas fotos para você mostrar o problema ao profissional e escolher sua foto de perfil.",
+          "cameraPermission": "A Rezolveaê usa a câmera para você fotografar o problema e enviar ao profissional."
         }
       ],
       [
         "expo-location",
         {
-          "locationWhenInUsePermission": "O Resolve usa sua localização para marcar de onde você atende (profissionais) e mostrar quem atende perto de você."
+          "locationWhenInUsePermission": "A Rezolveaê usa sua localização para marcar de onde você atende (profissionais) e mostrar quem atende perto de você."
         }
       ],
       [

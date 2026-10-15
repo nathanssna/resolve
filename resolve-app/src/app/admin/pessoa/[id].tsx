@@ -73,7 +73,11 @@ export default function AdminPessoa() {
       onRetry={reload}
       footer={
         p && !p.deleted_at ? (
-          suspended ? (
+          <>
+            <Button variant="primary" block iconLeft="message-circle" onPress={() => router.push({ pathname: '/admin/atendimento/[id]', params: { id } })}>
+              Mandar mensagem
+            </Button>
+            {suspended ? (
             <Button variant="dark" block onPress={unsuspend}>
               Reativar conta
             </Button>
@@ -81,7 +85,8 @@ export default function AdminPessoa() {
             <Button variant="secondary" block iconLeft="ban" onPress={() => setSuspending(true)}>
               Suspender conta
             </Button>
-          )
+            )}
+          </>
         ) : undefined
       }
     >

@@ -55,6 +55,7 @@ let pass = 0, fail = 0; const ok = (c, m) => { c ? pass++ : fail++; console.log(
   // serviço em andamento + pedido aberto + serviço concluído e avaliado
   const p1 = (await one(pro, 'insert into public.proposals (conversation_id, request_id, amount, scheduled_label) values ($1, $2, 100, $3) returning id', [conv, r1, 'Hoje'])).id;
   const o1 = await one(cli, 'select * from public.accept_proposal($1)', [p1]);
+  await one(pro, 'select 1 x from public.mark_order_done($1)', [o1.id]);
   await one(cli, 'select 1 x from public.complete_order($1)', [o1.id]);
   await one(cli, "select 1 x from public.rate_order($1, 5, 'Ótimo')", [o1.id]);
   const r2 = await req('eletricista');

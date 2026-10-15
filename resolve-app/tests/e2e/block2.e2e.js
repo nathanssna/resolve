@@ -83,7 +83,7 @@ const login = async (email) => (await (await fetch(`${URL_}/auth/v1/token?grant_
   ok((await cli.text()).includes('Encanador') && (await cli.text()).includes('Eletricista'), 'perfil lista os dois serviços');
   await cli.press('Pedir orçamento a Pro');
   ok(await cli.waitText('Qual serviço?'), 'pedido pergunta qual serviço (profissional faz 2)');
-  ok(await cli.waitText('Novo no Resolve'), 'pedido mostra "Novo no Resolve", não 0,0');
+  ok(await cli.waitText('Novo na Rezolveaê'), 'pedido mostra "Novo na Rezolveaê", não 0,0');
   await cli.pressText('Eletricista', { exact: true });
   await cli.type('O que você precisa?', 'Trocar duas tomadas da sala');
   await cli.press('Continuar'); await cli.waitText('PASSO 2 DE 3'); await cli.press('Continuar'); await cli.waitText('PASSO 3 DE 3');
@@ -120,7 +120,7 @@ const login = async (email) => (await (await fetch(`${URL_}/auth/v1/token?grant_
   console.log('\nProfissional');
   const pro = await device(proS, 'pro');
   await pro.page.goto(`${APP}/inicio`, { waitUntil: 'networkidle0' });
-  ok(await pro.waitText('1 pedido esperando resposta') && !(await pro.text()).includes('Torneira pingando no banheiro'), 'painel: só o pedido em aberto (o cancelado some)');
+  ok(await pro.waitText('Enviar proposta') && (await pro.text()).split('Enviar proposta').length === 2 && !(await pro.text()).includes('Torneira pingando no banheiro'), 'painel: só o pedido em aberto (o cancelado some)');
   await pro.page.goto(`${APP}/chat/${conv}`, { waitUntil: 'networkidle0' });
   ok(await pro.waitText('CANCELADO') && (await pro.text()).split('Recusar pedido').length - 1 === 1, 'chat do profissional: 1 pedido aberto, o outro cancelado');
   await pro.press('Enviar proposta');
@@ -146,8 +146,12 @@ const login = async (email) => (await (await fetch(`${URL_}/auth/v1/token?grant_
   const phone = await rpc(proS, 'get_contact_phone', { p_conversation_id: conv });
   ok(phone === '+5511912345678', `profissional recebe o telefone do cliente depois de combinar (${phone})`);
   const [order] = await api(cliS, `/rest/v1/orders?request_id=eq.${reqEle}&select=id`);
+  // O profissional marca "Serviço feito" (só a partir do começo do período combinado) e o cliente confirma.
+  const marked = await rpc(proS, 'mark_order_done', { p_order_id: order.id });
+  if (marked?.message) console.log(`  (o período combinado ainda não começou: ${marked.message})`);
   await cli.page.goto(`${APP}/pedido/${order.id}`, { waitUntil: 'networkidle0' });
-  await cli.press('Serviço concluído');
+  ok(await cli.waitText('marcou o serviço como feito'), 'cliente vê "Pro marcou o serviço como feito"');
+  await cli.press('Sim, foi feito');
   ok(await cli.waitText('Como foi o serviço de Pro?'), 'concluído; pede avaliação');
   await cli.press('5 estrelas');
   await cli.type('Conte como foi (opcional)', 'Pontual e caprichoso, recomendo!');

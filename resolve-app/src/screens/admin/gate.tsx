@@ -54,7 +54,7 @@ export function GateScreen({ gate, recheck }: { gate: Gate; recheck: () => void 
   return (
     <View style={styles.box}>
       {gate === 'denied' ? (
-        <EmptyState icon="shield-check" title="Acesso restrito" description="Esta área é só da equipe do Resolve." />
+        <EmptyState icon="shield-check" title="Acesso restrito" description="Esta área é só da equipe da Rezolveaê." />
       ) : gate === 'loading' || gate === 'error' ? (
         <CatalogFallback status={gate} onRetry={recheck} />
       ) : gate === 'enroll' ? (
@@ -66,7 +66,7 @@ export function GateScreen({ gate, recheck }: { gate: Gate; recheck: () => void 
   );
 }
 
-/** Primeira vez: cadastrar o Resolve no app autenticador e confirmar com um código. */
+/** Primeira vez: cadastrar a Rezolveaê no app autenticador e confirmar com um código. */
 function Enroll({ onDone }: { onDone: () => void }) {
   const [factor, setFactor] = useState<{ id: string; qr: string; secret: string; uri: string } | null>(null);
   const [code, setCode] = useState('');
@@ -79,7 +79,7 @@ function Enroll({ onDone }: { onDone: () => void }) {
       // Cadastro começado e não confirmado (saiu no meio): recomeça do zero.
       const { data: list } = await supabase.auth.mfa.listFactors();
       for (const f of list?.all ?? []) if (f.status === 'unverified') await supabase.auth.mfa.unenroll({ factorId: f.id });
-      const { data, error: e } = await supabase.auth.mfa.enroll({ factorType: 'totp', friendlyName: 'Resolve' });
+      const { data, error: e } = await supabase.auth.mfa.enroll({ factorType: 'totp', friendlyName: 'Rezolveaê' });
       if (!alive) return;
       if (e || !data) setError('Não foi possível começar. Volte e tente de novo.');
       else setFactor({ id: data.id, qr: data.totp.qr_code, secret: data.totp.secret, uri: data.totp.uri });
@@ -109,7 +109,7 @@ function Enroll({ onDone }: { onDone: () => void }) {
       </Text>
       {factor ? (
         <>
-          <Text variant="label">1. Adicione o Resolve no app autenticador</Text>
+          <Text variant="label">1. Adicione a Rezolveaê no app autenticador</Text>
           {Platform.OS === 'web' ? (
             <View style={styles.qr}>
               <SvgXml xml={factor.qr.slice(factor.qr.indexOf(',') + 1)} width={180} height={180} />
@@ -170,7 +170,7 @@ function Code({ onDone }: { onDone: () => void }) {
         Código do app autenticador
       </Text>
       <Text variant="body" color={colors.inkBody}>
-        Abra o app autenticador e digite o código do Resolve.
+        Abra o app autenticador e digite o código da Rezolveaê.
       </Text>
       <Field label="Código de 6 dígitos" placeholder="000000" value={code} onChangeText={(t) => setCode(t.replace(/\D/g, '').slice(0, 6))} keyboardType="number-pad" inputMode="numeric" maxLength={6} autoFocus onSubmitEditing={confirm} />
       {error ? (

@@ -1,6 +1,6 @@
 import { router, useIsFocused, useLocalSearchParams } from 'expo-router';
-import { useEffect, useRef, useState } from 'react';
-import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { useEffect, useState } from 'react';
+import { FlatList, KeyboardAvoidingView, Platform, Pressable, StyleSheet, View } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import {
@@ -17,6 +17,7 @@ import {
   PhotoViewer,
   ProposalCard,
   ProposalSheet,
+  serviceStage,
   RequestCard,
   SystemNote,
   Text,
@@ -26,16 +27,19 @@ import {
 import { authErrorMessage } from '@/lib/authErrors';
 import { callOther } from '@/lib/contact';
 import { setOpenChat } from '@/lib/push';
-import { useApp } from '@/state/app';
+import { soonestFirst, useApp, type Message } from '@/state/app';
 import { useAuth } from '@/state/auth';
 import { useCatalog } from '@/state/catalog';
 import { addressLine } from '@/state/addresses';
 import { useSignedUrls } from '@/state/photoUrls';
 import { useTyping } from '@/state/typing';
 import { colors, radius, shadows, spacing } from '@/theme/tokens';
-import { formatBRL } from '@/utils/format';
+import { formatBRL, formatDayDivider } from '@/utils/format';
 import { supabase } from '@/lib/supabase';
 import { confirm, notify } from '@/utils/dialog';
+
+/** Linha da conversa: um separador de dia ou uma mensagem. */
+type Item = { key: string; day: string } | { key: string; message: Message };
 
 export default function Chat() {
   // `proposta`: id do pedido para já abrir a proposta (botão do painel do profissional).
@@ -49,12 +53,15 @@ export default function Chat() {
   // Do lado do cliente, os dados do profissional vêm do catálogo.
   const pro = conv && !isPro ? getProfessional(conv.proId) : undefined;
   const convOrders = orders.filter((o) => o.conversationId === conv?.id);
-  // Faixa no topo: serviços combinados; sem nenhum, o do pedido mais recente (para avaliar).
+  // Uma faixa só no topo: o próximo serviço combinado (e quantos há); sem nenhum, o cliente
+  // vê o último concluído enquanto não avaliar. Avaliado, a faixa some.
   const latestOrder = convOrders.find((o) => o.id === conv?.latestJob?.orderId);
-  const active = convOrders.filter((o) => o.status === 'combinado').sort((a, b) => a.createdAt - b.createdAt);
-  const banners = active.length ? active : latestOrder && latestOrder.status === 'concluido' ? [latestOrder] : [];
+  const active = convOrders.filter((o) => o.status === 'combinado').sort(soonestFirst);
+  const toRate = !isPro && latestOrder?.status === 'concluido' && latestOrder.rating == null ? latestOrder : undefined;
+  // Serviço que pede uma resposta (confirmar, nova data…) vem antes na faixa.
+  const staged = active.map((o) => ({ o, stage: serviceStage(o, isPro, conv?.other.name.split(' ')[0] ?? '') })).find((x) => x.stage);
+  const stage = staged?.stage;
   const insets = useSafeAreaInsets();
-  const scroll = useRef<ScrollView>(null);
   const [prefill, setPrefill] = useState<{ text: string; key: number }>();
   const [busy, setBusy] = useState<string | null>(null);
   const { otherTyping: typing, notifyTyping } = useTyping(conv?.id, session?.user.id);
@@ -83,23 +90,20 @@ export default function Chat() {
   };
 
 
-  const count = conv?.messages.length ?? 0;
   useEffect(() => {
     // Só marca como lido o que está na tela (não com o pedido aberto por cima).
     if (focused && conv?.unread) markRead(conv.id);
-    const t = setTimeout(() => scroll.current?.scrollToEnd({ animated: true }), 60);
-    return () => clearTimeout(t);
-  }, [count, typing, focused, conv?.unread, conv?.id, markRead]);
+  }, [focused, conv?.unread, conv?.id, markRead]);
 
   // Profissional: histórico do cliente, no pedido em aberto (serviços concluídos, cancelamentos em cima da hora).
   const clientId = isPro ? conv?.clientId : undefined;
-  const [record, setRecord] = useState<{ clientId: string; done: number; late: number; phone: boolean; verified: boolean } | null>(null);
+  const [record, setRecord] = useState<{ clientId: string; done: number; late: number; phone: boolean; verified: boolean; wrong: number } | null>(null);
   useEffect(() => {
     if (!clientId) return;
     let alive = true;
     supabase.rpc('client_track_record', { p_client_id: clientId }).then(({ data }) => {
       const r = data?.[0];
-      if (alive && r) setRecord({ clientId, done: r.done, late: r.late_cancels, phone: r.has_phone, verified: r.identity_verified });
+      if (alive && r) setRecord({ clientId, done: r.done, late: r.late_cancels, phone: r.has_phone, verified: r.identity_verified, wrong: r.wrong_contests });
     });
     return () => {
       alive = false;
@@ -132,7 +136,7 @@ export default function Chat() {
   const dealt = active.length > 0;
   const quick = isPro
     ? dealt
-      ? ['Estou a caminho', 'Chego em 15 minutos', 'Serviço finalizado!']
+      ? ['Estou a caminho', 'Chego em 15 minutos', 'Qual o ponto de referência?']
       : ['Pode mandar mais fotos?', 'Consigo ir hoje', 'Qual o melhor horário?']
     : dealt
       ? ['Obrigado!', 'Pode confirmar o horário?', 'Já está a caminho?']
@@ -203,6 +207,69 @@ export default function Chat() {
   ];
   const combined = convOrders.some((o) => o.status === 'combinado' || o.status === 'concluido');
   const openCount = openJobs.length;
+  // Mensagens com um separador a cada dia novo ("Hoje", "Ontem", "Sex, 10/10").
+  const items: Item[] = [];
+  conv.messages.forEach((m, i) => {
+    const prev = conv.messages[i - 1];
+    if (!prev || new Date(prev.at).toDateString() !== new Date(m.at).toDateString()) items.push({ key: `day-${m.id}`, day: formatDayDivider(m.at) });
+    items.push({ key: m.id, message: m });
+  });
+  // "Visto" embaixo da minha última mensagem, se o outro já abriu a conversa depois dela e ainda não respondeu.
+  const lastMine = conv.messages.findLast((m) => m.from !== 'system')?.from === 'me' ? conv.messages.findLast((m) => m.from === 'me') : undefined;
+  const seenId = lastMine && conv.otherReadAt >= lastMine.at ? lastMine.id : undefined;
+
+  const renderMessage = (m: Message) => {
+    switch (m.kind) {
+      case 'request': {
+        const job = jobOf(m.jobId);
+        const open = !!job && !job.orderId && !job.closedBy;
+        return (
+          <RequestCard
+            mine={m.from === 'me'}
+            closed={job?.closedBy ? { cliente: 'CANCELADO', profissional: 'RECUSADO', sistema: 'SEM RESPOSTA' }[job.closedBy] : undefined}
+            action={open && !locked ? { label: isPro ? 'Recusar pedido' : 'Cancelar pedido', onPress: () => close(job.id) } : undefined}
+            serviceTitle={m.serviceTitle}
+            description={m.description}
+            when={m.when}
+            address={
+              m.addressPartial
+                ? [m.address.area, m.address.city].filter(Boolean).join(' · ')
+                : addressLine({ line: m.address.line, complement: m.address.complement ?? '', area: m.address.area })
+            }
+            addressHint={m.addressPartial ? 'Endereço completo depois de combinar' : undefined}
+            clientNote={open ? clientNote : undefined}
+            at={m.at}
+            photos={m.photos.map((p) => photoUrls[p])}
+            onOpenPhoto={(index) => {
+              const uris = m.photos.map((p) => photoUrls[p]).filter((u): u is string => !!u);
+              setViewer({ uris, index: Math.min(index, uris.length - 1) });
+            }}
+          />
+        );
+      }
+      case 'proposal':
+        return (
+          <ProposalCard
+            mine={m.from === 'me'}
+            serviceTitle={multi ? jobTitle(m.jobId) : undefined}
+            amount={m.amount}
+            when={m.when}
+            note={m.note}
+            status={m.status}
+            at={m.at}
+            onAccept={() => answer(m.id, true)}
+            onDecline={() => answer(m.id, false)}
+            onCounter={() => setPrefill({ text: 'Consigo fechar por R$ ', key: Date.now() })}
+          />
+        );
+      case 'system': {
+        const title = multi ? jobTitle(m.jobId) : undefined;
+        return <SystemNote text={title ? `${title}: ${m.text}` : m.text} tone={m.text.startsWith('Serviço combinado') ? 'success' : 'muted'} />;
+      }
+      default:
+        return <Bubble mine={m.from === 'me'} text={m.text} at={m.at} />;
+    }
+  };
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
@@ -237,89 +304,63 @@ export default function Chat() {
           <IconButton icon="ellipsis-vertical" label="Mais opções" onPress={() => setMenu(true)} />
         </View>
 
-        {banners.map((order) => (
+        {active[0] || toRate ? (
           <Pressable
-            key={order.id}
             accessibilityRole="button"
-            onPress={() => router.push({ pathname: '/pedido/[id]', params: { id: order.id } })}
+            onPress={() =>
+              staged
+                ? router.push({ pathname: '/pedido/[id]', params: { id: staged.o.id } })
+                : active.length > 1
+                  ? router.push('/pedidos')
+                  : router.push({ pathname: '/pedido/[id]', params: { id: (active[0] ?? toRate)!.id } })
+            }
             style={({ pressed }) => [styles.deal, pressed && { opacity: 0.9 }]}
           >
             <Icon name="badge-check" size={20} strokeWidth={2.25} color={colors.brand} />
             <View style={{ flex: 1 }}>
               <Text variant="label" color={colors.onInk} numberOfLines={1}>
-                {order.status === 'concluido' ? 'Serviço concluído' : 'Serviço combinado'}
-                {multi ? ` · ${getService(order.serviceId)?.short ?? ''}` : ''}
+                {stage ? stage.title : active.length > 1 ? `${active.length} serviços combinados` : active[0] ? 'Serviço combinado' : 'Serviço concluído'}
               </Text>
-              <Text variant="caption" color={colors.onInkMuted}>
-                {formatBRL(order.amount)} · {order.when}
+              <Text variant="caption" color={colors.onInkMuted} numberOfLines={1}>
+                {stage
+                  ? stage.tone === 'action'
+                    ? 'Toque para responder'
+                    : (stage.text ?? '')
+                  : active[0]
+                    ? `${active.length > 1 ? `Próximo: ${getService(active[0].serviceId)?.short ?? ''} · ` : ''}${formatBRL(active[0].amount)} · ${active[0].when}`
+                    : 'Toque para avaliar'}
               </Text>
             </View>
             <Text variant="label" color={colors.brand}>
-              Ver
+              {stage?.tone === 'action' ? 'Abrir' : active[0] ? 'Ver' : 'Avaliar'}
             </Text>
           </Pressable>
-        ))}
+        ) : null}
 
-        <ScrollView ref={scroll} style={styles.list} contentContainerStyle={styles.listContent}>
-          <SystemNote text="Combine tudo por aqui. Não compartilhe senhas ou códigos." />
-          {conv.messages.map((m) => {
-            switch (m.kind) {
-              case 'request': {
-                const job = jobOf(m.jobId);
-                const open = !!job && !job.orderId && !job.closedBy;
-                return (
-                  <RequestCard
-                    key={m.id}
-                    mine={m.from === 'me'}
-                    closed={job?.closedBy ? { cliente: 'CANCELADO', profissional: 'RECUSADO', sistema: 'SEM RESPOSTA' }[job.closedBy] : undefined}
-                    action={open && !locked ? { label: isPro ? 'Recusar pedido' : 'Cancelar pedido', onPress: () => close(job.id) } : undefined}
-                    serviceTitle={m.serviceTitle}
-                    description={m.description}
-                    when={m.when}
-                    address={
-                      m.addressPartial
-                        ? [m.address.area, m.address.city].filter(Boolean).join(' · ')
-                        : addressLine({ line: m.address.line, complement: m.address.complement ?? '', area: m.address.area })
-                    }
-                    addressHint={m.addressPartial ? 'Endereço completo depois de combinar' : undefined}
-                    clientNote={open ? clientNote : undefined}
-                    at={m.at}
-                    photos={m.photos.map((p) => photoUrls[p])}
-                    onOpenPhoto={(index) => {
-                      const uris = m.photos.map((p) => photoUrls[p]).filter((u): u is string => !!u);
-                      setViewer({ uris, index: Math.min(index, uris.length - 1) });
-                    }}
-                  />
-                );
-              }
-              case 'proposal':
-                return (
-                  <ProposalCard
-                    key={m.id}
-                    mine={m.from === 'me'}
-                    serviceTitle={multi ? jobTitle(m.jobId) : undefined}
-                    amount={m.amount}
-                    when={m.when}
-                    note={m.note}
-                    status={m.status}
-                    at={m.at}
-                    onAccept={() => answer(m.id, true)}
-                    onDecline={() => answer(m.id, false)}
-                    onCounter={() => setPrefill({ text: 'Consigo fechar por R$ ', key: Date.now() })}
-                  />
-                );
-              case 'system': {
-                const title = multi ? jobTitle(m.jobId) : undefined;
-                return (
-                  <SystemNote key={m.id} text={title ? `${title}: ${m.text}` : m.text} tone={m.text.startsWith('Serviço combinado') ? 'success' : 'muted'} />
-                );
-              }
-              default:
-                return <Bubble key={m.id} mine={m.from === 'me'} text={m.text} at={m.at} />;
-            }
-          })}
-          {typing ? <TypingBubble /> : null}
-        </ScrollView>
+        {/* Invertida (padrão de chat): abre na mensagem mais recente e só desenha o que está perto da tela. */}
+        <FlatList
+          inverted
+          data={items.toReversed()}
+          keyExtractor={(item) => item.key}
+          style={styles.list}
+          contentContainerStyle={styles.listContent}
+          ListFooterComponent={<SystemNote text="Combine tudo por aqui. Não compartilhe senhas ou códigos." />}
+          renderItem={({ item }) =>
+            'day' in item ? (
+              <SystemNote text={item.day} />
+            ) : (
+              <View style={{ gap: spacing[1] }}>
+                {renderMessage(item.message)}
+                {item.message.id === seenId ? (
+                  <Text variant="caption" color={colors.inkMuted} style={styles.seen}>
+                    Visto
+                  </Text>
+                ) : null}
+              </View>
+            )
+          }
+          ListHeaderComponent={typing ? <TypingBubble /> : null}
+        />
 
         <View style={[styles.composer, { paddingBottom: Math.max(insets.bottom, spacing[3]) }]}>
           {locked ? (
@@ -363,17 +404,18 @@ export default function Chat() {
 
 /**
  * O que se sabe do cliente: "Identidade confirmada · telefone informado · 3 serviços concluídos ·
- * 1 cancelamento em cima da hora" (ou "Cliente novo no Resolve").
+ * 1 cancelamento em cima da hora · 1 contestação indevida" (ou "Cliente novo na Rezolveaê").
  */
-function describeClient({ done, late, phone, verified }: { done: number; late: number; phone: boolean; verified: boolean }) {
+function describeClient({ done, late, phone, verified, wrong }: { done: number; late: number; phone: boolean; verified: boolean; wrong: number }) {
   const parts = [
     verified ? 'Identidade confirmada' : null,
     phone ? 'telefone informado' : 'sem telefone',
-    done || late ? `${done} ${done === 1 ? 'serviço concluído' : 'serviços concluídos'}` : 'cliente novo no Resolve',
+    done || late ? `${done} ${done === 1 ? 'serviço concluído' : 'serviços concluídos'}` : 'cliente novo na Rezolveaê',
     late ? `${late} ${late === 1 ? 'cancelamento' : 'cancelamentos'} em cima da hora` : null,
+    wrong ? `${wrong} ${wrong === 1 ? 'contestação indevida' : 'contestações indevidas'}` : null,
   ].filter(Boolean) as string[];
   const text = parts.join(' · ');
-  return { text: text.charAt(0).toUpperCase() + text.slice(1), warn: late > 0 };
+  return { text: text.charAt(0).toUpperCase() + text.slice(1), warn: late > 0 || wrong > 0 };
 }
 
 const styles = StyleSheet.create({
@@ -402,6 +444,7 @@ const styles = StyleSheet.create({
     boxShadow: shadows.card,
   },
   list: { flex: 1 },
+  seen: { alignSelf: 'flex-end', paddingHorizontal: spacing[4] },
   listContent: { paddingVertical: spacing[4], gap: spacing[3] },
   composer: { gap: spacing[3], paddingHorizontal: spacing[4], paddingTop: spacing[3], borderTopWidth: 1, borderTopColor: colors.line, backgroundColor: colors.surface },
 });

@@ -1,11 +1,11 @@
 /**
- * Tokens do design system Resolve (v2).
+ * Tokens do design system Rezolveaê (v2).
  * Linguagem de super-app: topo amarelo, painéis brancos com cantos grandes,
  * campos preenchidos sem borda, um único botão amarelo por tela.
  */
 
 export const colors = {
-  /** Amarelo Resolve — topo das telas raiz, botão principal, seleção. */
+  /** Amarelo Rezolveaê — topo das telas raiz, botão principal, seleção. */
   brand: '#FFD900',
   /** Curva decorativa sobre `brand`. */
   brandSoft: '#FFE54D',

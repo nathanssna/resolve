@@ -105,12 +105,14 @@ export const isToday = (s: Schedule, now = Date.now()) => daysFrom(s.day, now) =
 export const CANCEL_NOTICE_HOURS = 12;
 
 /**
- * Cancelar agora é "em cima da hora"? Menos de 12 h para o começo do período,
- * até o fim do dia do serviço (depois disso o serviço já passou). Mesma regra
- * do banco (cancel_order).
+ * Cancelar agora é "em cima da hora"? Menos de 12 h para o começo do período.
+ * Cliente: até o fim do dia do serviço e nunca depois de dizer que não foi feito.
+ * Profissional: também depois do dia (ele não foi). Mesma regra do banco (cancel_order).
  */
-export function cancelIsLate(s: Schedule | undefined, now = Date.now()) {
-  return !!s && daysFrom(s.day, now) >= 0 && now > scheduleAt(s).getTime() - CANCEL_NOTICE_HOURS * 3_600_000;
+export function cancelIsLate(s: Schedule | undefined, who: { pro: boolean; contested?: boolean }, now = Date.now()) {
+  if (!s || now <= scheduleAt(s).getTime() - CANCEL_NOTICE_HOURS * 3_600_000) return false;
+  // Profissional: depois do dia sem ter feito também conta. Cliente: até o fim do dia, e nunca depois de "não foi feito".
+  return who.pro || (daysFrom(s.day, now) >= 0 && !who.contested);
 }
 
 /** O período já terminou (dura umas 4 h; mesma regra do banco para propostas). */

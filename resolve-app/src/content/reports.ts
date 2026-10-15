@@ -9,4 +9,5 @@ export const REPORT_REASONS = [
 
 export type ReportReason = (typeof REPORT_REASONS)[number]['id'];
 
-export const reportReasonLabel = (id: string) => REPORT_REASONS.find((r) => r.id === id)?.label ?? id;
+/** `servico`: aberta pelo app quando o profissional discorda do "não foi feito" ou pede ajuda (não aparece na tela Denunciar). */
+export const reportReasonLabel = (id: string) => (id === 'servico' ? 'Serviço em disputa' : (REPORT_REASONS.find((r) => r.id === id)?.label ?? id));

@@ -30,7 +30,7 @@ export default function Welcome() {
       <View pointerEvents="none" style={styles.curve} />
       <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
         <View style={{ marginLeft: -4 }}>
-          <Logo tone="onYellow" width={170} />
+          <Logo tone="onYellow" width={150} mark />
         </View>
 
         <View style={styles.art} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">

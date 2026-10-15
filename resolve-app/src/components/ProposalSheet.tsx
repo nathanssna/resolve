@@ -1,13 +1,14 @@
-import { useRef, useState } from 'react';
-import { Keyboard, KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { useState } from 'react';
+import { Keyboard, KeyboardAvoidingView, Modal, Platform, Pressable, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { authErrorMessage } from '@/lib/authErrors';
 import { colors, radius, spacing } from '@/theme/tokens';
 import { parseBRLInput } from '@/utils/format';
-import { nextDays, periodEnded, PERIODS, soonest, type Schedule } from '@/utils/schedule';
+import { periodEnded, soonest, type Schedule } from '@/utils/schedule';
 import { Button } from './Button';
 import { Field } from './Fields';
+import { pickerDays, SchedulePicker } from './SchedulePicker';
 import { OptionChip } from './Surfaces';
 import { Text } from './Text';
 
@@ -21,12 +22,8 @@ export type ProposalJob = {
   defaultSchedule?: Schedule;
 };
 
-/** Dias que dá para escolher na proposta. */
-const DAYS = 30;
 /** Valor máximo de uma proposta (o banco também recusa acima disso). */
 const MAX_AMOUNT = 50000;
-/** Largura aproximada de um dia na faixa (chip + espaço), para rolar até o escolhido. */
-const DAY_WIDTH = 72;
 
 /** Profissional monta a proposta: para qual pedido, valor, quando e observação. */
 export function ProposalSheet({
@@ -47,13 +44,12 @@ export function ProposalSheet({
   const insets = useSafeAreaInsets();
   const [jobId, setJobId] = useState<string | null>(null);
   const job = jobs.find((j) => j.id === (jobId ?? initialJobId)) ?? jobs.at(-1);
-  const days = nextDays(DAYS);
+  const days = pickerDays();
   // O dia pedido pelo cliente, se ainda estiver na faixa; senão, o primeiro período que dá tempo.
   const asked = job?.defaultSchedule;
   const fallback = asked && days.some((d) => d.day === asked.day) && !periodEnded(asked) ? asked : soonest();
   const [picked, setPicked] = useState<Schedule | null>(null);
   const schedule = picked ?? fallback;
-  const daysRef = useRef<ScrollView>(null);
   const [amount, setAmount] = useState('');
   const [note, setNote] = useState('');
   const [sending, setSending] = useState(false);
@@ -62,12 +58,6 @@ export function ProposalSheet({
   const value = parseBRLInput(amount);
   const tooHigh = value !== null && value > MAX_AMOUNT;
   const canSend = !!job && value !== null && value > 0 && !tooHigh && !periodEnded(schedule) && !sending;
-  // Hoje, os períodos que já terminaram não podem ser escolhidos.
-  const open = (day: number) => PERIODS.filter((p) => !periodEnded({ day, period: p.id }));
-  const pickDay = (day: number) => {
-    const free = open(day);
-    setPicked({ day, period: free.some((p) => p.id === schedule.period) ? schedule.period : (free[0]?.id ?? schedule.period) });
-  };
 
   const reset = () => {
     setJobId(null);
@@ -135,37 +125,7 @@ export function ProposalSheet({
           />
           <View style={{ gap: spacing[2] }}>
             <Text variant="label">Quando</Text>
-            <ScrollView
-              ref={daysRef}
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              keyboardShouldPersistTaps="handled"
-              contentContainerStyle={{ gap: spacing[2] }}
-              onLayout={() => {
-                // Abre com o dia escolhido à vista.
-                const i = days.findIndex((d) => d.day === schedule.day);
-                if (i > 3) daysRef.current?.scrollTo({ x: (i - 1) * DAY_WIDTH, animated: false });
-              }}
-            >
-              {days.map((d) => {
-                const full = open(d.day).length === 0;
-                return (
-                  <View key={d.day} style={full && styles.unavailable} pointerEvents={full ? 'none' : 'auto'}>
-                    <OptionChip label={d.label} sublabel={d.sub} active={d.day === schedule.day} onPress={() => pickDay(d.day)} />
-                  </View>
-                );
-              })}
-            </ScrollView>
-            <View style={{ flexDirection: 'row', gap: spacing[2] }}>
-              {PERIODS.map((p) => {
-                const ended = periodEnded({ day: schedule.day, period: p.id });
-                return (
-                  <View key={p.id} style={[{ flex: 1 }, ended && styles.unavailable]} pointerEvents={ended ? 'none' : 'auto'}>
-                    <OptionChip label={p.label} sublabel={p.hint} active={p.id === schedule.period} onPress={() => setPicked({ ...schedule, period: p.id })} />
-                  </View>
-                );
-              })}
-            </View>
+            <SchedulePicker value={schedule} onChange={setPicked} />
             {job?.defaultWhen ? (
               <Text variant="caption" color={colors.inkMuted}>
                 {`O cliente pediu: ${job.defaultWhen.toLowerCase()}`}
@@ -205,7 +165,6 @@ export function ProposalSheet({
 
 const styles = StyleSheet.create({
   backdrop: { flex: 1, backgroundColor: 'rgba(17,18,19,0.45)' },
-  unavailable: { opacity: 0.35 },
   sheet: {
     backgroundColor: colors.surface,
     borderTopLeftRadius: radius.sheet,

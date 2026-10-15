@@ -95,6 +95,8 @@ export type Conversation = {
   latestJob?: Job;
   /** Eu bloqueei o outro participante. */
   blockedByMe: boolean;
+  /** Quando o outro abriu a conversa pela última vez (0 = nunca): o "Visto" do chat. */
+  otherReadAt: number;
 };
 
 export type OrderStatus = Database['public']['Enums']['order_status'];
@@ -122,7 +124,24 @@ export type Order = {
   createdAt: number;
   /** Quando foi concluído (resumo do mês do profissional). */
   completedAt?: number;
+  /** O profissional marcou "Serviço feito": aguardando o cliente confirmar (enquanto combinado). */
+  doneAt?: number;
+  /** Fotos do trabalho pronto (bucket done-photos). */
+  donePhotos: string[];
+  /** O cliente disse "não foi feito": para marcar "feito" de novo, os dois remarcam antes. */
+  doneBlocked: boolean;
+  /** A equipe da Rezolveaê está analisando (o profissional discordou ou pediu ajuda). */
+  disputed: boolean;
+  /** O profissional já pediu ajuda à equipe (cliente sem responder). */
+  helpRequested: boolean;
+  /** Quem concluiu: o cliente, automático (7 dias com foto) ou a equipe. */
+  completedBy?: 'cliente' | 'automatico' | 'equipe';
+  /** Remarcação pendente: a nova data e quem pediu. */
+  reschedule?: { when: string; label: string; byMe: boolean };
 };
+
+/** Serviço esperando o cliente confirmar se foi feito. */
+export const awaitingClient = (o: Order) => o.status === 'combinado' && !!o.doneAt;
 
 /** Agenda: o serviço mais próximo primeiro; sem data (propostas antigas), no fim, por ordem de combinado. */
 export const soonestFirst = (a: Order, b: Order) =>
@@ -160,6 +179,15 @@ type OrderRow = Pick<
   | 'completed_at'
   | 'canceled_late'
   | 'cancel_reason'
+  | 'done_at'
+  | 'done_photos'
+  | 'done_blocked'
+  | 'disputed_at'
+  | 'help_requested_at'
+  | 'completed_by'
+  | 'reschedule_at'
+  | 'reschedule_label'
+  | 'reschedule_by'
 > & { rating?: number; comment?: string | null };
 
 type Store = {
@@ -201,7 +229,18 @@ type AppValue = {
   /** Profissional: envia uma proposta para o pedido (substitui a pendente anterior dele). */
   sendProposal: (conversationId: string, jobId: string, input: { amount: number; schedule: Schedule; note?: string }) => Promise<void>;
   markRead: (conversationId: string) => void;
-  completeOrder: (orderId: string) => Promise<void>;
+  /** Profissional: "Serviço feito", com até 3 fotos do trabalho pronto. */
+  markDone: (orderId: string, photos?: LocalPhoto[], onProgress?: (sent: number, total: number) => void) => Promise<void>;
+  /** Cliente: o serviço foi feito? */
+  confirmDone: (orderId: string, done: boolean) => Promise<void>;
+  /** Propõe nova data (o outro aceita ou recusa). */
+  requestReschedule: (orderId: string, schedule: Schedule) => Promise<void>;
+  /** Responde à remarcação (quem pediu pode desistir com `false`). */
+  respondReschedule: (orderId: string, accept: boolean) => Promise<void>;
+  /** Profissional discorda do "não foi feito": a equipe decide. */
+  disputeOrder: (orderId: string) => Promise<void>;
+  /** Profissional: cliente sem responder há 7 dias (sem foto): pede à equipe. */
+  askTeam: (orderId: string) => Promise<void>;
   /** `reason`: obrigatório em cima da hora (ver cancelIsLate); vai para o chat. */
   cancelOrder: (orderId: string, reason?: string) => Promise<void>;
   rateOrder: (orderId: string, stars: number, comment?: string) => Promise<void>;
@@ -253,7 +292,7 @@ async function fetchStore(uid: string, role: UserRole): Promise<Store> {
       requests!requests_conversation_id_fkey(id, conversation_id, service_id, created_at, closed_at, closed_by, request_address:request_addresses(address)),
       messages!messages_conversation_id_fkey(id, conversation_id, request_id, sender_id, kind, body, proposal_id, request_when, request_address, photos, created_at),
       proposals!proposals_conversation_id_fkey(id, conversation_id, request_id, amount, scheduled_label, scheduled_at, note, status),
-      orders!orders_conversation_id_fkey(id, conversation_id, request_id, professional_id, service_id, amount, scheduled_label, scheduled_at, address, status, created_at, completed_at, canceled_late, cancel_reason, review:reviews(rating, comment))`,
+      orders!orders_conversation_id_fkey(id, conversation_id, request_id, professional_id, service_id, amount, scheduled_label, scheduled_at, address, status, created_at, completed_at, canceled_late, cancel_reason, done_at, done_photos, done_blocked, disputed_at, help_requested_at, completed_by, reschedule_at, reschedule_label, reschedule_by, review:reviews(rating, comment))`,
     )
     .eq(role === 'profissional' ? 'professional_id' : 'client_id', uid);
   if (error) throw error;
@@ -538,6 +577,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
         jobs,
         latestJob: jobs.at(-1),
         blockedByMe: blocked.includes(role === 'profissional' ? c.client_id : c.professional_id),
+        otherReadAt: (() => {
+          const other = role === 'profissional' ? c.client_last_read_at : c.professional_last_read_at;
+          return other ? time(other) : 0;
+        })(),
       };
     });
 
@@ -567,9 +610,19 @@ export function AppProvider({ children }: { children: ReactNode }) {
           comment: o.comment ?? undefined,
           createdAt: time(o.created_at),
           completedAt: o.completed_at ? time(o.completed_at) : undefined,
+          doneAt: o.done_at ? time(o.done_at) : undefined,
+          donePhotos: o.done_photos ?? [],
+          doneBlocked: !!o.done_blocked,
+          disputed: !!o.disputed_at,
+          helpRequested: !!o.help_requested_at,
+          completedBy: (o.completed_by ?? undefined) as Order['completedBy'],
+          reschedule:
+            o.reschedule_at && o.reschedule_label
+              ? { when: whenOf(o.reschedule_label, o.reschedule_at, time(o.created_at)).when, label: o.reschedule_label, byMe: o.reschedule_by === uid }
+              : undefined,
         }))
         .sort((a, b) => b.createdAt - a.createdAt),
-    [store.orders, store.convs, otherOf],
+    [store.orders, store.convs, otherOf, uid],
   );
 
   // ----- ações -----
@@ -749,14 +802,48 @@ export function AppProvider({ children }: { children: ReactNode }) {
     [update],
   );
 
-  const completeOrder = useCallback(
-    async (orderId: string) => {
-      const { data: order, error } = await supabase.rpc('complete_order', { p_order_id: orderId });
+  const markDone = useCallback(
+    async (orderId: string, photos: LocalPhoto[] = [], onProgress?: (sent: number, total: number) => void) => {
+      // Fotos na pasta do serviço (é o que o Storage e o banco exigem).
+      const paths: string[] = [];
+      onProgress?.(0, photos.length);
+      for (const photo of photos) {
+        const path = `${orderId}/${photoName()}`;
+        await uploadPhoto('done-photos', path, photo.uri);
+        paths.push(path);
+        onProgress?.(paths.length, photos.length);
+      }
+      const { data: order, error } = await supabase.rpc('mark_order_done', { p_order_id: orderId, p_photos: paths });
       if (error) throw error;
       applyOrder(order);
     },
     [applyOrder],
   );
+
+  // Ações de uma chamada só que devolvem o serviço atualizado.
+  const orderRpc = useCallback(
+    async (call: PromiseLike<{ data: Omit<OrderRow, 'rating'> | null; error: unknown }>) => {
+      const { data: order, error } = await call;
+      if (error) throw error;
+      if (order) applyOrder(order);
+    },
+    [applyOrder],
+  );
+  const confirmDone = useCallback(
+    (orderId: string, done: boolean) => orderRpc(supabase.rpc('confirm_order_done', { p_order_id: orderId, p_done: done })),
+    [orderRpc],
+  );
+  const requestReschedule = useCallback(
+    (orderId: string, schedule: Schedule) =>
+      orderRpc(supabase.rpc('request_reschedule', { p_order_id: orderId, p_scheduled_at: scheduleAt(schedule).toISOString(), p_label: scheduleLabel(schedule) })),
+    [orderRpc],
+  );
+  const respondReschedule = useCallback(
+    (orderId: string, accept: boolean) => orderRpc(supabase.rpc('respond_reschedule', { p_order_id: orderId, p_accept: accept })),
+    [orderRpc],
+  );
+  const disputeOrder = useCallback((orderId: string) => orderRpc(supabase.rpc('dispute_order', { p_order_id: orderId })), [orderRpc]);
+  const askTeam = useCallback((orderId: string) => orderRpc(supabase.rpc('ask_team_order', { p_order_id: orderId })), [orderRpc]);
 
   const cancelOrder = useCallback(
     async (orderId: string, reason?: string) => {
@@ -840,7 +927,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
       respondProposal,
       sendProposal,
       markRead,
-      completeOrder,
+      markDone,
+      confirmDone,
+      requestReschedule,
+      respondReschedule,
+      disputeOrder,
+      askTeam,
       cancelOrder,
       rateOrder,
       closeRequest,
@@ -850,7 +942,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       unblock,
       isFavorite: (sid) => favorites.includes(sid),
     }),
-    [status, role, load, conversations, orders, favorites, startRequest, sendText, respondProposal, sendProposal, markRead, completeOrder, cancelOrder, rateOrder, closeRequest, toggleFavorite, blocked, block, unblock],
+    [status, role, load, conversations, orders, favorites, startRequest, sendText, respondProposal, sendProposal, markRead, markDone, confirmDone, requestReschedule, respondReschedule, disputeOrder, askTeam, cancelOrder, rateOrder, closeRequest, toggleFavorite, blocked, block, unblock],
   );
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;

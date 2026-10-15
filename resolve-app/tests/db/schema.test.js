@@ -162,7 +162,9 @@ async function main() {
   console.log('\nConcluir e avaliar');
   ok(!!(await as(cli, 'select public.rate_order($1, 5)', [order.id])).error, 'não avalia antes de concluir');
   ok(!!(await as(other, 'select public.complete_order($1)', [order.id])).error, 'estranho não conclui');
-  ok((await one(cli, 'select * from public.complete_order($1)', [order.id])).status === 'concluido', 'cliente conclui');
+  ok(!!(await as(cli, 'select public.complete_order($1)', [order.id])).error, 'cliente não conclui antes do profissional marcar feito');
+  ok((await one(pro, 'select * from public.complete_order($1)', [order.id])).status === 'combinado', 'profissional marca feito (pelo botão antigo): aguarda o cliente');
+  ok((await one(cli, 'select * from public.complete_order($1)', [order.id])).status === 'concluido', 'cliente confirma e conclui');
   ok(!!(await as(cli, 'select public.cancel_order($1)', [order.id])).error, 'não cancela depois de concluído');
   ok((await db.query('select jobs_count from public.professionals where id = $1', [pro])).rows[0].jobs_count === 1, 'jobs_count do profissional +1');
   ok(!!(await as(pro, 'select public.rate_order($1, 5)', [order.id])).error, 'profissional não se avalia');
@@ -191,7 +193,7 @@ async function main() {
   const c = (await db.query('select professional_last_read_at > client_last_read_at as lido from public.conversations where id = $1', [conv])).rows[0];
   ok(c.lido, 'mark_conversation_read atualiza só o lado de quem chamou');
   const pub = (await db.query("select tablename from pg_publication_tables where pubname = 'supabase_realtime' order by 1")).rows.map((r) => r.tablename).join();
-  ok(pub === 'conversations,messages,orders,proposals,requests,reviews', `publicação realtime: ${pub}`);
+  ok(pub === 'conversations,messages,orders,proposals,requests,reviews,support_messages,support_threads', `publicação realtime: ${pub}`);
   const rls = (await db.query("select count(*)::int as n from pg_tables where schemaname = 'public' and not rowsecurity")).rows[0].n;
   ok(rls === 0, 'RLS ativo em todas as tabelas de public');
   ok(!!(await as(cli, 'select private.handle_new_user()')).error, 'funções internas não são chamáveis');

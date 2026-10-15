@@ -11,7 +11,7 @@ export { CatalogFallback } from './CatalogFallback';
 export { DialogHost } from './DialogHost';
 export { CheckItem, EmptyState, InfoBanner } from './Info';
 export { LocationPill } from './LocationPill';
-export { Logo } from './Logo';
+export { Logo, LogoMark } from './Logo';
 export { PhotoThumbs, PhotoViewer } from './Photos';
 export { Avatar, ProfessionalCard } from './ProfessionalCard';
 export { Rating } from './Rating';
@@ -22,3 +22,6 @@ export { ActionButton, Badge, ListRow, OptionChip, SectionHeader, Segmented, She
 export { Text } from './Text';
 export { ProposalSheet } from './ProposalSheet';
 export { goBack, IconButton, TopBar, type TopBarAction } from './TopBar';
+export { SchedulePicker } from './SchedulePicker';
+export { DoneSheet, RescheduleSheet } from './ServiceSheets';
+export { serviceStage, ServicePanel, type ServiceAction, type ServiceStage } from './ServicePanel';

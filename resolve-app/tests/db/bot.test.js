@@ -68,6 +68,7 @@ let pass = 0, fail = 0; const ok = (c, m) => { c ? pass++ : fail++; console.log(
   m = await msgs(conv);
   ok(m.at(-1).body === 'Combinado! Qualquer coisa é só chamar por aqui.' && m.filter((x) => x.kind === 'proposal').length === 2, 'depois de combinado, valor no texto não gera proposta');
   const oid = (await as(cli, 'select id from public.orders where conversation_id = $1', [conv]))[0].id;
+  await as(marcos, 'select public.mark_order_done($1)', [oid]);
   await as(cli, 'select public.complete_order($1)', [oid]);
   ok((await msgs(conv)).at(-1).body === 'Obrigado! Se puder, deixe sua avaliação no app.', 'responde à conclusão');
 
