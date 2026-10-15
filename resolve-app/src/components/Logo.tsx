@@ -1,7 +1,7 @@
 /**
- * Logo Rezolveaê. O R (assets/images/RESOLVE.png) é a logo principal; a palavra
- * (assets/images/RESOLVE (1).png) é o complemento. Recortes com fundo
- * transparente em assets/logo/.
+ * Logo Rezolveaê. O R é a logo principal; a palavra é o complemento.
+ * Arte original (fundo transparente): assets/logo/RESOLVE (2).png e RESOLVE (3).png;
+ * rezolveae-r.png e rezolveae-wordmark.png são as mesmas, só sem a margem.
  */
 import { Image } from 'expo-image';
 import { View } from 'react-native';
@@ -10,8 +10,8 @@ import { colors } from '@/theme/tokens';
 
 type Tone = 'onWhite' | 'onYellow' | 'onDark';
 
-const WORD_RATIO = 2143 / 355;
-const MARK_RATIO = 796 / 1024;
+const WORD_RATIO = 2133 / 345;
+const MARK_RATIO = 797 / 1024;
 
 /** O R, a logo principal. `height` em px. */
 export function LogoMark({ height = 56 }: { height?: number }) {

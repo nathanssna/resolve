@@ -77,7 +77,6 @@ export default function Mensagens() {
             preview={preview(last)}
             time={formatDay(last.at)}
             unread={c.unread}
-            done={c.latestJob?.state === 'concluido'}
             onPress={() => router.push({ pathname: '/chat/[id]', params: { id: c.id } })}
           />
         ),

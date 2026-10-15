@@ -264,7 +264,15 @@ export default function Chat() {
         );
       case 'system': {
         const title = multi ? jobTitle(m.jobId) : undefined;
-        return <SystemNote text={title ? `${title}: ${m.text}` : m.text} tone={m.text.startsWith('Serviço combinado') ? 'success' : 'muted'} />;
+        // Combinado e concluído ganham destaque verde; concluído com o ✓.
+        const concluded = m.text.startsWith('Serviço concluído') || m.text.endsWith('Serviço concluído.');
+        return (
+          <SystemNote
+            text={title ? `${title}: ${m.text}` : m.text}
+            tone={concluded || m.text.startsWith('Serviço combinado') ? 'success' : 'muted'}
+            icon={concluded ? 'check' : 'badge-check'}
+          />
+        );
       }
       default:
         return <Bubble mine={m.from === 'me'} text={m.text} at={m.at} />;

@@ -186,11 +186,11 @@ export function ProposalCard({
 }
 
 /** Aviso do sistema no meio da conversa ("Serviço combinado…"). */
-export function SystemNote({ text, tone = 'muted' }: { text: string; tone?: 'muted' | 'success' }) {
+export function SystemNote({ text, tone = 'muted', icon = 'badge-check' }: { text: string; tone?: 'muted' | 'success'; icon?: IconName }) {
   return (
     <View style={styles.systemRow}>
       <View style={[styles.system, tone === 'success' && { backgroundColor: colors.successTint }]}>
-        {tone === 'success' ? <Icon name="badge-check" size={14} strokeWidth={2.25} color={colors.success} /> : null}
+        {tone === 'success' ? <Icon name={icon} size={14} strokeWidth={icon === 'check' ? 3 : 2.25} color={colors.success} /> : null}
         <Text variant="caption" color={tone === 'success' ? colors.success : colors.inkMuted} style={{ fontFamily: fonts.semibold }}>
           {text}
         </Text>
@@ -319,7 +319,6 @@ export function ConversationRow({
   time,
   unread,
   typing,
-  done,
   verified,
   onPress,
   avatarUrl,
@@ -334,19 +333,11 @@ export function ConversationRow({
   time: string;
   unread: number;
   typing?: boolean;
-  done?: boolean;
   onPress?: () => void;
 }) {
   return (
     <Pressable accessibilityRole="button" onPress={onPress} style={({ pressed }) => [styles.convRow, pressed && { backgroundColor: colors.surfaceMuted }]}>
-      <View>
-        <Avatar size={52} uri={avatarUrl} />
-        {done ? (
-          <View style={styles.convCheck}>
-            <Icon name="check" size={11} strokeWidth={3} color={colors.onInk} />
-          </View>
-        ) : null}
-      </View>
+      <Avatar size={52} uri={avatarUrl} />
       <View style={{ flex: 1, gap: 2 }}>
         <View style={styles.convTop}>
           <View style={styles.convName}>
@@ -437,18 +428,5 @@ const styles = StyleSheet.create({
   send: { width: 52, height: 52, borderRadius: radius.pill, backgroundColor: colors.brand, alignItems: 'center', justifyContent: 'center' },
   convRow: { flexDirection: 'row', alignItems: 'center', gap: spacing[3], paddingVertical: spacing[3], paddingHorizontal: spacing[5] },
   convTop: { flexDirection: 'row', alignItems: 'center', gap: spacing[2] },
-  convCheck: {
-    position: 'absolute',
-    right: -2,
-    bottom: -2,
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    backgroundColor: colors.success,
-    borderWidth: 2,
-    borderColor: colors.surface,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
   unread: { minWidth: 22, height: 22, paddingHorizontal: 6, borderRadius: 11, backgroundColor: colors.brand, alignItems: 'center', justifyContent: 'center' },
 });
