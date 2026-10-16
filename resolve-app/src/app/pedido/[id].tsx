@@ -1,5 +1,5 @@
 import { router, useLocalSearchParams } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Pressable, ScrollView, Share, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -34,8 +34,9 @@ import { serviceStage, type ServiceAction } from '@/utils/serviceStage';
 import { notify, confirm } from '@/utils/dialog';
 
 export default function PedidoDetalhe() {
-  const { id } = useLocalSearchParams<{ id: string }>();
-  const { role, orders, markDone, confirmDone, requestReschedule, respondReschedule, disputeOrder, askTeam, cancelOrder, rateOrder, rateClient } = useApp();
+  // `acao`: botão do lembrete do dia ("confirmar" ou "remarcar").
+  const { id, acao } = useLocalSearchParams<{ id: string; acao?: string }>();
+  const { role, orders, markDone, confirmDone, requestReschedule, respondReschedule, disputeOrder, askTeam, cancelOrder, rateOrder, rateClient, confirmDay } = useApp();
   const isPro = role === 'profissional';
   const { getProfessional, getService } = useCatalog();
   const order = orders.find((o) => o.id === id);
@@ -43,7 +44,7 @@ export default function PedidoDetalhe() {
   const [comment, setComment] = useState('');
   const [busy, setBusy] = useState(false);
   const [doneOpen, setDoneOpen] = useState(false);
-  const [rescheduleOpen, setRescheduleOpen] = useState(false);
+  const [rescheduleOpen, setRescheduleOpen] = useState(acao === 'remarcar');
   const [viewer, setViewer] = useState<number | null>(null);
   const donePhotos = useSignedUrls(order?.donePhotos ?? [], 'done-photos');
   const run = (action: () => Promise<void>) => {
@@ -53,6 +54,14 @@ export default function PedidoDetalhe() {
       .catch((e) => notify(authErrorMessage(e)))
       .finally(() => setBusy(false));
   };
+
+  // Botão "Confirmar" do lembrete: confirma uma vez, assim que o serviço carrega.
+  const autoConfirmed = useRef(acao !== 'confirmar');
+  useEffect(() => {
+    if (autoConfirmed.current || !order) return;
+    autoConfirmed.current = true;
+    confirmDay(order.id).catch((e) => notify(authErrorMessage(e)));
+  }, [order, confirmDay]);
 
   if (!order) {
     return (
@@ -90,6 +99,7 @@ export default function PedidoDetalhe() {
   const act = (a: ServiceAction) => {
     const id = order.id;
     if (a === 'done') return setDoneOpen(true);
+    if (a === 'confirmDay') return run(() => confirmDay(id));
     if (a === 'reschedule') return setRescheduleOpen(true);
     if (a === 'confirm') return run(() => confirmDone(id, true));
     if (a === 'deny')

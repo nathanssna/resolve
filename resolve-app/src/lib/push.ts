@@ -53,6 +53,12 @@ export async function registerPush({ ask }: { ask: boolean }): Promise<'granted'
       });
     }
 
+    // Botões do lembrete do dia (o banco manda categoryId 'lembrete'). Abrem o app, que faz a ação.
+    await Notifications.setNotificationCategoryAsync('lembrete', [
+      { identifier: 'confirmar', buttonTitle: 'Confirmar', options: { opensAppToForeground: true } },
+      { identifier: 'remarcar', buttonTitle: 'Preciso remarcar', options: { opensAppToForeground: true } },
+    ]);
+
     let { status } = await Notifications.getPermissionsAsync();
     if (status !== 'granted' && ask) ({ status } = await Notifications.requestPermissionsAsync());
     if (status !== 'granted') return 'denied';
@@ -95,15 +101,20 @@ export async function unregisterPush() {
   await supabase.from('push_tokens').delete().eq('token', token);
 }
 
-/** Ao tocar numa notificação (com o app aberto, em segundo plano ou fechado), abre o chat. */
+/**
+ * Ao tocar numa notificação (com o app aberto, em segundo plano ou fechado), abre a tela dela.
+ * Botões do lembrete: abrem o serviço já com a ação (`?acao=confirmar` ou `?acao=remarcar`).
+ */
 export function onNotificationTap(open: (url: string) => void) {
   if (!pushSupported) return () => {};
-  const handle = (n: Notifications.Notification) => {
-    const url = n.request.content.data?.url;
-    if (typeof url === 'string' && url.startsWith('/')) open(url);
+  const handle = (r: Notifications.NotificationResponse) => {
+    const url = r.notification.request.content.data?.url;
+    if (typeof url !== 'string' || !url.startsWith('/')) return;
+    const action = r.actionIdentifier;
+    open(action === 'confirmar' || action === 'remarcar' ? `${url}?acao=${action}` : url);
   };
   const last = Notifications.getLastNotificationResponse();
-  if (last?.notification) handle(last.notification);
-  const sub = Notifications.addNotificationResponseReceivedListener((r) => handle(r.notification));
+  if (last?.notification) handle(last);
+  const sub = Notifications.addNotificationResponseReceivedListener(handle);
   return () => sub.remove();
 }

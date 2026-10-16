@@ -35,7 +35,7 @@ npm run db:stop
 | `notif` | preferências de notificação e limpeza dos tokens de push inválidos (tickets e recibos da Expo) |
 | `search` | busca por frase (`search_services`): radicais, sem acento, começo de palavra, erro de digitação, ranking |
 | `pause` | profissional pausa os pedidos: some das listas, sem conversa/pedido novo, o resto continua |
-| `reminder` | lembrete no dia do serviço (push às 7h): quem recebe, texto, uma vez só, lotes de 100 |
+| `reminder` | lembrete no dia do serviço (push às 7h): quem recebe, texto, botões, um resumo para quem tem vários serviços, uma vez só, lotes de 100 |
 | `cancel` | cancelamento em cima da hora (12 h): motivo, pausa automática de 7 dias, histórico do cliente, taxa do profissional |
 | `limits` | proposta (teto, data), proposta vencida, pedido sem resposta fecha, limites de pedidos e mensagens, e-mail descartável |
 | `verify` | selo Verificado: bucket privado, envio, revisão no painel (aprova/recusa + push), fotos apagadas, conta excluída |
@@ -44,6 +44,7 @@ npm run db:stop
 | `admin` | painel de moderação: só administrador com segundo fator; números, pessoas, serviços, denúncias, selo, suspensão, registro |
 | `contact` | contato escondido antes de combinar: telefone, e-mail, @perfil e links no chat, no pedido e na proposta; liberado depois do aceite |
 | `rateclient` | profissional avalia o cliente: só depois de concluído, uma vez; o cliente não lê as notas; média só com 3 avaliações (cliente e profissionais) |
+| `confirm` | confirmar o serviço no dia: cliente e profissional, aviso no chat, só no dia, zera ao remarcar |
 
 ## Ponta a ponta
 
@@ -73,6 +74,7 @@ npm run e2e:cleanup            # apaga as contas (sempre, no fim)
 | `contato` | telefone no chat antes de combinar: aviso no campo, "[contato oculto]" para os dois; depois do aceite, aparece |
 | `suspensa` | conta suspensa: aviso no início, Mensagens, chat e pedido novo; sem prazo; vencida ou reativada, some |
 | `notacliente` | profissional dá estrelas ao cliente no serviço concluído; cliente vê no Perfil só "Aparece depois de 3 avaliações" |
+| `confirma` | "Confirmar" no serviço do dia (cliente), botões do lembrete (`?acao=confirmar` / `?acao=remarcar`) e avisos no chat |
 | `busca` | busca por frase na tela Buscar, como visitante (não precisa das contas); sem internet, cai na busca local |
 | `pause` | pausar no painel do profissional; lista, perfil e pedido do lado do cliente |
 | `cancela` | cancelar no prazo e em cima da hora (motivo), histórico do cliente, pausa automática e taxa no perfil |

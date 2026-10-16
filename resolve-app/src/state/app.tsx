@@ -156,6 +156,9 @@ export type Order = {
   disputed: boolean;
   /** O profissional já pediu ajuda à equipe (cliente sem responder). */
   helpRequested: boolean;
+  /** No dia do serviço: quem já confirmou (zera se a data mudar). */
+  confirmedByMe: boolean;
+  confirmedByOther: boolean;
   /** Quem concluiu: o cliente, automático (7 dias com foto) ou a equipe. */
   completedBy?: 'cliente' | 'automatico' | 'equipe';
   /** Remarcação pendente: a nova data e quem pediu. */
@@ -204,6 +207,8 @@ type AppValue = {
   confirmDone: (orderId: string, done: boolean) => Promise<void>;
   /** Propõe nova data (o outro aceita ou recusa). */
   requestReschedule: (orderId: string, schedule: Schedule) => Promise<void>;
+  /** No dia do serviço: "Confirmar" (o outro recebe o aviso no chat). */
+  confirmDay: (orderId: string) => Promise<void>;
   /** Responde à remarcação (quem pediu pode desistir com `false`). */
   respondReschedule: (orderId: string, accept: boolean) => Promise<void>;
   /** Profissional discorda do "não foi feito": a equipe decide. */
@@ -261,7 +266,7 @@ async function fetchStore(uid: string, role: UserRole): Promise<Store> {
       job_messages:messages!messages_conversation_id_fkey(${MESSAGE_COLS}),
       recent_messages:messages!messages_conversation_id_fkey(${MESSAGE_COLS}),
       proposals!proposals_conversation_id_fkey(id, conversation_id, request_id, amount, scheduled_label, scheduled_at, note, status),
-      orders!orders_conversation_id_fkey(id, conversation_id, request_id, professional_id, service_id, amount, scheduled_label, scheduled_at, address, status, created_at, completed_at, canceled_late, cancel_reason, done_at, done_photos, done_blocked, disputed_at, help_requested_at, completed_by, reschedule_at, reschedule_label, reschedule_by, review:reviews(rating, comment), client_review:client_reviews(rating))`,
+      orders!orders_conversation_id_fkey(id, conversation_id, request_id, professional_id, service_id, amount, scheduled_label, scheduled_at, address, status, created_at, completed_at, canceled_late, cancel_reason, done_at, done_photos, done_blocked, disputed_at, help_requested_at, completed_by, reschedule_at, reschedule_label, reschedule_by, client_confirmed_at, pro_confirmed_at, review:reviews(rating, comment), client_review:client_reviews(rating))`,
     )
     .eq(role === 'profissional' ? 'professional_id' : 'client_id', uid)
     // Pedidos e propostas: todas (os pedidos dependem delas). O resto: só a página mais recente.
@@ -595,6 +600,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
           doneBlocked: !!o.done_blocked,
           disputed: !!o.disputed_at,
           helpRequested: !!o.help_requested_at,
+          confirmedByMe: !!(uid === o.professional_id ? o.pro_confirmed_at : o.client_confirmed_at),
+          confirmedByOther: !!(uid === o.professional_id ? o.client_confirmed_at : o.pro_confirmed_at),
           completedBy: (o.completed_by ?? undefined) as Order['completedBy'],
           reschedule:
             o.reschedule_at && o.reschedule_label
@@ -830,6 +837,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     (orderId: string, done: boolean) => orderRpc(supabase.rpc('confirm_order_done', { p_order_id: orderId, p_done: done })),
     [orderRpc],
   );
+  const confirmDay = useCallback((orderId: string) => orderRpc(supabase.rpc('confirm_service_day', { p_order_id: orderId })), [orderRpc]);
   const requestReschedule = useCallback(
     (orderId: string, schedule: Schedule) =>
       orderRpc(supabase.rpc('request_reschedule', { p_order_id: orderId, p_scheduled_at: scheduleAt(schedule).toISOString(), p_label: scheduleLabel(schedule) })),
@@ -937,6 +945,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       markDone,
       confirmDone,
       requestReschedule,
+      confirmDay,
       respondReschedule,
       disputeOrder,
       askTeam,
@@ -950,7 +959,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       unblock,
       isFavorite: (sid) => favorites.includes(sid),
     }),
-    [status, role, load, conversations, orders, favorites, startRequest, sendText, respondProposal, sendProposal, markRead, loadOlder, markDone, confirmDone, requestReschedule, respondReschedule, disputeOrder, askTeam, cancelOrder, rateOrder, rateClient, closeRequest, toggleFavorite, blocked, block, unblock],
+    [status, role, load, conversations, orders, favorites, startRequest, sendText, respondProposal, sendProposal, markRead, loadOlder, markDone, confirmDone, requestReschedule, confirmDay, respondReschedule, disputeOrder, askTeam, cancelOrder, rateOrder, rateClient, closeRequest, toggleFavorite, blocked, block, unblock],
   );
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;

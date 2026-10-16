@@ -53,6 +53,8 @@ export type OrderRow = Pick<
   | 'reschedule_at'
   | 'reschedule_label'
   | 'reschedule_by'
+  | 'client_confirmed_at'
+  | 'pro_confirmed_at'
 > & { rating?: number; comment?: string | null; clientRating?: number };
 
 export type Store = {

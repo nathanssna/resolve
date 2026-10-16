@@ -366,6 +366,7 @@ export type Database = {
           canceled_at: string | null
           canceled_by: string | null
           canceled_late: boolean
+          client_confirmed_at: string | null
           client_contest_wrong: boolean
           client_id: string
           completed_at: string | null
@@ -381,6 +382,7 @@ export type Database = {
           followup_at: string | null
           help_requested_at: string | null
           id: string
+          pro_confirmed_at: string | null
           professional_id: string
           proposal_id: string
           reminded_at: string | null
@@ -402,6 +404,7 @@ export type Database = {
           canceled_at?: string | null
           canceled_by?: string | null
           canceled_late?: boolean
+          client_confirmed_at?: string | null
           client_contest_wrong?: boolean
           client_id: string
           completed_at?: string | null
@@ -417,6 +420,7 @@ export type Database = {
           followup_at?: string | null
           help_requested_at?: string | null
           id?: string
+          pro_confirmed_at?: string | null
           professional_id: string
           proposal_id: string
           reminded_at?: string | null
@@ -438,6 +442,7 @@ export type Database = {
           canceled_at?: string | null
           canceled_by?: string | null
           canceled_late?: boolean
+          client_confirmed_at?: string | null
           client_contest_wrong?: boolean
           client_id?: string
           completed_at?: string | null
@@ -453,6 +458,7 @@ export type Database = {
           followup_at?: string | null
           help_requested_at?: string | null
           id?: string
+          pro_confirmed_at?: string | null
           professional_id?: string
           proposal_id?: string
           reminded_at?: string | null
@@ -1164,6 +1170,7 @@ export type Database = {
           canceled_at: string | null
           canceled_by: string | null
           canceled_late: boolean
+          client_confirmed_at: string | null
           client_contest_wrong: boolean
           client_id: string
           completed_at: string | null
@@ -1179,6 +1186,7 @@ export type Database = {
           followup_at: string | null
           help_requested_at: string | null
           id: string
+          pro_confirmed_at: string | null
           professional_id: string
           proposal_id: string
           reminded_at: string | null
@@ -1349,6 +1357,7 @@ export type Database = {
           canceled_at: string | null
           canceled_by: string | null
           canceled_late: boolean
+          client_confirmed_at: string | null
           client_contest_wrong: boolean
           client_id: string
           completed_at: string | null
@@ -1364,6 +1373,7 @@ export type Database = {
           followup_at: string | null
           help_requested_at: string | null
           id: string
+          pro_confirmed_at: string | null
           professional_id: string
           proposal_id: string
           reminded_at: string | null
@@ -1394,6 +1404,7 @@ export type Database = {
           canceled_at: string | null
           canceled_by: string | null
           canceled_late: boolean
+          client_confirmed_at: string | null
           client_contest_wrong: boolean
           client_id: string
           completed_at: string | null
@@ -1409,6 +1420,7 @@ export type Database = {
           followup_at: string | null
           help_requested_at: string | null
           id: string
+          pro_confirmed_at: string | null
           professional_id: string
           proposal_id: string
           reminded_at: string | null
@@ -1493,6 +1505,7 @@ export type Database = {
           canceled_at: string | null
           canceled_by: string | null
           canceled_late: boolean
+          client_confirmed_at: string | null
           client_contest_wrong: boolean
           client_id: string
           completed_at: string | null
@@ -1508,6 +1521,7 @@ export type Database = {
           followup_at: string | null
           help_requested_at: string | null
           id: string
+          pro_confirmed_at: string | null
           professional_id: string
           proposal_id: string
           reminded_at: string | null
@@ -1538,6 +1552,7 @@ export type Database = {
           canceled_at: string | null
           canceled_by: string | null
           canceled_late: boolean
+          client_confirmed_at: string | null
           client_contest_wrong: boolean
           client_id: string
           completed_at: string | null
@@ -1553,6 +1568,54 @@ export type Database = {
           followup_at: string | null
           help_requested_at: string | null
           id: string
+          pro_confirmed_at: string | null
+          professional_id: string
+          proposal_id: string
+          reminded_at: string | null
+          request_id: string
+          reschedule_at: string | null
+          reschedule_by: string | null
+          reschedule_label: string | null
+          reschedule_requested_at: string | null
+          scheduled_at: string | null
+          scheduled_label: string
+          service_id: string
+          status: Database["public"]["Enums"]["order_status"]
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "orders"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      confirm_service_day: {
+        Args: { p_order_id: string }
+        Returns: {
+          address: Json | null
+          amount: number
+          cancel_reason: string | null
+          canceled_at: string | null
+          canceled_by: string | null
+          canceled_late: boolean
+          client_confirmed_at: string | null
+          client_contest_wrong: boolean
+          client_id: string
+          completed_at: string | null
+          completed_by: string | null
+          confirm_reminders: number
+          conversation_id: string
+          created_at: string
+          disputed_at: string | null
+          done_at: string | null
+          done_blocked: boolean
+          done_contested_at: string | null
+          done_photos: string[]
+          followup_at: string | null
+          help_requested_at: string | null
+          id: string
+          pro_confirmed_at: string | null
           professional_id: string
           proposal_id: string
           reminded_at: string | null
@@ -1635,6 +1698,7 @@ export type Database = {
           canceled_at: string | null
           canceled_by: string | null
           canceled_late: boolean
+          client_confirmed_at: string | null
           client_contest_wrong: boolean
           client_id: string
           completed_at: string | null
@@ -1650,6 +1714,7 @@ export type Database = {
           followup_at: string | null
           help_requested_at: string | null
           id: string
+          pro_confirmed_at: string | null
           professional_id: string
           proposal_id: string
           reminded_at: string | null
@@ -1722,6 +1787,7 @@ export type Database = {
           canceled_at: string | null
           canceled_by: string | null
           canceled_late: boolean
+          client_confirmed_at: string | null
           client_contest_wrong: boolean
           client_id: string
           completed_at: string | null
@@ -1737,6 +1803,7 @@ export type Database = {
           followup_at: string | null
           help_requested_at: string | null
           id: string
+          pro_confirmed_at: string | null
           professional_id: string
           proposal_id: string
           reminded_at: string | null
@@ -1861,6 +1928,7 @@ export type Database = {
           canceled_at: string | null
           canceled_by: string | null
           canceled_late: boolean
+          client_confirmed_at: string | null
           client_contest_wrong: boolean
           client_id: string
           completed_at: string | null
@@ -1876,6 +1944,7 @@ export type Database = {
           followup_at: string | null
           help_requested_at: string | null
           id: string
+          pro_confirmed_at: string | null
           professional_id: string
           proposal_id: string
           reminded_at: string | null
@@ -1906,6 +1975,7 @@ export type Database = {
           canceled_at: string | null
           canceled_by: string | null
           canceled_late: boolean
+          client_confirmed_at: string | null
           client_contest_wrong: boolean
           client_id: string
           completed_at: string | null
@@ -1921,6 +1991,7 @@ export type Database = {
           followup_at: string | null
           help_requested_at: string | null
           id: string
+          pro_confirmed_at: string | null
           professional_id: string
           proposal_id: string
           reminded_at: string | null

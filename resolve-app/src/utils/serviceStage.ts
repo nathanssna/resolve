@@ -3,6 +3,7 @@ import { scheduleAt } from '@/utils/schedule';
 
 export type ServiceAction =
   | 'done'
+  | 'confirmDay'
   | 'confirm'
   | 'deny'
   | 'reschedule'
@@ -19,7 +20,7 @@ const WEEK = 7 * 86_400_000;
 
 /**
  * Em que pé está um serviço combinado e o que quem vê pode fazer (mesmas regras do banco:
- * mark_order_done, confirm_order_done, respond_reschedule, dispute_order, ask_team_order).
+ * mark_order_done, confirm_order_done, respond_reschedule, dispute_order, ask_team_order, confirm_service_day).
  * `null`: nada a decidir agora (combinado, antes do dia).
  */
 export function serviceStage(o: Order, isPro: boolean, other: string, now = Date.now()): ServiceStage | null {
@@ -63,13 +64,26 @@ export function serviceStage(o: Order, isPro: boolean, other: string, now = Date
         }
       : { tone: 'action', title: 'Você disse que o serviço não foi feito', text: `Combine uma nova data com ${other} ou cancele.`, primary: 'reschedule' };
   }
+  // No dia: cada um confirma (o profissional até o começo do período; depois vale "Serviço feito").
+  const started = !o.schedule || now >= scheduleAt(o.schedule).getTime();
+  if (o.schedule && new Date(o.schedule.day).toDateString() === new Date(now).toDateString() && (!isPro || !started)) {
+    return o.confirmedByMe
+      ? { tone: 'wait', title: 'Serviço de hoje confirmado', text: o.confirmedByOther ? `${other} também confirmou.` : `${other} ainda não confirmou.` }
+      : {
+          tone: 'action',
+          title: 'Confirme o serviço de hoje',
+          text: o.confirmedByOther ? `${other} já confirmou.` : `Assim ${other} sabe que está tudo certo. Se não der, remarque.`,
+          primary: 'confirmDay',
+          secondary: 'reschedule',
+        };
+  }
   // Profissional: a partir do começo do período (sem data, a qualquer momento).
-  if (isPro && (!o.schedule || now >= scheduleAt(o.schedule).getTime())) {
+  if (isPro && started) {
     const past = !!o.schedule && now - scheduleAt(o.schedule).getTime() > 24 * 3_600_000;
     return {
       tone: 'action',
       title: past ? 'O serviço aconteceu?' : 'Dia do serviço',
-      text: 'Quando terminar, marque como feito. Se não deu, remarque.',
+      text: `${o.confirmedByOther && !past ? `${other} confirmou. ` : ''}Quando terminar, marque como feito. Se não deu, remarque.`,
       primary: 'done',
       secondary: 'reschedule',
     };

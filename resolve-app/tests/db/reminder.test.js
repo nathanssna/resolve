@@ -54,7 +54,8 @@ let pass = 0, fail = 0; const ok = (c, m) => { c ? pass++ : fail++; console.log(
   ok(msgs.length === 2, `um envio com 2 notificações (cliente e profissional): ${msgs.length}`);
   ok(toAna?.title === 'Hoje: Encanador' && toAna?.body === 'Com Marcos, à tarde.', `cliente: "${toAna?.title}" / "${toAna?.body}"`);
   ok(toPro?.title === 'Hoje: Encanador' && toPro?.body === 'Ana, à tarde · Bela Vista.', `profissional: "${toPro?.body}"`);
-  ok(toAna?.data?.url === `/pedido/${o1}`, 'tocar abre o serviço');
+  ok(toAna?.data?.url === `/pedido/${o1}` && toAna?.data?.orderId === o1, 'tocar abre o serviço');
+  ok(toAna?.categoryId === 'lembrete' && toPro?.categoryId === 'lembrete', 'com um serviço no dia: botões Confirmar e Preciso remarcar');
   const sent = (await db.query('select tokens from private.push_sends where request_id = $1', [c1?.id])).rows[0]?.tokens ?? [];
   ok(sent.join() === msgs.map((m) => m.to).join(), 'envio guardado para a limpeza de tokens, na mesma ordem');
   await db.query('delete from net.calls');
@@ -94,8 +95,34 @@ let pass = 0, fail = 0; const ok = (c, m) => { c ? pass++ : fail++; console.log(
   await db.query('delete from net.calls');
   ok((await remind()) === 55, '55 serviços lembrados');
   const big = await calls();
-  ok(big.length === 2 && big[0].body.length === 100 && big[1].body.length === 10, `110 notificações em envios de até 100 (${big.map((c) => c.body.length)})`);
-  ok(big.every((c) => c.body.every((m) => m.title === 'Hoje: Encanador')), 'todas com o título certo');
+  const all = big.flatMap((c) => c.body);
+  ok(big.length === 1 && all.length === 56, `55 clientes + 1 resumo para o profissional, num envio (${big.map((c) => c.body.length)})`);
+  const summary = all.find((m) => m.to === 'ExponentPushToken[pro]');
+  ok(summary?.title === 'Hoje: 55 serviços' && summary?.body === 'Cliente de manhã, Cliente de manhã e mais 53.', `profissional: um resumo só ("${summary?.title}" / "${summary?.body}")`);
+  ok(summary?.data?.url === '/pedidos' && !summary?.categoryId, 'o resumo abre a agenda, sem botões');
+  ok(all.filter((m) => m.to !== 'ExponentPushToken[pro]').every((m) => m.title === 'Hoje: Encanador' && m.categoryId === 'lembrete'), 'clientes: o lembrete do serviço, com botões');
+
+  console.log('\nDois serviços no dia');
+  const gil = await signup('Gil Prado');
+  await as(gil, "select public.register_push_token('ExponentPushToken[gil]', 'android')");
+  const hel = await signup('Helena Costa');
+  await deal(gil, 'encanador', 0, 13);
+  await deal(hel, 'eletricista', 0, 8);
+  await db.query('delete from net.calls');
+  ok((await remind()) === 2, '2 serviços lembrados');
+  const two = (await calls()).flatMap((c) => c.body).find((m) => m.to === 'ExponentPushToken[pro]');
+  ok(two?.title === 'Hoje: 2 serviços' && two?.body === 'Helena de manhã e Gil à tarde.', `em ordem de horário: "${two?.body}"`);
+
+  console.log('\nMais de 100 notificações');
+  for (let i = 0; i < 101; i++) {
+    const c = await signup(`Outro ${i}`);
+    await as(c, `select public.register_push_token('ExponentPushToken[o${String(i).padStart(3, '0')}]', 'android')`);
+    await deal(c, 'encanador', 0, 8);
+  }
+  await db.query('delete from net.calls');
+  ok((await remind()) === 101, '101 serviços lembrados');
+  const many = await calls();
+  ok(many.length === 2 && many[0].body.length === 100 && many[1].body.length === 2, `102 notificações em envios de até 100 (${many.map((c) => c.body.length)})`);
 
   console.log('\nAgendamento');
   const job = (await db.query("select schedule, command from cron.job where jobname = 'lembrete-do-dia'")).rows[0];

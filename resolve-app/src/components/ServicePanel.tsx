@@ -8,6 +8,7 @@ import { Text } from './Text';
 
 const LABEL: Record<ServiceAction, string> = {
   done: 'Serviço feito',
+  confirmDay: 'Confirmar',
   confirm: 'Sim, foi feito',
   deny: 'Não foi feito',
   reschedule: 'Remarcar',

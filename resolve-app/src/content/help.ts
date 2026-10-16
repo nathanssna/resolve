@@ -37,6 +37,10 @@ const CLIENT: HelpSection = {
       a: 'Antes de combinar, toque em Cancelar pedido no card do pedido, no chat. Depois de combinado, abra o serviço em Pedidos: em Remarcar você propõe outro dia e o profissional aceita ou recusa; em Cancelar serviço você cancela. Cancelar com menos de 12 horas pede um motivo.',
     },
     {
+      q: 'O que é confirmar o serviço?',
+      a: 'No dia do serviço, de manhã, você recebe um lembrete com Confirmar e Preciso remarcar. Ao confirmar, o profissional fica sabendo que está tudo certo. Se não der, remarque. Confirmar não é obrigatório.',
+    },
+    {
       q: 'Como o serviço é concluído?',
       a: 'Quando terminar, o profissional marca o serviço como feito, às vezes com fotos. Você recebe um aviso e responde: Sim, foi feito (o serviço é concluído) ou Não foi feito (vocês remarcam ou cancelam). Se não responder em 3 dias, você não consegue fazer pedidos novos até responder. Com fotos, se você não responder em 7 dias, o serviço é concluído sozinho.',
     },
@@ -78,6 +82,10 @@ const PRO: HelpSection = {
     {
       q: 'Como concluo um serviço?',
       a: 'A partir do dia e período combinados, abra o serviço e toque em Serviço feito. Anexe fotos do trabalho pronto: o cliente confirma e, se ele não responder em 7 dias, o serviço é concluído sozinho. Sem foto, só o cliente conclui; depois de 7 dias sem resposta, você pode pedir ajuda à equipe.',
+    },
+    {
+      q: 'O que é confirmar o serviço?',
+      a: 'No dia do serviço, de manhã, você recebe um lembrete com Confirmar e Preciso remarcar (com vários serviços no dia, um resumo só). Ao confirmar, o cliente fica sabendo que você vai. O cliente também pode confirmar, e você vê no serviço e no chat.',
     },
     {
       q: 'Posso avaliar o cliente?',

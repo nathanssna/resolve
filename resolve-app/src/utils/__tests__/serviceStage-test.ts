@@ -25,6 +25,8 @@ const order = (o: Partial<Order> = {}): Order => ({
   doneBlocked: false,
   disputed: false,
   helpRequested: false,
+  confirmedByMe: false,
+  confirmedByOther: false,
   ...o,
 });
 const stage = (o: Partial<Order>, isPro: boolean, now = start) => serviceStage(order(o), isPro, 'Ana', now);
@@ -35,9 +37,37 @@ describe('serviceStage', () => {
     expect(stage({ status: 'cancelado' }, false)).toBeNull();
   });
 
-  it('antes do período: nada para os dois', () => {
-    expect(stage({}, true, start - 1)).toBeNull();
-    expect(stage({}, false, start + HOUR)).toBeNull();
+  it('antes do dia: nada para os dois', () => {
+    expect(stage({}, true, start - DAY)).toBeNull();
+    expect(stage({}, false, start - DAY)).toBeNull();
+  });
+
+  describe('no dia do serviço', () => {
+    it('os dois confirmam ou remarcam', () => {
+      for (const isPro of [true, false]) {
+        expect(stage({}, isPro, start - 5 * HOUR)).toMatchObject({ tone: 'action', title: 'Confirme o serviço de hoje', primary: 'confirmDay', secondary: 'reschedule' });
+      }
+    });
+
+    it('diz se o outro já confirmou', () => {
+      expect(stage({ confirmedByOther: true }, false, start - HOUR)?.text).toBe('Ana já confirmou.');
+    });
+
+    it('quem confirmou espera, sem botões', () => {
+      expect(stage({ confirmedByMe: true }, false, start - HOUR)).toEqual({ tone: 'wait', title: 'Serviço de hoje confirmado', text: 'Ana ainda não confirmou.' });
+      expect(stage({ confirmedByMe: true, confirmedByOther: true }, true, start - HOUR)?.text).toBe('Ana também confirmou.');
+    });
+
+    it('cliente pode confirmar durante o período; o profissional passa a marcar feito', () => {
+      expect(stage({}, false, start + HOUR)?.primary).toBe('confirmDay');
+      expect(stage({}, true, start + HOUR)?.primary).toBe('done');
+      expect(stage({ confirmedByOther: true }, true, start + HOUR)?.text).toBe('Ana confirmou. Quando terminar, marque como feito. Se não deu, remarque.');
+      expect(stage({ confirmedByMe: true }, false, start + HOUR)?.tone).toBe('wait');
+    });
+
+    it('remarcação pendente vem antes da confirmação', () => {
+      expect(stage({ reschedule: { when: 'Amanhã, à tarde', label: 'x', byMe: false } }, false, start - HOUR)?.primary).toBe('acceptReschedule');
+    });
   });
 
   it('profissional: a partir do começo do período, marca feito ou remarca', () => {
