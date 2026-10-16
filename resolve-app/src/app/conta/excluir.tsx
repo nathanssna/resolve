@@ -25,7 +25,7 @@ export default function ExcluirConta() {
     setBusy(true);
     try {
       // Fotos primeiro (depois da exclusão, a sessão deixa de valer).
-      const requestPhotos = conversations.flatMap((c) => c.messages.flatMap((m) => (m.kind === 'request' && m.from === 'me' ? m.photos : [])));
+      const requestPhotos = conversations.flatMap((c) => c.jobs.flatMap((j) => (j.request?.from === 'me' ? j.request.photos : [])));
       if (requestPhotos.length) await supabase.storage.from('request-photos').remove(requestPhotos);
       await supabase.storage.from('avatars').remove([`${uid}/avatar.jpg`]);
       await deleteAllVerificationPhotos();

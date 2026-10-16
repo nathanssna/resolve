@@ -101,7 +101,7 @@ const login = async (email) => (await (await fetch(`${URL_}/auth/v1/token?grant_
   await cli.page.goto(`${APP}/chat/${conv1}`, { waitUntil: 'networkidle0' });
   await cli.press('Aceitar proposta');
   ok(await cli.waitText('Eletricista: Serviço combinado · R$ 200,00'), 'aviso de sistema diz o serviço');
-  ok(await cli.waitText('Serviço combinado · Eletricista'), 'faixa do topo: serviço combinado do eletricista');
+  ok(await cli.waitText('Serviço combinado\n') && await cli.waitText('R$ 200,00 · '), 'faixa do topo: serviço combinado, com valor e data');
   await cli.page.screenshot({ path: SHOTS + 'pair-3-cliente.png' });
 
   console.log('\nProfissional: o outro pedido continua aberto');

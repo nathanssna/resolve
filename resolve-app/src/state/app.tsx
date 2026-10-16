@@ -19,6 +19,24 @@ import { AppState } from 'react-native';
 import type { Database, Json } from '@/lib/database.types';
 import { photoName, uploadPhoto, type LocalPhoto } from '@/lib/photos';
 import { supabase, type UserRole } from '@/lib/supabase';
+import {
+  byId,
+  EMPTY,
+  isTmp,
+  MESSAGE_COLS,
+  mergeFresh,
+  mergeOlder,
+  PAGE,
+  pageStart,
+  time,
+  type ConvRow,
+  type MessageRow,
+  type OrderRow,
+  type ProposalRow,
+  type RequestRow,
+  type Store,
+  type Tables,
+} from '@/state/appStore';
 import { useAuth } from '@/state/auth';
 import { useCatalog } from '@/state/catalog';
 import { formatSchedule, fromScheduledAt, parseSchedule, scheduleAt, scheduleLabel, scheduleOrder, type Schedule } from '@/utils/schedule';
@@ -97,6 +115,8 @@ export type Conversation = {
   blockedByMe: boolean;
   /** Quando o outro abriu a conversa pela última vez (0 = nunca): o "Visto" do chat. */
   otherReadAt: number;
+  /** Há mensagens anteriores às carregadas (ver loadOlder). */
+  hasOlder: boolean;
 };
 
 export type OrderStatus = Database['public']['Enums']['order_status'];
@@ -144,58 +164,6 @@ export type Order = {
 export const soonestFirst = (a: Order, b: Order) =>
   (a.schedule ? scheduleOrder(a.schedule) : Infinity) - (b.schedule ? scheduleOrder(b.schedule) : Infinity) || a.createdAt - b.createdAt;
 
-type Tables = Database['public']['Tables'];
-type PartyRow = { full_name: string; avatar_url: string | null; deleted_at: string | null };
-type ConvRow = Pick<Tables['conversations']['Row'], 'id' | 'professional_id' | 'client_id' | 'client_last_read_at' | 'professional_last_read_at'> & {
-  client: PartyRow | null;
-  /** Nome do profissional mesmo fora do catálogo (ex.: conta excluída). */
-  professional: { profile: PartyRow | null } | null;
-};
-type RequestRow = Pick<Tables['requests']['Row'], 'id' | 'conversation_id' | 'service_id' | 'created_at' | 'closed_at' | 'closed_by'> & {
-  /** Endereço completo do pedido: só o cliente recebe (o banco devolve null para o profissional). */
-  request_address?: { address: Json } | null;
-};
-type MessageRow = Pick<
-  Tables['messages']['Row'],
-  'id' | 'conversation_id' | 'request_id' | 'sender_id' | 'kind' | 'body' | 'proposal_id' | 'request_when' | 'request_address' | 'photos' | 'created_at'
->;
-type ProposalRow = Pick<Tables['proposals']['Row'], 'id' | 'conversation_id' | 'request_id' | 'amount' | 'scheduled_label' | 'scheduled_at' | 'note' | 'status'>;
-type OrderRow = Pick<
-  Tables['orders']['Row'],
-  | 'id'
-  | 'conversation_id'
-  | 'request_id'
-  | 'professional_id'
-  | 'service_id'
-  | 'amount'
-  | 'scheduled_label'
-  | 'scheduled_at'
-  | 'address'
-  | 'status'
-  | 'created_at'
-  | 'completed_at'
-  | 'canceled_late'
-  | 'cancel_reason'
-  | 'done_at'
-  | 'done_photos'
-  | 'done_blocked'
-  | 'disputed_at'
-  | 'help_requested_at'
-  | 'completed_by'
-  | 'reschedule_at'
-  | 'reschedule_label'
-  | 'reschedule_by'
-> & { rating?: number; comment?: string | null };
-
-type Store = {
-  convs: Record<string, ConvRow>;
-  requests: Record<string, RequestRow>;
-  messages: Record<string, MessageRow>;
-  proposals: Record<string, ProposalRow>;
-  orders: Record<string, OrderRow>;
-};
-const EMPTY: Store = { convs: {}, requests: {}, messages: {}, proposals: {}, orders: {} };
-
 const PROPOSAL_COLS = 'id, conversation_id, request_id, amount, scheduled_label, scheduled_at, note, status';
 
 export type AppStatus = 'idle' | 'loading' | 'ready' | 'error';
@@ -226,6 +194,8 @@ type AppValue = {
   /** Profissional: envia uma proposta para o pedido (substitui a pendente anterior dele). */
   sendProposal: (conversationId: string, jobId: string, input: { amount: number; schedule: Schedule; note?: string }) => Promise<void>;
   markRead: (conversationId: string) => void;
+  /** Busca a página de mensagens anterior às carregadas na conversa. */
+  loadOlder: (conversationId: string) => Promise<void>;
   /** Profissional: "Serviço feito", com até 3 fotos do trabalho pronto. */
   markDone: (orderId: string, photos?: LocalPhoto[], onProgress?: (sent: number, total: number) => void) => Promise<void>;
   /** Cliente: o serviço foi feito? */
@@ -254,15 +224,12 @@ type AppValue = {
 
 const Ctx = createContext<AppValue | null>(null);
 
-const byId = <T extends { id: string }>(rows: T[]) => Object.fromEntries(rows.map((r) => [r.id, r]));
-const time = (iso: string) => Date.parse(iso);
 
 /** Quando, para a tela: da data gravada (`scheduled_at`) ou do texto, relativo a `ref` (quando foi escrito). */
 function whenOf(label: string, scheduledAt: string | null, ref: number): { when: string; schedule?: Schedule } {
   const schedule = scheduledAt ? fromScheduledAt(time(scheduledAt)) : (parseSchedule(label, ref) ?? undefined);
   return { when: schedule ? formatSchedule(schedule) : label, schedule };
 }
-const isTmp = (id: string) => id.startsWith('tmp:');
 
 function toAddress(value: Json | null): Address {
   const v = value && typeof value === 'object' && !Array.isArray(value) ? value : {};
@@ -287,18 +254,24 @@ async function fetchStore(uid: string, role: UserRole): Promise<Store> {
       client:profiles!conversations_client_id_fkey(full_name, avatar_url, deleted_at),
       professional:professionals!conversations_professional_id_fkey(profile:profiles!professionals_id_fkey(full_name, avatar_url, deleted_at)),
       requests!requests_conversation_id_fkey(id, conversation_id, service_id, created_at, closed_at, closed_by, request_address:request_addresses(address)),
-      messages!messages_conversation_id_fkey(id, conversation_id, request_id, sender_id, kind, body, proposal_id, request_when, request_address, photos, created_at),
+      job_messages:messages!messages_conversation_id_fkey(${MESSAGE_COLS}),
+      recent_messages:messages!messages_conversation_id_fkey(${MESSAGE_COLS}),
       proposals!proposals_conversation_id_fkey(id, conversation_id, request_id, amount, scheduled_label, scheduled_at, note, status),
       orders!orders_conversation_id_fkey(id, conversation_id, request_id, professional_id, service_id, amount, scheduled_label, scheduled_at, address, status, created_at, completed_at, canceled_late, cancel_reason, done_at, done_photos, done_blocked, disputed_at, help_requested_at, completed_by, reschedule_at, reschedule_label, reschedule_by, review:reviews(rating, comment))`,
     )
-    .eq(role === 'profissional' ? 'professional_id' : 'client_id', uid);
+    .eq(role === 'profissional' ? 'professional_id' : 'client_id', uid)
+    // Pedidos e propostas: todas (os pedidos dependem delas). O resto: só a página mais recente.
+    .in('job_messages.kind', ['request', 'proposal'])
+    .order('created_at', { referencedTable: 'recent_messages', ascending: false })
+    .limit(PAGE, { referencedTable: 'recent_messages' });
   if (error) throw error;
 
-  const store: Store = { convs: {}, requests: {}, messages: {}, proposals: {}, orders: {} };
-  for (const { requests, messages, proposals, orders, ...conv } of data) {
+  const store: Store = { convs: {}, requests: {}, messages: {}, proposals: {}, orders: {}, history: {} };
+  for (const { requests, job_messages, recent_messages, proposals, orders, ...conv } of data) {
     store.convs[conv.id] = conv;
     Object.assign(store.requests, byId(requests));
-    Object.assign(store.messages, byId(messages));
+    Object.assign(store.messages, byId(job_messages), byId(recent_messages));
+    store.history[conv.id] = pageStart(recent_messages);
     Object.assign(store.proposals, byId(proposals));
     for (const { review, ...o } of orders) store.orders[o.id] = { ...o, rating: review?.rating, comment: review?.comment };
   }
@@ -345,7 +318,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     [owner],
   );
 
-  /** Busca tudo do banco (abertura, reconexão do Realtime, app de volta, "Tentar de novo"). */
+  /** Busca do banco (abertura, reconexão do Realtime, app de volta, "Tentar de novo"): pedidos inteiros e a página mais recente de cada conversa. */
   const load = useCallback(() => {
     if (!uid || !owner) return;
     const buffer: ((s: Store) => Store)[] = [];
@@ -353,9 +326,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
     fetchStore(uid, role)
       .then((fresh) => {
         setData((d) => {
-          // Mantém mensagens ainda não confirmadas pelo banco.
-          const pending = d?.owner === owner ? Object.values(d.store.messages).filter((m) => isTmp(m.id)) : [];
-          let next: Store = { ...fresh, messages: { ...fresh.messages, ...byId(pending) } };
+          // Junta ao que já estava na tela (mensagens antigas do chat e as ainda não confirmadas).
+          let next = mergeFresh(d?.owner === owner ? d.store : null, fresh);
           for (const fn of buffer) next = fn(next);
           return { owner, store: next };
         });
@@ -561,6 +533,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
           };
         });
 
+      // O chat mostra só o trecho sem buracos; pedidos e propostas mais antigos aparecem ao carregar as anteriores.
+      const from = store.history[c.id];
+      const visible = from ? messages.filter((m) => m.at >= time(from)) : messages;
+
       const readAt = time(role === 'profissional' ? c.professional_last_read_at : c.client_last_read_at);
       // O chat aberto marca como lido no banco assim que algo chega (ver chat/[id].tsx).
       const unread = rows.filter((r) => r.sender_id !== uid && time(r.created_at) > readAt).length;
@@ -569,7 +545,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         proId: c.professional_id,
         clientId: c.client_id,
         other: otherOf(c),
-        messages,
+        messages: visible,
         unread,
         jobs,
         latestJob: jobs.at(-1),
@@ -578,6 +554,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
           const other = role === 'profissional' ? c.client_last_read_at : c.professional_last_read_at;
           return other ? time(other) : 0;
         })(),
+        hasOlder: !!from,
       };
     });
 
@@ -709,7 +686,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       const { data: msg, error } = await supabase
         .from('messages')
         .insert({ conversation_id: conversationId, body: text })
-        .select('id, conversation_id, request_id, sender_id, kind, body, proposal_id, request_when, request_address, photos, created_at')
+        .select(MESSAGE_COLS)
         .single();
       update((s) => {
         const rest = { ...s.messages };
@@ -770,6 +747,23 @@ export function AppProvider({ children }: { children: ReactNode }) {
       supabase.rpc('mark_conversation_read', { p_conversation_id: conversationId }).then(() => {});
     },
     [store.messages, update, role],
+  );
+
+  const loadOlder: AppValue['loadOlder'] = useCallback(
+    async (conversationId) => {
+      const before = store.history[conversationId];
+      if (!before) return;
+      const { data: page, error } = await supabase
+        .from('messages')
+        .select(MESSAGE_COLS)
+        .eq('conversation_id', conversationId)
+        .lt('created_at', before)
+        .order('created_at', { ascending: false })
+        .limit(PAGE);
+      if (error) throw error;
+      update((s) => (s.history[conversationId] === before ? mergeOlder(s, conversationId, page) : s));
+    },
+    [store.history, update],
   );
 
   const sendProposal: AppValue['sendProposal'] = useCallback(
@@ -924,6 +918,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       respondProposal,
       sendProposal,
       markRead,
+      loadOlder,
       markDone,
       confirmDone,
       requestReschedule,
@@ -939,7 +934,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       unblock,
       isFavorite: (sid) => favorites.includes(sid),
     }),
-    [status, role, load, conversations, orders, favorites, startRequest, sendText, respondProposal, sendProposal, markRead, markDone, confirmDone, requestReschedule, respondReschedule, disputeOrder, askTeam, cancelOrder, rateOrder, closeRequest, toggleFavorite, blocked, block, unblock],
+    [status, role, load, conversations, orders, favorites, startRequest, sendText, respondProposal, sendProposal, markRead, loadOlder, markDone, confirmDone, requestReschedule, respondReschedule, disputeOrder, askTeam, cancelOrder, rateOrder, closeRequest, toggleFavorite, blocked, block, unblock],
   );
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;

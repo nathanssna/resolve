@@ -67,6 +67,7 @@ npm run e2e:cleanup            # apaga as contas (sempre, no fim)
 | `alert` | quando uma mensagem deixa o painel do profissional em alerta |
 | `notif` | Notificações (preferências gravadas no banco) e Ajuda, para cliente e profissional |
 | `chat` | "Negociar" preenche o campo; "digitando…" com os pontos animados |
+| `historico` | conversa longa abre com as 50 mensagens mais recentes; "Carregar mensagens anteriores" até o começo; tempo real e lista |
 | `busca` | busca por frase na tela Buscar, como visitante (não precisa das contas); sem internet, cai na busca local |
 | `pause` | pausar no painel do profissional; lista, perfil e pedido do lado do cliente |
 | `cancela` | cancelar no prazo e em cima da hora (motivo), histórico do cliente, pausa automática e taxa no perfil |

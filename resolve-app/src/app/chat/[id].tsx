@@ -44,7 +44,7 @@ type Item = { key: string; day: string } | { key: string; message: Message };
 export default function Chat() {
   // `proposta`: id do pedido para já abrir a proposta (botão do painel do profissional).
   const { id, proposta } = useLocalSearchParams<{ id: string; proposta?: string }>();
-  const { status, role, refresh, conversations, orders, sendText, respondProposal, sendProposal, markRead, closeRequest, block, unblock } = useApp();
+  const { status, role, refresh, conversations, orders, sendText, respondProposal, sendProposal, markRead, loadOlder, closeRequest, block, unblock } = useApp();
   const isPro = role === 'profissional';
   const { session } = useAuth();
   const focused = useIsFocused();
@@ -87,6 +87,15 @@ export default function Chat() {
   };
   const send = (text: string) => {
     if (conv) sendText(conv.id, text).catch((e) => notify(`Mensagem não enviada. ${authErrorMessage(e)}`));
+  };
+  // Mensagens anteriores: ao rolar até o topo ou pelo botão.
+  const [loadingOlder, setLoadingOlder] = useState(false);
+  const older = () => {
+    if (!conv?.hasOlder || loadingOlder) return;
+    setLoadingOlder(true);
+    loadOlder(conv.id)
+      .catch((e) => notify(authErrorMessage(e)))
+      .finally(() => setLoadingOlder(false));
   };
 
 
@@ -352,7 +361,16 @@ export default function Chat() {
           keyExtractor={(item) => item.key}
           style={styles.list}
           contentContainerStyle={styles.listContent}
-          ListFooterComponent={<SystemNote text="Combine tudo por aqui. Não compartilhe senhas ou códigos." />}
+          onEndReached={older}
+          ListFooterComponent={
+            conv.hasOlder ? (
+              <Button variant="secondary" size="md" onPress={older} disabled={loadingOlder} style={styles.older}>
+                {loadingOlder ? 'Carregando…' : 'Carregar mensagens anteriores'}
+              </Button>
+            ) : (
+              <SystemNote text="Combine tudo por aqui. Não compartilhe senhas ou códigos." />
+            )
+          }
           renderItem={({ item }) =>
             'day' in item ? (
               <SystemNote text={item.day} />
@@ -453,6 +471,7 @@ const styles = StyleSheet.create({
   },
   list: { flex: 1 },
   seen: { alignSelf: 'flex-end', paddingHorizontal: spacing[4] },
+  older: { alignSelf: 'center' },
   listContent: { paddingVertical: spacing[4], gap: spacing[3] },
   composer: { gap: spacing[3], paddingHorizontal: spacing[4], paddingTop: spacing[3], borderTopWidth: 1, borderTopColor: colors.line, backgroundColor: colors.surface },
 });
