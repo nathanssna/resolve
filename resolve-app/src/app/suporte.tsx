@@ -58,7 +58,7 @@ export default function Suporte() {
           <View style={{ flex: 1, gap: 1 }}>
             <View style={styles.name}>
               <Text variant="labelLg">Rezolveaê</Text>
-              <Icon name="badge-check" size={16} strokeWidth={2.25} fill={colors.brand} label="Verificado" />
+              <Icon name="badge-check" size={16} fill={colors.brand} label="Verificado" />
             </View>
             <Text variant="caption" color={colors.inkMuted}>
               Equipe Rezolveae

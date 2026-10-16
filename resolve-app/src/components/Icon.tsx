@@ -32,8 +32,15 @@ function a11y(label?: string): object {
   };
 }
 
-function IconBase({ name, size = 24, color = colors.ink, strokeWidth = 2, fill = 'none', duotone, label }: Props) {
+/**
+ * Traço pelo tamanho, para todos os ícones parecerem da mesma família: o guia pede 1,75 em
+ * 24px; ícones menores ganham um pouco de traço para não sumirem.
+ */
+const strokeFor = (size: number) => (size <= 14 ? 2.5 : size <= 18 ? 2.25 : size <= 22 ? 2 : 1.75);
+
+function IconBase({ name, size = 24, color = colors.ink, strokeWidth, fill = 'none', duotone, label }: Props) {
   if (duotone) fill = colors.brand;
+  strokeWidth ??= strokeFor(size);
   const xml = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" fill="${fill}" stroke="${color}" stroke-width="${strokeWidth}" stroke-linecap="round" stroke-linejoin="round">${iconPaths[name]}</svg>`;
   return <SvgXml xml={xml} width={size} height={size} {...a11y(label)} />;
 }

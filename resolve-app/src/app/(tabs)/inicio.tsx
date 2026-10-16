@@ -47,7 +47,7 @@ function NearbyPro({ pro, km, service }: { pro: Professional; km: number; servic
         <Avatar size={56} uri={pro.avatarUrl} />
         {pro.verified ? (
           <View style={styles.nearSeal}>
-            <Icon name="badge-check" size={20} strokeWidth={2.25} fill={colors.brand} />
+            <Icon name="badge-check" size={20} fill={colors.brand} />
           </View>
         ) : null}
       </View>
@@ -151,11 +151,11 @@ function ClientHome() {
             onPress={() => router.push('/enderecos')}
             style={styles.address}
           >
-            <Icon name="map-pin" size={18} strokeWidth={2.25} fill={colors.ink} color={colors.brand} />
+            <Icon name="map-pin" size={18} fill={colors.ink} color={colors.brand} />
             <Text variant="label" numberOfLines={1} style={{ flexShrink: 1 }}>
               {addressText}
             </Text>
-            <Icon name="chevron-down" size={16} strokeWidth={2.5} />
+            <Icon name="chevron-down" size={16} />
           </Pressable>
           <IconButton icon="bell" label="Notificações" floating onPress={() => notify('Sem notificações novas.')} />
         </View>
@@ -190,12 +190,12 @@ function ClientHome() {
           {!primary?.coords ? (
             <Pressable accessibilityRole="button" onPress={() => router.push('/enderecos')} style={({ pressed }) => [styles.invite, pressed && { opacity: 0.85 }]}>
               <View style={styles.inviteIcon}>
-                <Icon name="map-pin" size={18} strokeWidth={2.25} />
+                <Icon name="map-pin" size={18} />
               </View>
               <Text variant="label" style={{ flex: 1 }}>
                 {primary ? 'Confira seu endereço para ver quem atende perto de você' : 'Adicione seu endereço para ver quem atende perto de você'}
               </Text>
-              <Icon name="chevron-right" size={18} strokeWidth={2} />
+              <Icon name="chevron-right" size={18} />
             </Pressable>
           ) : !dist ? null : nearby.length ? (
             <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.nearScroll} contentContainerStyle={styles.nearList}>

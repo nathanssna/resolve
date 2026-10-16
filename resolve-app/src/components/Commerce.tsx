@@ -24,10 +24,10 @@ export function ServiceTile({
       {({ pressed }) => (
         <>
           <View style={[styles.tile, pressed && { transform: [{ scale: 0.95 }] }]}>
-            <Icon name={icon} size={32} strokeWidth={2} duotone />
+            <Icon name={icon} size={32} duotone />
             {badge ? (
               <View style={styles.tileBadge}>
-                <Text variant="overline" color={colors.onInk} style={{ fontSize: 9, lineHeight: 12 }}>
+                <Text variant="overline" color={colors.onInk} style={{ fontSize: 11, lineHeight: 14 }}>
                   {badge}
                 </Text>
               </View>
@@ -75,7 +75,7 @@ export function PromoCard({
       style={({ pressed }) => [styles.promo, { backgroundColor: t.bg, width }, pressed && { opacity: 0.92 }]}
     >
       <View style={[styles.promoArt, { backgroundColor: t.art }]}>
-        <Icon name={icon} size={34} strokeWidth={2} color={t.artIcon} />
+        <Icon name={icon} size={34} color={t.artIcon} />
       </View>
       <View style={{ flex: 1, gap: 4 }}>
         <Text variant="labelLg" color={t.fg} style={{ fontSize: 16, lineHeight: 21 }}>
@@ -89,7 +89,7 @@ export function PromoCard({
             <Text variant="label" color={t.fg}>
               {cta}
             </Text>
-            <Icon name="arrow-right" size={16} strokeWidth={2.25} color={t.fg} />
+            <Icon name="arrow-right" size={16} color={t.fg} />
           </View>
         ) : null}
       </View>
@@ -131,7 +131,7 @@ export function ActiveOrderCard({
     >
       <View style={styles.activeTop}>
         <View style={styles.activeIcon}>
-          <Icon name="timer" size={22} strokeWidth={2.25} color={colors.onBrand} />
+          <Icon name="timer" size={22} color={colors.onBrand} />
         </View>
         <View style={{ flex: 1, gap: 2 }}>
           <Text variant="labelLg" color={colors.onInk}>
@@ -141,7 +141,7 @@ export function ActiveOrderCard({
             {subtitle}
           </Text>
         </View>
-        <Icon name="chevron-right" size={20} strokeWidth={2.25} color={colors.onInk} />
+        <Icon name="chevron-right" size={20} color={colors.onInk} />
       </View>
       <View style={styles.activeTrack}>
         <View style={[styles.activeFill, { width: `${Math.max(6, progress * 100)}%` }]} />
@@ -203,7 +203,7 @@ export function ProfessionalOption({
           </View>
         ) : (
           <View style={styles.optionMeta}>
-            <Icon name="sparkles" size={13} strokeWidth={2} />
+            <Icon name="sparkles" size={13} />
             <Text variant="bodySm" style={{ fontFamily: fonts.bold }}>
               Novo na Rezolveaê
             </Text>
@@ -245,7 +245,7 @@ export function Timeline({ steps }: { steps: TimelineStep[] }) {
                   s.state === 'current' && styles.dotCurrent,
                 ]}
               >
-                {s.state === 'done' ? <Icon name="check" size={12} strokeWidth={3} color={colors.onInk} /> : null}
+                {s.state === 'done' ? <Icon name="check" size={12} color={colors.onInk} /> : null}
               </View>
               {!last ? <View style={[styles.rail, s.state === 'done' && styles.railDone]} /> : null}
             </View>

@@ -3,7 +3,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { Platform, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { Button, CatalogFallback, EmptyState, Icon, InfoBanner, OptionChip, StickyFooter, Text, TopBar } from '@/components';
+import { Button, CatalogFallback, Checkbox, EmptyState, Icon, InfoBanner, StickyFooter, Text, TopBar } from '@/components';
 import { authErrorMessage } from '@/lib/authErrors';
 import { PermissionDeniedError, pickPhotos, type LocalPhoto } from '@/lib/photos';
 import { deleteReviewedPhotos, DOCUMENT_SIDE, latestVerification, submitVerification, type Verification } from '@/lib/verification';
@@ -130,7 +130,7 @@ export default function Verificacao() {
         </Text>
         <PhotoSlot title="Documento com foto" hint="RG ou CNH, frente, sem reflexo, com o nome legível" photo={docPhoto} onPick={(s) => pick(setDocPhoto, s)} />
         <PhotoSlot title="Selfie com o documento" hint="Seu rosto e o documento aparecendo juntos" photo={selfie} onPick={(s) => pick(setSelfie, s)} />
-        <OptionChip label="Autorizo o uso das fotos só para confirmar minha identidade" active={consent} onPress={() => setConsent((c) => !c)} />
+        <Checkbox label="Autorizo o uso das fotos só para confirmar minha identidade" checked={consent} onPress={() => setConsent((c) => !c)} />
         <Text variant="caption" color={colors.inkMuted}>
           A selfie é um dado sensível. As fotos ficam guardadas com acesso restrito e são apagadas depois da análise.
         </Text>

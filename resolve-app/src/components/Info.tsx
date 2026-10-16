@@ -14,7 +14,7 @@ export function CheckItem({ children, tone = 'brand' }: { children: string; tone
   return (
     <View style={styles.check}>
       <View style={[styles.dot, ok && { backgroundColor: colors.successTint }]}>
-        <Icon name="check" size={13} strokeWidth={3} color={ok ? colors.success : colors.onBrand} />
+        <Icon name="check" size={13} color={ok ? colors.success : colors.onBrand} />
       </View>
       <Text variant="body" color={colors.inkBody} style={styles.checkText}>
         {children}
@@ -27,7 +27,7 @@ export function CheckItem({ children, tone = 'brand' }: { children: string; tone
 export function InfoBanner({ icon = 'shield-check', title, description }: { icon?: IconName; title: string; description?: string }) {
   return (
     <View style={styles.banner}>
-      <Icon name={icon} size={28} strokeWidth={1.6} />
+      <Icon name={icon} size={28} />
       <View style={{ flex: 1 }}>
         <Text variant="labelLg" style={{ fontSize: 14, lineHeight: 18 }}>
           {title}
@@ -47,7 +47,7 @@ export function SuspendedNotice({ until, compact = false }: { until: number; com
   return (
     <View style={styles.suspended} accessibilityRole="alert">
       <View style={{ flexDirection: 'row', gap: spacing[3], alignItems: 'flex-start' }}>
-        <Icon name="ban" size={22} strokeWidth={2} color={colors.danger} />
+        <Icon name="ban" size={22} color={colors.danger} />
         <View style={{ flex: 1, gap: 2 }}>
           <Text variant="labelLg" color={colors.danger}>
             {`Sua conta está suspensa${until === Infinity ? '' : ` até ${formatDay(until)}`}`}

@@ -27,7 +27,7 @@ export const Field = forwardRef<TextInput, FieldProps>(function Field({ icon, la
         </Text>
       ) : null}
       <View style={[styles.box, multiline && styles.multi, focused && styles.focused]}>
-        {icon ? <Icon name={icon} size={20} strokeWidth={2} color={colors.ink} /> : null}
+        {icon ? <Icon name={icon} size={20} color={colors.ink} /> : null}
         <TextInput
           ref={ref}
           placeholderTextColor={colors.inkMuted}
@@ -47,7 +47,7 @@ export const Field = forwardRef<TextInput, FieldProps>(function Field({ icon, la
         />
         {onClear && hasValue ? (
           <Pressable accessibilityRole="button" accessibilityLabel="Limpar" onPress={onClear} hitSlop={10} style={styles.clear}>
-            <Icon name="x" size={14} strokeWidth={2.5} color={colors.surface} />
+            <Icon name="x" size={14} color={colors.surface} />
           </Pressable>
         ) : null}
       </View>
@@ -56,11 +56,23 @@ export const Field = forwardRef<TextInput, FieldProps>(function Field({ icon, la
 });
 
 /** Campo de busca usado como botão (abre a tela de busca). Fica sobre o topo amarelo. */
+/** Caixa de marcar com o texto ao lado (ex.: autorização). */
+export function Checkbox({ label, checked, onPress }: { label: string; checked: boolean; onPress: () => void }) {
+  return (
+    <Pressable accessibilityRole="checkbox" accessibilityState={{ checked }} accessibilityLabel={label} onPress={onPress} hitSlop={4} style={styles.check}>
+      <View style={[styles.checkBox, checked && styles.checkBoxOn]}>{checked ? <Icon name="check" size={16} color={colors.onBrand} /> : null}</View>
+      <Text variant="body" style={{ flex: 1 }}>
+        {label}
+      </Text>
+    </Pressable>
+  );
+}
+
 export function SearchTrigger({ placeholder = 'O que você precisa?', onPress }: { placeholder?: string; onPress?: () => void }) {
   return (
     <View style={styles.trigger}>
       <Pressable accessibilityRole="search" accessibilityLabel={placeholder} onPress={onPress} style={styles.triggerMain}>
-        <Icon name="search" size={22} strokeWidth={2.25} />
+        <Icon name="search" size={22} />
         <Text variant="labelLg" style={{ flex: 1, fontSize: 16 }} numberOfLines={1}>
           {placeholder}
         </Text>
@@ -70,6 +82,9 @@ export function SearchTrigger({ placeholder = 'O que você precisa?', onPress }:
 }
 
 const styles = StyleSheet.create({
+  check: { flexDirection: 'row', alignItems: 'flex-start', gap: spacing[3], paddingVertical: spacing[1] },
+  checkBox: { width: 24, height: 24, marginTop: 1, borderRadius: radius.sm, borderWidth: 2, borderColor: colors.ink, alignItems: 'center', justifyContent: 'center' },
+  checkBoxOn: { backgroundColor: colors.brand },
   box: {
     minHeight: 54,
     flexDirection: 'row',

@@ -182,7 +182,7 @@ export default function PedidoDetalhe() {
             {order.rating ? (
               <View style={styles.stars} accessibilityLabel={`Nota do cliente: ${order.rating} de 5`}>
                 {[1, 2, 3, 4, 5].map((n) => (
-                  <Icon key={n} name="star" size={32} strokeWidth={1.75} fill={n <= (order.rating ?? 0) ? colors.star : 'none'} color={n <= (order.rating ?? 0) ? colors.star : colors.inkMuted} />
+                  <Icon key={n} name="star" size={32} fill={n <= (order.rating ?? 0) ? colors.star : 'none'} color={n <= (order.rating ?? 0) ? colors.star : colors.inkMuted} />
                 ))}
               </View>
             ) : null}
@@ -202,7 +202,7 @@ export default function PedidoDetalhe() {
                 const on = n <= (order.rating ?? stars);
                 return (
                   <Pressable key={n} accessibilityRole="button" accessibilityLabel={`${n} estrelas`} disabled={!!order.rating} onPress={() => setStars(n)} hitSlop={6}>
-                    <Icon name="star" size={36} strokeWidth={1.75} fill={on ? colors.star : 'none'} color={on ? colors.star : colors.inkMuted} />
+                    <Icon name="star" size={36} fill={on ? colors.star : 'none'} color={on ? colors.star : colors.inkMuted} />
                   </Pressable>
                 );
               })}
@@ -247,7 +247,7 @@ export default function PedidoDetalhe() {
                 const on = n <= (order.clientRating ?? stars);
                 return (
                   <Pressable key={n} accessibilityRole="button" accessibilityLabel={`${n} estrelas`} disabled={!!order.clientRating} onPress={() => setStars(n)} hitSlop={6}>
-                    <Icon name="star" size={36} strokeWidth={1.75} fill={on ? colors.star : 'none'} color={on ? colors.star : colors.inkMuted} />
+                    <Icon name="star" size={36} fill={on ? colors.star : 'none'} color={on ? colors.star : colors.inkMuted} />
                   </Pressable>
                 );
               })}

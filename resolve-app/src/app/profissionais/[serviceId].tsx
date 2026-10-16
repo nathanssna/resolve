@@ -136,7 +136,7 @@ const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.surface },
   sub: { paddingHorizontal: spacing[5], marginTop: -spacing[2] },
   filters: { paddingHorizontal: spacing[5], paddingVertical: spacing[4], gap: spacing[2] },
-  list: { paddingHorizontal: spacing[4], paddingBottom: spacing[6], gap: spacing[2] },
+  list: { paddingHorizontal: spacing[5], paddingBottom: spacing[6], gap: spacing[2] },
   note: {
     flexDirection: 'row',
     gap: spacing[3],

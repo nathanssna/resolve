@@ -104,7 +104,7 @@ export default function Mensagens() {
         {rows.length ? (
           <View style={styles.searchWrap}>
             <View style={styles.search}>
-              <Icon name="search" size={18} strokeWidth={2.25} color={colors.inkMuted} />
+              <Icon name="search" size={18} color={colors.inkMuted} />
               <TextInput
                 value={query}
                 onChangeText={setQuery}
@@ -117,7 +117,7 @@ export default function Mensagens() {
               />
               {query ? (
                 <Pressable accessibilityRole="button" accessibilityLabel="Limpar busca" hitSlop={8} onPress={() => setQuery('')}>
-                  <Icon name="x" size={18} strokeWidth={2.25} color={colors.inkMuted} />
+                  <Icon name="x" size={18} color={colors.inkMuted} />
                 </Pressable>
               ) : null}
             </View>

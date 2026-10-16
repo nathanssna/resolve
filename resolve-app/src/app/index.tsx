@@ -53,7 +53,7 @@ export default function Welcome() {
               <Icon
                 name={f.icon}
                 size={f.size * 0.44}
-                strokeWidth={2}
+               
                 color={f.tone === 'ink' ? colors.brand : colors.ink}
                 duotone={f.tone === 'white'}
               />

@@ -26,7 +26,7 @@ export function SectionHeader({ title, action, onAction }: { title: string; acti
       {action ? (
         <Pressable accessibilityRole="button" hitSlop={10} onPress={onAction} style={styles.sectionAction}>
           <Text variant="label">{action}</Text>
-          <Icon name="chevron-right" size={16} strokeWidth={2.25} />
+          <Icon name="chevron-right" size={16} />
         </Pressable>
       ) : null}
     </View>
@@ -58,7 +58,7 @@ export function ListRow({
   const content = (
     <>
       <View style={styles.rowIcon}>
-        <Icon name={icon} size={20} strokeWidth={2} color={danger ? colors.danger : colors.ink} />
+        <Icon name={icon} size={20} color={danger ? colors.danger : colors.ink} />
       </View>
       <View style={{ flex: 1, gap: 1 }}>
         {label ? (
@@ -70,7 +70,7 @@ export function ListRow({
           {value}
         </Text>
       </View>
-      {trailing ?? (onPress ? <Icon name="chevron-right" size={18} strokeWidth={2} /> : null)}
+      {trailing ?? (onPress ? <Icon name="chevron-right" size={18} /> : null)}
     </>
   );
   if (!onPress) return <View style={styles.row}>{content}</View>;
@@ -113,7 +113,7 @@ export function ToggleRow({
       style={({ pressed }) => [styles.row, pressed && { backgroundColor: colors.surfaceMuted }, disabled && { opacity: 0.5 }]}
     >
       <View style={styles.rowIcon}>
-        <Icon name={icon} size={20} strokeWidth={2} />
+        <Icon name={icon} size={20} />
       </View>
       <View style={{ flex: 1, gap: 1 }}>
         <Text variant="label">{title}</Text>
@@ -144,7 +144,7 @@ export function Badge({ tone = 'brand', icon, children }: { tone?: BadgeTone; ic
   const t = badgeTone[tone];
   return (
     <View style={[styles.badge, { backgroundColor: t.bg }]}>
-      {icon ? <Icon name={icon} size={12} strokeWidth={2.5} color={t.fg} /> : null}
+      {icon ? <Icon name={icon} size={12} color={t.fg} /> : null}
       <Text variant="overline" color={t.fg}>
         {children}
       </Text>
@@ -159,7 +159,7 @@ export function ActionButton({ icon, label, onPress }: { icon: IconName; label: 
       {({ pressed }) => (
         <>
           <View style={[styles.actionCircle, pressed && { backgroundColor: colors.surfaceStrong }]}>
-            <Icon name={icon} size={22} strokeWidth={2} />
+            <Icon name={icon} size={22} />
           </View>
           <Text variant="caption">{label}</Text>
         </>
@@ -191,7 +191,7 @@ export function Segmented<T extends string>({
             onPress={() => onChange(o.id)}
             style={[styles.segmentItem, on && styles.segmentOn]}
           >
-            {o.icon ? <Icon name={o.icon} size={18} strokeWidth={2} /> : null}
+            {o.icon ? <Icon name={o.icon} size={18} /> : null}
             <Text variant="label" style={on ? undefined : { color: colors.inkMuted }}>
               {o.label}
             </Text>

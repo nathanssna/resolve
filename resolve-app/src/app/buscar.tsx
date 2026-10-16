@@ -67,7 +67,7 @@ export default function Buscar() {
             <View style={styles.chips}>
               {suggestions.map((s) => (
                 <Pressable key={s.text} accessibilityRole="button" onPress={() => open(s.id)} style={({ pressed }) => [styles.chip, pressed && { backgroundColor: colors.surfaceStrong }]}>
-                  <Icon name="clock" size={14} strokeWidth={2.25} color={colors.inkMuted} />
+                  <Icon name="clock" size={14} color={colors.inkMuted} />
                   <Text variant="label">{s.text}</Text>
                 </Pressable>
               ))}

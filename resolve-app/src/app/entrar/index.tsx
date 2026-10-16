@@ -67,7 +67,7 @@ export default function Entrar() {
         </Text>
       ) : null}
       <View style={{ flexDirection: 'row', gap: spacing[2], alignItems: 'center' }}>
-        <Icon name="shield-check" size={16} strokeWidth={2.25} color={colors.success} />
+        <Icon name="shield-check" size={16} color={colors.success} />
         <Text variant="caption" color={colors.inkMuted} style={{ flex: 1 }}>
           Se for seu primeiro acesso, a conta é criada na hora.
         </Text>

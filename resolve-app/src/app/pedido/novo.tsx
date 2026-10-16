@@ -223,7 +223,7 @@ export default function NovoPedido() {
                   </View>
                 </View>
                 <View style={styles.reply}>
-                  <Icon name="timer" size={14} strokeWidth={2.25} />
+                  <Icon name="timer" size={14} />
                   <Text variant="caption">~{pro.replyMin} min</Text>
                 </View>
               </View>
@@ -258,7 +258,7 @@ export default function NovoPedido() {
                       onPress={() => setDescription((d) => (d ? `${d} ${e}` : e))}
                       style={({ pressed }) => [styles.suggest, pressed && { backgroundColor: colors.surfaceStrong }]}
                     >
-                      <Icon name="plus" size={14} strokeWidth={2.5} />
+                      <Icon name="plus" size={14} />
                       <Text variant="caption" style={{ fontSize: 13 }}>
                         {e}
                       </Text>
@@ -333,7 +333,7 @@ export default function NovoPedido() {
                           }}
                           style={[styles.addr, on && styles.addrOn]}
                         >
-                          <Icon name="map-pin" size={20} strokeWidth={2} />
+                          <Icon name="map-pin" size={20} />
                           <View style={{ flex: 1, gap: 1 }}>
                             <Text variant="label">{a.label}</Text>
                             <Text variant="bodySm" color={colors.inkBody} numberOfLines={2}>
@@ -409,13 +409,13 @@ export default function NovoPedido() {
                 </Text>
                 <View style={{ gap: 4 }}>
                   <View style={styles.summaryRow}>
-                    <Icon name="calendar-clock" size={16} strokeWidth={2} color={colors.inkMuted} />
+                    <Icon name="calendar-clock" size={16} color={colors.inkMuted} />
                     <Text variant="bodySm" color={colors.inkBody}>
                       {mode === 'agora' ? when : formatSchedule({ day, period })}
                     </Text>
                   </View>
                   <View style={styles.summaryRow}>
-                    <Icon name="map-pin" size={16} strokeWidth={2} color={colors.inkMuted} />
+                    <Icon name="map-pin" size={16} color={colors.inkMuted} />
                     <Text variant="bodySm" color={colors.inkBody} numberOfLines={1} style={{ flex: 1 }}>
                       {address ? addressLine(address) : 'Endereço a escolher'}
                     </Text>
@@ -440,7 +440,7 @@ export default function NovoPedido() {
           ) : (
             <>
               <View style={styles.free}>
-                <Icon name="shield-check" size={16} strokeWidth={2.25} color={colors.success} />
+                <Icon name="shield-check" size={16} color={colors.success} />
                 <Text variant="caption" color={colors.inkMuted} style={{ flex: 1 }}>
                   Nada é cobrado agora. Vocês combinam o valor no chat.
                 </Text>

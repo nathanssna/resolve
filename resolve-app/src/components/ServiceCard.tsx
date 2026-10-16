@@ -29,7 +29,7 @@ export function ServiceCard({ icon, title, subtitle, onPress }: Props) {
           </Text>
         ) : null}
       </View>
-      <Icon name="chevron-right" size={18} strokeWidth={2} />
+      <Icon name="chevron-right" size={18} />
     </Card>
   );
 }

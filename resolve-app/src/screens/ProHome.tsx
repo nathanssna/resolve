@@ -538,7 +538,7 @@ const styles = StyleSheet.create({
   knob: { width: 20, height: 20, borderRadius: 10, backgroundColor: colors.surface },
   // Igual ao interruptor do resto do app (Notificações): trilho preto, bolinha branca.
   knobOn: { alignSelf: 'flex-end' },
-  body: { paddingHorizontal: spacing[4], paddingTop: spacing[5], gap: spacing[6] },
+  body: { paddingHorizontal: spacing[5], paddingTop: spacing[5], gap: spacing[6] },
   section: { gap: spacing[3] },
   sectionTitle: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between', paddingHorizontal: spacing[1] },
   // Blocos cinza, sem sombra, como no Início do cliente.

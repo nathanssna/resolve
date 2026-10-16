@@ -93,7 +93,7 @@ export default function Perfil() {
             >
               <Avatar size={76} uri={profile?.avatar_url ?? undefined} />
               <View style={styles.photoBadge}>
-                {uploading ? <ActivityIndicator size="small" color={colors.ink} /> : <Icon name="camera" size={14} strokeWidth={2.25} />}
+                {uploading ? <ActivityIndicator size="small" color={colors.ink} /> : <Icon name="camera" size={14} />}
               </View>
             </Pressable>
           ) : (
@@ -104,7 +104,7 @@ export default function Perfil() {
               <Text variant="titleLg" numberOfLines={2} style={{ flexShrink: 1 }}>
                 {name}
               </Text>
-              {me?.verified ? <Icon name="badge-check" size={20} strokeWidth={2.25} fill={colors.brand} label="Verificado" /> : null}
+              {me?.verified ? <Icon name="badge-check" size={20} fill={colors.brand} label="Verificado" /> : null}
             </View>
             {session && profile ? (
               <View style={styles.roleRow}>
@@ -257,7 +257,7 @@ const styles = StyleSheet.create({
   nameRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   roleRow: { flexDirection: 'row', alignItems: 'center', gap: spacing[2], flexWrap: 'wrap' },
   role: { alignSelf: 'flex-start', paddingHorizontal: spacing[2], paddingVertical: 3, borderRadius: radius.pill, backgroundColor: colors.ink },
-  body: { paddingHorizontal: spacing[4], paddingTop: spacing[5], gap: spacing[4] },
+  body: { paddingHorizontal: spacing[5], paddingTop: spacing[5], gap: spacing[4] },
   groupLabel: { paddingHorizontal: spacing[2], marginBottom: -spacing[2] },
   group: { borderRadius: radius.lg, backgroundColor: colors.surface, overflow: 'hidden', paddingVertical: spacing[1] },
   photoBadge: {

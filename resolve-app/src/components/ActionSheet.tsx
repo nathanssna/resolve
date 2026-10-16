@@ -32,7 +32,7 @@ export function ActionSheet({ visible, title, actions, onClose }: { visible: boo
             }}
             style={({ pressed }) => [styles.row, pressed && { backgroundColor: colors.surfaceMuted }]}
           >
-            <Icon name={a.icon} size={22} strokeWidth={2} color={a.danger ? colors.danger : colors.ink} />
+            <Icon name={a.icon} size={22} color={a.danger ? colors.danger : colors.ink} />
             <Text variant="labelLg" color={a.danger ? colors.danger : colors.ink}>
               {a.label}
             </Text>

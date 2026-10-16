@@ -31,7 +31,7 @@ export function Bubble({ mine, text, at }: { mine: boolean; text: string; at: nu
 function CardRow({ icon, text, color }: { icon: IconName; text: string; color?: string }) {
   return (
     <View style={styles.cardRow}>
-      <Icon name={icon} size={16} strokeWidth={2.25} color={color} />
+      <Icon name={icon} size={16} color={color} />
       <Text variant="bodySm" color={color ?? colors.inkBody} style={{ flex: 1 }}>
         {text}
       </Text>
@@ -159,7 +159,7 @@ export function ProposalCard({
         </View>
         {status === 'pending' && mine ? (
           <View style={styles.waiting}>
-            <Icon name="clock" size={16} strokeWidth={2.25} color={colors.inkMuted} />
+            <Icon name="clock" size={16} color={colors.inkMuted} />
             <Text variant="bodySm" color={colors.inkMuted}>
               Aguardando resposta do cliente
             </Text>
@@ -168,7 +168,7 @@ export function ProposalCard({
         {status === 'pending' && !mine ? (
           <View style={{ gap: spacing[2], marginTop: spacing[1] }}>
             <Pressable accessibilityRole="button" onPress={onAccept} style={({ pressed }) => [styles.accept, pressed && { opacity: 0.88 }]}>
-              <Icon name="check" size={18} strokeWidth={2.5} color={colors.onBrand} />
+              <Icon name="check" size={18} color={colors.onBrand} />
               <Text variant="labelLg">Aceitar proposta</Text>
             </Pressable>
             <View style={{ flexDirection: 'row', gap: spacing[2] }}>
@@ -233,7 +233,7 @@ export function ContactNotice({ text }: { text: string }) {
   if (!hasContact(text)) return null;
   return (
     <View style={styles.contactNotice} accessibilityLiveRegion="polite">
-      <Icon name="shield-check" size={16} strokeWidth={2.25} color={colors.inkMuted} />
+      <Icon name="shield-check" size={16} color={colors.inkMuted} />
       <Text variant="caption" color={colors.inkMuted} style={{ flex: 1 }}>
         Telefone, e-mail e perfis vão escondidos até vocês combinarem um serviço. Depois do aceite, o botão Ligar libera o telefone.
       </Text>
@@ -322,7 +322,7 @@ export function Composer({
           disabled={!text.trim()}
           style={({ pressed }) => [styles.send, !text.trim() && { backgroundColor: colors.surfaceStrong }, pressed && { opacity: 0.85 }]}
         >
-          <Icon name="arrow-right" size={22} strokeWidth={2.5} color={text.trim() ? colors.onBrand : colors.inkMuted} />
+          <Icon name="arrow-right" size={22} color={text.trim() ? colors.onBrand : colors.inkMuted} />
         </Pressable>
       </View>
     </View>
@@ -362,7 +362,7 @@ export function ConversationRow({
             <Text variant="labelLg" numberOfLines={1} style={{ flexShrink: 1 }}>
               {name}
             </Text>
-            {verified ? <Icon name="badge-check" size={16} strokeWidth={2.25} fill={colors.brand} label="Verificado" /> : null}
+            {verified ? <Icon name="badge-check" size={16} fill={colors.brand} label="Verificado" /> : null}
           </View>
           <Text variant="caption" color={unread ? colors.ink : colors.inkMuted}>
             {time}
@@ -397,7 +397,7 @@ const styles = StyleSheet.create({
   bubble: { maxWidth: '80%', paddingHorizontal: spacing[4], paddingTop: 10, paddingBottom: 6, borderRadius: 20, gap: 2 },
   bubbleMine: { backgroundColor: colors.brand, borderBottomRightRadius: 6 },
   bubbleTheirs: { backgroundColor: colors.surfaceMuted, borderBottomLeftRadius: 6 },
-  time: { alignSelf: 'flex-end', fontSize: 10, lineHeight: 12, opacity: 0.8 },
+  time: { alignSelf: 'flex-end', fontSize: 11, lineHeight: 14, opacity: 0.8 },
   card: { width: '84%', padding: spacing[4], borderRadius: radius.xl, gap: spacing[3] },
   requestCard: { backgroundColor: colors.brandTint, borderBottomRightRadius: 6 },
   requestTheirs: { borderBottomRightRadius: radius.xl, borderBottomLeftRadius: 6 },

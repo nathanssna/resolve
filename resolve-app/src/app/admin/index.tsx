@@ -63,14 +63,14 @@ function Home() {
           </View>
           {queue.loading ? null : pending ? (
             <View style={styles.pill}>
-              <Icon name="bell" size={16} strokeWidth={2.5} color={colors.brand} />
+              <Icon name="bell" size={16} color={colors.brand} />
               <Text variant="label" color={colors.onInk}>
                 {pending === 1 ? '1 coisa para resolver' : `${n(pending)} coisas para resolver`}
               </Text>
             </View>
           ) : (
             <View style={styles.calm}>
-              <Icon name="check" size={18} strokeWidth={2.5} />
+              <Icon name="check" size={18} />
               <Text variant="label">Tudo em dia</Text>
             </View>
           )}

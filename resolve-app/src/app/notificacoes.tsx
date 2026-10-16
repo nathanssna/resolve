@@ -138,6 +138,6 @@ export default function Notificacoes() {
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.surface },
-  content: { padding: spacing[4], paddingTop: spacing[2], gap: spacing[6], paddingBottom: spacing[8] },
+  content: { padding: spacing[5], paddingTop: spacing[2], gap: spacing[6], paddingBottom: spacing[8] },
   hint: { paddingHorizontal: spacing[2] },
 });

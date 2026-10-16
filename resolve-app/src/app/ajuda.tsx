@@ -26,7 +26,7 @@ function Question({ topic, initialOpen }: { topic: HelpTopic; initialOpen?: bool
           {topic.q}
         </Text>
         <View style={open && { transform: [{ rotate: '180deg' }] }}>
-          <Icon name="chevron-down" size={18} strokeWidth={2.25} />
+          <Icon name="chevron-down" size={18} />
         </View>
       </Pressable>
       {open ? (
@@ -112,7 +112,7 @@ export default function Ajuda() {
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.surface },
-  content: { padding: spacing[4], paddingTop: spacing[2], gap: spacing[6], paddingBottom: spacing[8] },
+  content: { padding: spacing[5], paddingTop: spacing[2], gap: spacing[6], paddingBottom: spacing[8] },
   item: { borderBottomWidth: 1, borderBottomColor: colors.line },
   question: { flexDirection: 'row', alignItems: 'center', gap: spacing[3], paddingVertical: spacing[4], paddingHorizontal: spacing[2], borderRadius: radius.md },
   answer: { paddingHorizontal: spacing[2], paddingBottom: spacing[4] },

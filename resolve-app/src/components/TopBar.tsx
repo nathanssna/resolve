@@ -30,7 +30,7 @@ export function IconButton({ icon, label, onPress, filled, floating }: TopBarAct
         pressed && { backgroundColor: floating ? colors.surfaceMuted : colors.surfaceMuted },
       ]}
     >
-      <Icon name={icon} size={22} strokeWidth={2.25} fill={filled ? colors.brand : 'none'} />
+      <Icon name={icon} size={22} fill={filled ? colors.brand : 'none'} />
     </Pressable>
   );
 }

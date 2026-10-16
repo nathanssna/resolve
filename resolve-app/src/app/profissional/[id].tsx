@@ -29,7 +29,7 @@ function Stars({ value }: { value: number }) {
   return (
     <View style={{ flexDirection: 'row', gap: 2 }} accessible accessibilityLabel={`${value} de 5 estrelas`}>
       {[1, 2, 3, 4, 5].map((n) => (
-        <Icon key={n} name="star" size={14} strokeWidth={1.5} fill={n <= value ? colors.star : 'none'} color={n <= value ? colors.star : colors.inkMuted} />
+        <Icon key={n} name="star" size={14} fill={n <= value ? colors.star : 'none'} color={n <= value ? colors.star : colors.inkMuted} />
       ))}
     </View>
   );
@@ -97,7 +97,7 @@ export default function PerfilProfissional() {
             <Text variant="titleLg" accessibilityRole="header" style={{ flexShrink: 1, textAlign: 'center' }}>
               {pro.name}
             </Text>
-            {pro.verified ? <Icon name="badge-check" size={22} strokeWidth={2.25} fill={colors.brand} label="Verificado" /> : null}
+            {pro.verified ? <Icon name="badge-check" size={22} fill={colors.brand} label="Verificado" /> : null}
           </View>
           {pro.role ? (
             <Text variant="body" color={colors.inkMuted}>

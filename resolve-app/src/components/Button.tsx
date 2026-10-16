@@ -59,11 +59,11 @@ export function Button({ variant = 'primary', size = 'lg', block, iconLeft, icon
       ]}
     >
       <View style={styles.row}>
-        {iconLeft ? <Icon name={iconLeft} size={20} strokeWidth={2} color={fg} /> : null}
+        {iconLeft ? <Icon name={iconLeft} size={20} color={fg} /> : null}
         <Text variant="labelLg" color={fg} style={size === 'lg' ? styles.lgText : undefined}>
           {children}
         </Text>
-        {iconRight ? <Icon name={iconRight} size={20} strokeWidth={2} color={fg} /> : null}
+        {iconRight ? <Icon name={iconRight} size={20} color={fg} /> : null}
       </View>
       {trailing ? (
         <Text variant="labelLg" color={fg} style={styles.lgText}>

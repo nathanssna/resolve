@@ -308,7 +308,7 @@ export default function Chat() {
                 <Text variant="labelLg" numberOfLines={1} style={{ flexShrink: 1 }}>
                   {conv.other.name}
                 </Text>
-                {pro?.verified ? <Icon name="badge-check" size={16} strokeWidth={2.25} fill={colors.brand} /> : null}
+                {pro?.verified ? <Icon name="badge-check" size={16} fill={colors.brand} /> : null}
               </View>
               {/* Só o nome; o "digitando…" aparece embaixo quando for o caso. */}
               {typing ? (
@@ -334,7 +334,7 @@ export default function Chat() {
             }
             style={({ pressed }) => [styles.deal, pressed && { opacity: 0.9 }]}
           >
-            <Icon name="badge-check" size={20} strokeWidth={2.25} color={colors.brand} />
+            <Icon name="badge-check" size={20} color={colors.brand} />
             <View style={{ flex: 1 }}>
               <Text variant="label" color={colors.onInk} numberOfLines={1}>
                 {stage ? stage.title : active.length > 1 ? `${active.length} serviços combinados` : active[0] ? 'Serviço combinado' : 'Serviço concluído'}

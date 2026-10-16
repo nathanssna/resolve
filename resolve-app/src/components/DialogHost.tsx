@@ -43,7 +43,7 @@ export function DialogHost() {
             onPress={dialogStore.dismissToast}
             style={[styles.toast, error && styles.toastError]}
           >
-            <Icon name={error ? 'info' : success ? 'check' : 'bell'} size={18} strokeWidth={2.25} color={error ? colors.danger : colors.brand} />
+            <Icon name={error ? 'info' : success ? 'check' : 'bell'} size={18} color={error ? colors.danger : colors.brand} />
             <Text variant="bodySm" color={error ? colors.ink : colors.onInk} style={{ flex: 1 }}>
               {toast.message}
             </Text>

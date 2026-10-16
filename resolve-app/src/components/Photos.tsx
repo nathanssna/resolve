@@ -43,7 +43,7 @@ export function PhotoThumbs({
               onPress={() => onRemove(i)}
               style={styles.remove}
             >
-              <Icon name="x" size={14} strokeWidth={2.75} color={colors.onInk} />
+              <Icon name="x" size={14} color={colors.onInk} />
             </Pressable>
           ) : null}
         </View>
@@ -80,7 +80,7 @@ export function PhotoViewer({ uris, index, onClose }: { uris: string[]; index: n
             {uris.length > 1 ? `${page + 1} de ${uris.length}` : ''}
           </Text>
           <Pressable accessibilityRole="button" accessibilityLabel="Fechar foto" onPress={onClose} hitSlop={8} style={styles.close}>
-            <Icon name="x" size={22} strokeWidth={2.5} color={colors.onInk} />
+            <Icon name="x" size={22} color={colors.onInk} />
           </Pressable>
         </View>
       </View>

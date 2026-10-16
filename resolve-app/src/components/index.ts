@@ -4,7 +4,7 @@ export { Card } from './Card';
 export { Bubble, Composer, ContactNotice, ConversationRow, ProposalCard, RequestCard, SystemNote, TypingBubble } from './Chat';
 export { FilterChip, Tag } from './Chips';
 export { ActiveOrderCard, ProfessionalOption, ProgressBar, PromoCard, ServiceTile, Timeline, type TimelineStep } from './Commerce';
-export { Field, SearchTrigger } from './Fields';
+export { Checkbox, Field, SearchTrigger } from './Fields';
 export { Icon, type IconName } from './Icon';
 export { CatalogFallback } from './CatalogFallback';
 export { DialogHost } from './DialogHost';

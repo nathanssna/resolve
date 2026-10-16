@@ -29,7 +29,7 @@ function ProRow({ pro, serviceId }: { pro: Professional; serviceId: string }) {
           <Text variant="label" numberOfLines={1} style={{ flexShrink: 1 }}>
             {pro.name}
           </Text>
-          {pro.verified ? <Icon name="badge-check" size={16} strokeWidth={2.25} fill={colors.brand} /> : null}
+          {pro.verified ? <Icon name="badge-check" size={16} fill={colors.brand} /> : null}
         </View>
         <View style={styles.proName}>
           {/* Sem avaliações ainda: "Novo" em vez de uma nota 0,0. */}
@@ -39,7 +39,7 @@ function ProRow({ pro, serviceId }: { pro: Professional; serviceId: string }) {
           </Text>
         </View>
       </View>
-      <Icon name="chevron-right" size={18} strokeWidth={2} />
+      <Icon name="chevron-right" size={18} />
     </Pressable>
   );
 }
@@ -92,7 +92,7 @@ export default function ServicoDetalhe() {
           />
           <View style={styles.heroBody}>
             <View style={styles.bigIcon}>
-              <Icon name={service.icon} size={52} strokeWidth={2} duotone />
+              <Icon name={service.icon} size={52} duotone />
             </View>
             <Text variant="titleLg" accessibilityRole="header">
               {service.title}
