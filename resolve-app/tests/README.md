@@ -45,6 +45,7 @@ npm run db:stop
 | `contact` | contato escondido antes de combinar: telefone, e-mail, @perfil e links no chat, no pedido e na proposta; liberado depois do aceite |
 | `rateclient` | profissional avalia o cliente: só depois de concluído, uma vez; o cliente não lê as notas; média só com 3 avaliações (cliente e profissionais) |
 | `confirm` | confirmar o serviço no dia: cliente e profissional, aviso no chat, só no dia, zera ao remarcar |
+| `unread` | não lidas antes de um ponto (`unread_before`): só de outra pessoa, avisos contam, zera ao ler, só participante |
 
 ## Ponta a ponta
 
@@ -70,7 +71,7 @@ npm run e2e:cleanup            # apaga as contas (sempre, no fim)
 | `alert` | quando uma mensagem deixa o painel do profissional em alerta |
 | `notif` | Notificações (preferências gravadas no banco) e Ajuda, para cliente e profissional |
 | `chat` | "Negociar" preenche o campo; "digitando…" com os pontos animados |
-| `historico` | conversa longa abre com as 50 mensagens mais recentes; "Carregar mensagens anteriores" até o começo; tempo real e lista |
+| `historico` | conversa longa abre com as 50 mensagens mais recentes; "Carregar mensagens anteriores" até o começo; tempo real e lista; contador com mais de 50 não lidas |
 | `contato` | telefone no chat antes de combinar: aviso no campo, "[contato oculto]" para os dois; depois do aceite, aparece |
 | `suspensa` | conta suspensa: aviso no início, Mensagens, chat e pedido novo; sem prazo; vencida ou reativada, some |
 | `notacliente` | profissional dá estrelas ao cliente no serviço concluído; cliente vê no Perfil só "Aparece depois de 3 avaliações" |

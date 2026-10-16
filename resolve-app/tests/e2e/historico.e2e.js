@@ -90,6 +90,20 @@ const login = async (email) => (await (await fetch(`${URL_}/auth/v1/token?grant_
   await list.page.goto(`${APP}/mensagens`, { waitUntil: 'networkidle0' });
   ok(await list.waitText('Chego às 14h.'), 'lista de conversas mostra a última mensagem');
 
+  console.log('\nNão lidas além das 50 carregadas');
+  // O profissional ainda não abriu a conversa: mais 40 avisos (pelo banco, sem o limite de mensagens por minuto).
+  const { execSync } = require('child_process');
+  const sql = (q) => JSON.parse(execSync(`npx supabase db query --linked ${JSON.stringify(q)}`, { cwd: require('path').resolve(__dirname, '../..'), encoding: 'utf8' })).rows;
+  sql(`insert into public.messages (conversation_id, kind, body) select '${conv}', 'system', 'Aviso ' || i from generate_series(1, 40) i`);
+  const expected = sql(`select count(*)::int as n from public.messages m join public.conversations c on c.id = m.conversation_id where c.id = '${conv}' and m.sender_id is distinct from c.professional_id and m.created_at > c.professional_last_read_at`)[0].n;
+  const pro = await device(proS, 'profissional');
+  await pro.page.goto(`${APP}/mensagens`, { waitUntil: 'networkidle0' });
+  // A linha da conversa (um botão) termina com o contador.
+  const rowBadge = () => [...document.querySelectorAll('button, [role="button"]')].find((e) => e.innerText.startsWith('Cliente Teste'))?.innerText.split('\n').at(-1);
+  await pro.page.waitForFunction((f, n) => new Function('return ' + f)()() === n, { timeout: 15000, polling: 300 }, rowBadge.toString(), String(expected)).catch(() => {});
+  const badge = await pro.page.evaluate((f) => new Function('return ' + f)()(), rowBadge.toString());
+  ok(expected > 50 && badge === String(expected), `contador mostra todas as ${expected} não lidas, não só as 50 carregadas (mostra ${badge})`);
+
   ok(errors.length === 0, 'sem erros nem alertas' + (errors.length ? ': ' + errors.join(' | ') : ''));
   console.log(`\n${pass} ok, ${fail} falhas`);
   await browser.close();

@@ -1,4 +1,4 @@
-import { EMPTY, mergeFresh, mergeOlder, PAGE, pageStart, type MessageRow, type Store } from '../appStore';
+import { EMPTY, mergeFresh, mergeOlder, PAGE, pageStart, time, unreadCount, type MessageRow, type Store } from '../appStore';
 
 // Minuto `n` de um dia qualquer, no formato do banco.
 const at = (n: number) => new Date(Date.UTC(2026, 9, 15, 0, n)).toISOString().replace('Z', '+00:00');
@@ -121,5 +121,30 @@ describe('mergeOlder', () => {
     const before = mergeFresh(null, fetched({ a: page('a', 200, PAGE), b: page('b', 200, PAGE) }));
     const s = mergeOlder(before, 'a', page('a', 150, 7));
     expect(s.history.b).toBe(before.history.b);
+  });
+});
+
+describe('unreadCount', () => {
+  // Mensagens da outra pessoa (u1) nos minutos 100 a 149: as 50 carregadas.
+  const loaded = page('c1', 149, PAGE);
+  const me = 'u2';
+
+  it('só com as carregadas: as de outra pessoa depois da última leitura', () => {
+    expect(unreadCount(loaded, me, time(at(139)))).toBe(10);
+    expect(unreadCount(loaded, 'u1', time(at(0)))).toBe(0);
+  });
+
+  it('com não lidas antes do trecho carregado: soma as do banco', () => {
+    // 60 não lidas: 50 carregadas + 10 antes do minuto 100.
+    expect(unreadCount(loaded, me, time(at(89)), { before: at(100), n: 10 })).toBe(60);
+  });
+
+  it('carregar as anteriores não conta duas vezes', () => {
+    const more = [...loaded, ...page('c1', 99, 10)];
+    expect(unreadCount(more, me, time(at(89)), { before: at(100), n: 10 })).toBe(60);
+  });
+
+  it('depois de ler, as antigas não contam mais', () => {
+    expect(unreadCount([...loaded, msg('novo', 'c1', 150)], me, time(at(149)), { before: at(100), n: 10 })).toBe(1);
   });
 });

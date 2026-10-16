@@ -1,7 +1,7 @@
 /**
  * Catálogo vindo do Supabase: serviços e profissionais (leitura pública).
  *
- * É pequeno, então carrega tudo de uma vez ao abrir o app e guarda uma cópia
+ * Carrega tudo ao abrir o app (os profissionais em páginas de 1000, o limite da API) e guarda uma cópia
  * no aparelho: nas próximas aberturas a tela aparece na hora (e funciona sem
  * internet) enquanto a versão nova chega.
  */
@@ -11,6 +11,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState, t
 import type { IconName } from '@/components';
 import { iconPaths } from '@/components/iconPaths';
 import { supabase } from '@/lib/supabase';
+import { fetchAllPages } from '@/utils/pages';
 
 export type Service = {
   id: string;
@@ -80,14 +81,17 @@ async function fetchCatalog(): Promise<Data> {
       .from('services')
       .select('id, icon, title, short_title, subtitle, area, description, includes, examples, badge, is_popular')
       .order('sort_order'),
-    supabase
-      .from('professionals')
-      .select(
-        'id, role_title, bio, years_experience, reply_minutes, jobs_count, tags, verified, rating, review_count, base_area, service_radius_km, paused, profile:profiles!inner(full_name, avatar_url), professional_services(service_id)',
-      ),
+    fetchAllPages((from, to) =>
+      supabase
+        .from('professionals')
+        .select(
+          'id, role_title, bio, years_experience, reply_minutes, jobs_count, tags, verified, rating, review_count, base_area, service_radius_km, paused, profile:profiles!inner(full_name, avatar_url), professional_services(service_id)',
+        )
+        .order('id')
+        .range(from, to),
+    ),
   ]);
   if (svc.error) throw svc.error;
-  if (pros.error) throw pros.error;
 
   const services: Service[] = svc.data.map((s) => ({
     id: s.id,
@@ -103,7 +107,7 @@ async function fetchCatalog(): Promise<Data> {
     popular: s.is_popular,
   }));
 
-  const professionals: Professional[] = pros.data
+  const professionals: Professional[] = pros
     .map((p) => ({
       id: p.id,
       serviceIds: p.professional_services.map((ps) => ps.service_id),

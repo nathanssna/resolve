@@ -25,6 +25,7 @@ import {
   isTmp,
   MESSAGE_COLS,
   mergeFresh,
+  unreadCount,
   mergeOlder,
   PAGE,
   pageStart,
@@ -275,7 +276,7 @@ async function fetchStore(uid: string, role: UserRole): Promise<Store> {
     .limit(PAGE, { referencedTable: 'recent_messages' });
   if (error) throw error;
 
-  const store: Store = { convs: {}, requests: {}, messages: {}, proposals: {}, orders: {}, history: {} };
+  const store: Store = { convs: {}, requests: {}, messages: {}, proposals: {}, orders: {}, history: {}, olderUnread: {} };
   for (const { requests, job_messages, recent_messages, proposals, orders, ...conv } of data) {
     store.convs[conv.id] = conv;
     Object.assign(store.requests, byId(requests));
@@ -285,6 +286,16 @@ async function fetchStore(uid: string, role: UserRole): Promise<Store> {
     // client_review: só a nota que o próprio profissional deu (o cliente não lê a tabela).
     for (const { review, client_review, ...o } of orders) store.orders[o.id] = { ...o, rating: review?.rating, comment: review?.comment, clientRating: client_review?.rating };
   }
+  // Não lidas antes das 50 carregadas (raro): o banco conta.
+  await Promise.all(
+    Object.values(store.convs).map(async (c) => {
+      const before = store.history[c.id];
+      const readAt = role === 'profissional' ? c.professional_last_read_at : c.client_last_read_at;
+      if (!before || time(readAt) >= time(before)) return;
+      const { data: n, error: e } = await supabase.rpc('unread_before', { p_conversation_id: c.id, p_before: before });
+      if (!e && n) store.olderUnread[c.id] = { before, n };
+    }),
+  );
   return store;
 }
 
@@ -549,7 +560,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
       const readAt = time(role === 'profissional' ? c.professional_last_read_at : c.client_last_read_at);
       // O chat aberto marca como lido no banco assim que algo chega (ver chat/[id].tsx).
-      const unread = rows.filter((r) => r.sender_id !== uid && time(r.created_at) > readAt).length;
+      const unread = unreadCount(rows, uid, readAt, store.olderUnread[c.id]);
       return {
         id: c.id,
         proId: c.professional_id,

@@ -2037,6 +2037,10 @@ export type Database = {
         }
       }
       support_team_avatar: { Args: never; Returns: string }
+      unread_before: {
+        Args: { p_before: string; p_conversation_id: string }
+        Returns: number
+      }
     }
     Enums: {
       message_kind: "text" | "request" | "proposal" | "system"

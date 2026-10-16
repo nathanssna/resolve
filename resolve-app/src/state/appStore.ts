@@ -69,8 +69,13 @@ export type Store = {
    * todas (os pedidos dependem delas), e podem estar antes disso.
    */
   history: Record<string, string | null>;
+  /**
+   * Por conversa, só quando há não lidas antes do trecho carregado: quantas eram (`n`) antes
+   * de `before` (contadas pelo banco, unread_before). Mensagens novas chegam sempre depois.
+   */
+  olderUnread: Record<string, { before: string; n: number }>;
 };
-export const EMPTY: Store = { convs: {}, requests: {}, messages: {}, proposals: {}, orders: {}, history: {} };
+export const EMPTY: Store = { convs: {}, requests: {}, messages: {}, proposals: {}, orders: {}, history: {}, olderUnread: {} };
 
 export const byId = <T extends { id: string }>(rows: T[]) => Object.fromEntries(rows.map((r) => [r.id, r]));
 export const time = (iso: string) => Date.parse(iso);
@@ -80,6 +85,17 @@ export const isTmp = (id: string) => id.startsWith('tmp:');
 /** Onde começa o histórico contínuo de uma página buscada do mais novo para o mais antigo. */
 export const pageStart = (page: MessageRow[]): string | null =>
   page.length < PAGE ? null : page.reduce((a, m) => (time(m.created_at) < time(a) ? m.created_at : a), page[0].created_at);
+
+/**
+ * Não lidas de uma conversa: as carregadas (de outra pessoa, depois da última leitura) mais as
+ * anteriores ao trecho carregado, contadas pelo banco. Com `older`, as carregadas antes de
+ * `older.before` já estão em `older.n` e não contam de novo (ex.: depois de carregar as anteriores).
+ */
+export function unreadCount(rows: MessageRow[], uid: string, readAt: number, older?: { before: string; n: number }) {
+  const cut = older ? time(older.before) : -Infinity;
+  const loaded = rows.filter((r) => r.sender_id !== uid && time(r.created_at) > readAt && time(r.created_at) >= cut).length;
+  return loaded + (older && readAt < cut ? older.n : 0);
+}
 
 /** A mais antiga das duas marcas (`null` = desde o começo). */
 const earliest = (a: string | null, b: string | null) => (a === null || b === null ? null : time(a) < time(b) ? a : b);
