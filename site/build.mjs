@@ -51,7 +51,6 @@ const { company, LEGAL, help, iconPaths: appIcons } = await loadContent();
 const iconPaths = {
   ...appIcons,
   smartphone: '<rect width="14" height="20" x="5" y="2" rx="2" ry="2"/> <path d="M12 18h.01"/>',
-  instagram: '<rect width="20" height="20" x="2" y="2" rx="5" ry="5"/> <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/> <line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/>',
 };
 const services = loadServices();
 const EMAIL = company.CONTACT_EMAIL;
@@ -118,6 +117,7 @@ function layout({ title, description, path, body, root }) {
 <meta property="og:description" content="${esc(description)}">
 <meta property="og:image" content="${base}assets/rezolveae-r.png">
 <link rel="icon" type="image/png" href="${base}assets/favicon.png">
+<link rel="apple-touch-icon" href="${base}assets/apple-touch-icon.png">
 <link rel="preload" href="${base}assets/fonts/PlusJakartaSans_800ExtraBold.ttf" as="font" type="font/ttf" crossorigin>
 <link rel="stylesheet" href="${base}style.css">${
     root
@@ -146,7 +146,7 @@ ${body}
     </div>
     <nav aria-label="Rodapé">
       <a href="mailto:${EMAIL}">${EMAIL}</a>
-      <a class="footer-ig" href="${INSTAGRAM_URL}" target="_blank" rel="noopener">${icon('instagram', { size: 18 })}@${INSTAGRAM}</a>
+      <a class="footer-ig" href="${INSTAGRAM_URL}" target="_blank" rel="noopener">@${INSTAGRAM}</a>
       <a href="${base}termos/">Termos de uso</a>
       <a href="${base}privacidade/">Política de privacidade</a>
       <a href="${base}excluir-conta/">Excluir conta</a>
@@ -306,27 +306,25 @@ const proFeatures = [
 ];
 
 /** Tela do painel do profissional; data-r marca as áreas explicadas ao lado. */
+/** Partes do painel do profissional, na ordem das explicações ao lado. */
+const panelRegions = [
+  () => `<div class="ph-hello"><b>Olá, Carlos!</b>${avatar('Carlos', 0)}</div>
+      <div class="ph-accept"><span><b><i class="dot"></i>Recebendo pedidos</b><small>Eletricista · até 10 km do Centro</small></span><span class="switch"><i></i></span></div>`,
+  () => `<p class="ph-h">Para responder <span class="ph-count">2</span></p>
+        <div class="ph-req"><small>PEDIDO NOVO · há 5 min</small><b>Chuveiro não esquenta</b><span>Liguei e só sai água fria.</span><small>Ana · Centro · Esta semana</small>
+          <span class="ph-send">Enviar proposta ${icon('chevron-right', { size: 14 })}</span></div>`,
+  () => `<p class="ph-h">Agenda</p>
+        <div class="ph-line"><span><b>Hoje, à tarde</b><small>Tomada · Paulo · Jardins</small></span><b>R$ 90</b></div>
+        <div class="ph-line"><span><b>Sex, à tarde</b><small>Lustre · Rita · Pituba</small></span><b>R$ 150</b></div>`,
+  () => `<div class="ph-month">${icon('calendar-clock', { size: 16 })}<span>Outubro · 12 serviços · R$ 2.340,00</span>${icon('chevron-right', { size: 14 })}</div>`,
+];
+
+/** Tela do painel do profissional; data-r marca as áreas explicadas ao lado. */
 function proHomeScreen() {
   const badge = (n) => `<span class="pd-badge">${n}</span>`;
-  return `<div class="ph-top" data-r="0">${badge(1)}
-      <div class="ph-hello"><b>Olá, Carlos!</b>${avatar('Carlos', 0)}</div>
-      <div class="ph-accept"><span><b><i class="dot"></i>Recebendo pedidos</b><small>Eletricista · até 10 km do Centro</small></span><span class="switch"><i></i></span></div>
-    </div>
-    <div class="ph-body">
-      <div class="ph-block" data-r="1">${badge(2)}
-        <p class="ph-h">Para responder <span class="ph-count">2</span></p>
-        <div class="ph-req"><small>PEDIDO NOVO · há 5 min</small><b>Chuveiro não esquenta</b><span>Liguei e só sai água fria.</span><small>Ana · Centro · Esta semana</small>
-          <span class="ph-send">Enviar proposta ${icon('chevron-right', { size: 14 })}</span></div>
-      </div>
-      <div class="ph-block" data-r="2">${badge(3)}
-        <p class="ph-h">Agenda</p>
-        <div class="ph-line"><span><b>Hoje, à tarde</b><small>Tomada · Paulo · Jardins</small></span><b>R$ 90</b></div>
-        <div class="ph-line"><span><b>Sex, à tarde</b><small>Lustre · Rita · Pituba</small></span><b>R$ 150</b></div>
-      </div>
-      <div class="ph-block" data-r="3">${badge(4)}
-        <div class="ph-month">${icon('calendar-clock', { size: 16 })}<span>Outubro · 12 serviços · R$ 2.340,00</span>${icon('chevron-right', { size: 14 })}</div>
-      </div>
-    </div>`;
+  const [top, ...blocks] = panelRegions;
+  return `<div class="ph-top" data-r="0">${badge(1)}${top()}</div>
+    <div class="ph-body">${blocks.map((r, i) => `<div class="ph-block" data-r="${i + 1}">${badge(i + 2)}${r()}</div>`).join('')}</div>`;
 }
 
 const panelParts = [
@@ -352,7 +350,8 @@ function proSection() {
     .join('');
   const shots = proFeatures.map((c, i) => `<div class="pl-shot${i === 0 ? ' on' : ''}" data-i="${i}">${c.mini}</div>`).join('');
   const parts = panelParts
-    .map(([t, d], i) => `<li class="pd-item" data-part="${i}"><div><span class="pd-n">${i + 1}</span><h3>${t}</h3><p>${d}</p></div></li>`)
+    .map(([t, d], i) => `<li class="pd-item" data-part="${i}" data-i="${i}"><div><span class="pd-n">${i + 1}</span><h3>${t}</h3><p>${d}</p></div>
+        <div class="pd-shot${i === 0 ? ' pd-shot-top' : ''}" aria-hidden="true">${panelRegions[i]()}</div></li>`)
     .join('');
   const steps = startSteps
     .map(([t, d], i) => `<li class="start-step" data-reveal style="--i:${i}"><span class="start-n">${i + 1}</span><h3>${t}</h3><p>${d}</p></li>`)
@@ -386,9 +385,12 @@ function proSection() {
   <div class="wrap">
     <h2 id="pd-t" data-reveal>Seu painel, por dentro</h2>
     <p class="sub" data-reveal style="--i:1">É a primeira tela que você vê ao abrir o app.</p>
-    <div class="pd">
+    <div class="pd" data-carousel data-hscroll data-pin>
       <div class="pd-stage">${phone(proHomeScreen(), { cls: 'pd-phone', label: 'Painel do profissional no app Rezolveaê' })}</div>
-      <ol class="pd-list">${parts}</ol>
+      <div class="hs-pin">
+      <ol class="pd-list" data-track>${parts}</ol>
+      <div class="step-dots" aria-hidden="true">${Array.from({ length: panelParts.length }, (_, i) => `<i data-i="${i}"${i === 0 ? ' class="on"' : ''}></i>`).join('')}</div>
+      </div>
     </div>
   </div>
 </section>
@@ -420,13 +422,13 @@ function home() {
   ];
   const steps = stepsData
     .map(
-      (s, i) => `<li class="story-step" data-step="${i}">
+      (s, i) => `<li class="story-step" data-step="${i}" data-i="${i}">
         <div class="story-txt"><span class="step-n">${i + 1}</span><h3>${esc(s.title)}</h3><p>${esc(s.text)}</p></div>
         ${phone(storyScreens[i](), { cls: 'phone-sm' })}
       </li>`,
     )
     .join('');
-  const stickyScreens = storyScreens.map((f, i) => `<div class="story-screen${i === 0 ? ' on' : ''}" data-screen="${i}">${f()}</div>`).join('');
+  const stickyScreens = storyScreens.map((f, i) => `<div class="story-screen${i === 0 ? ' on' : ''}" data-screen="${i}" data-i="${i}">${f()}</div>`).join('');
 
   const safety = [
     ['map-pin', 'Endereço protegido', topic('Quem vê meu endereço e telefone?').a],
@@ -460,7 +462,7 @@ function home() {
     <div class="hero-copy">
       <h1 class="hero-title">${words('O que vamos resolver hoje?', 'hw')}</h1>
       <p class="lead hero-fade" style="--d:.55s">Eletricista, encanador, montador, faxina e mais, perto de você. Peça orçamento, converse pelo chat e combine tudo pelo app.</p>
-      <div class="hero-fade" style="--d:.7s">${storeButtons}</div>
+      <div class="hero-fade hero-stores" style="--d:.7s">${storeButtons}</div>
     </div>
     <div class="hero-visual">
       ${phone(homeScreen(), { cls: 'phone-hero', label: 'Tela inicial do app Rezolveaê, com a busca, os serviços e profissionais perto de você' })}
@@ -486,8 +488,11 @@ function home() {
   <div class="wrap">
     <h2 id="como-t" data-reveal>Como funciona</h2>
     <p class="sub" data-reveal style="--i:1">Sem formulário longo e sem intermediário: você fala direto com quem vai fazer.</p>
-    <div class="story">
-      <ol class="story-steps">${steps}</ol>
+    <div class="story" data-carousel data-hscroll data-pin>
+      <div class="hs-pin">
+      <ol class="story-steps" data-track>${steps}</ol>
+      <div class="step-dots" aria-hidden="true">${Array.from({ length: stepsData.length }, (_, i) => `<i data-i="${i}"${i === 0 ? ' class="on"' : ''}></i>`).join('')}</div>
+      </div>
       <div class="story-stage">${phone(stickyScreens, { cls: 'phone-story' })}</div>
     </div>
   </div>
@@ -517,7 +522,7 @@ ${proSection()}
     <h2 id="baixar-t" data-reveal style="--i:1">Chegando nas lojas</h2>
     <p data-reveal style="--i:2">O Rezolveaê está quase pronto para iPhone e Android.</p>
     <div data-reveal style="--i:3">${storeButtons}</div>
-    <a class="cta-ig" href="${INSTAGRAM_URL}" target="_blank" rel="noopener" data-reveal style="--i:4">${icon('instagram', { size: 20 })}Enquanto isso, siga <b>@${INSTAGRAM}</b></a>
+    <a class="cta-ig" href="${INSTAGRAM_URL}" target="_blank" rel="noopener" data-reveal style="--i:4">Enquanto isso, siga <b>@${INSTAGRAM}</b></a>
   </div>
 </section>`;
 

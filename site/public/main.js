@@ -25,6 +25,30 @@
   const hero = document.querySelector('[data-hero]');
   /* Seções presas: [data-pin] é alta e o filho fica sticky; --p vai de 0 a 1 enquanto ele está preso. */
   const pins = [...document.querySelectorAll('[data-pin]')];
+  /* Computador: celular fixo ao lado do texto. Celular: os mesmos passos viram cartões que andam para o lado. */
+  const wide = matchMedia('(min-width: 961px)');
+
+  /*
+   * Celular: [data-hscroll] fica preso e a rolagem para baixo passa os cartões para o lado.
+   * Cada cartão para no lugar por um trecho da rolagem (a tela dele anima) antes de seguir.
+   */
+  const HOLD = 0.35; // fração de cada trecho em que o cartão fica parado
+  const smooth = (t) => t * t * (3 - 2 * t);
+  const hscroll = [...document.querySelectorAll('[data-hscroll]')].map((el) => ({ el, pin: el.querySelector('.hs-pin'), track: el.querySelector('[data-track]') }));
+  function measureHscroll() {
+    for (const h of hscroll) {
+      if (wide.matches) {
+        h.el.style.height = '';
+        h.track.style.transform = '';
+        continue;
+      }
+      const cards = h.track.children;
+      h.n = cards.length;
+      h.step = cards.length > 1 ? cards[1].offsetLeft - cards[0].offsetLeft : 0;
+      h.dots = [...h.el.querySelectorAll('.step-dots i')];
+      h.el.style.height = `${h.pin.offsetHeight + (h.n - 1) * innerHeight * 0.65}px`;
+    }
+  }
 
   let ticking = false;
   function update() {
@@ -37,16 +61,38 @@
     }
     for (const el of pins) {
       const r = el.getBoundingClientRect();
-      const p = -r.top / Math.max(1, r.height - vh);
+      // Seção com filho preso abaixo do cabeçalho: conta o progresso só enquanto ele está preso.
+      const pin = !wide.matches && el.querySelector(':scope > .hs-pin, :scope > * > .hs-pin');
+      const p = pin
+        ? (parseFloat(getComputedStyle(pin).top) - r.top) / Math.max(1, r.height - pin.offsetHeight)
+        : -r.top / Math.max(1, r.height - vh);
       const pc = Math.min(1, Math.max(0, p));
       el.style.setProperty('--p', pc.toFixed(4));
       /* Com data-steps, o progresso também escolhe o item ativo ([data-i] ganha .on). */
       const n = Number(el.dataset.steps);
-      if (n) {
+      if (n && !(wide.matches && el.hasAttribute('data-mobile-only'))) {
         const active = String(Math.min(n - 1, Math.floor(pc * n)));
         if (el.dataset.active !== active) {
           el.dataset.active = active;
           el.querySelectorAll('[data-i]').forEach((x) => x.classList.toggle('on', x.dataset.i === active));
+        }
+      }
+    }
+    if (!wide.matches) {
+      for (const h of hscroll) {
+        if (!h.n) continue;
+        // Um pouco de folga no começo e no fim, para o primeiro e o último cartão também pararem.
+        const p = Math.min(1, Math.max(0, (Number(h.el.style.getPropertyValue('--p') || 0) - 0.08) / 0.84));
+        const u = p * (h.n - 1);
+        const k = Math.min(h.n - 2, Math.floor(u));
+        const f = Math.min(1, Math.max(0, (u - k - HOLD / 2) / (1 - HOLD)));
+        const pos = h.n > 1 ? k + smooth(f) : 0;
+        h.track.style.transform = `translateX(${(-pos * h.step).toFixed(1)}px)`;
+        h.dots.forEach((d, i) => d.style.setProperty('--f', Math.min(1, Math.max(0, p * h.n - i)).toFixed(3)));
+        const active = String(Math.round(pos));
+        if (h.active !== active) {
+          h.active = active;
+          h.el.querySelectorAll('[data-i]').forEach((x) => x.classList.toggle('on', x.dataset.i === active));
         }
       }
     }
@@ -62,7 +108,15 @@
     }
   };
   addEventListener('scroll', onScroll, { passive: true });
-  addEventListener('resize', onScroll);
+  addEventListener('resize', () => {
+    measureHscroll();
+    onScroll();
+  });
+  measureHscroll();
+  document.fonts?.ready.then(() => {
+    measureHscroll();
+    update();
+  });
   update();
 
   /*
@@ -74,8 +128,8 @@
     { items: [...document.querySelectorAll('.story-step')], text: '.story-txt', key: 'step', targets: document.querySelectorAll('.story-screen'), targetKey: 'screen' },
     { items: [...document.querySelectorAll('.pd-item')], text: ':scope > div', key: 'part', panel: document.querySelector('.pd-phone') },
   ];
-  const wide = matchMedia('(min-width: 961px)');
   function syncPhones() {
+    if (!wide.matches) return;
     const line = innerHeight * 0.6;
     for (const g of synced) {
       if (!g.items.length) continue;
@@ -88,10 +142,19 @@
       g.active = active;
       g.items.forEach((x) => x.classList.toggle('on', x.dataset[g.key] === active));
       g.targets?.forEach((x) => x.classList.toggle('on', x.dataset[g.targetKey] === active));
-      if (g.panel && wide.matches) g.panel.setAttribute('data-focus', active);
+      g.panel?.setAttribute('data-focus', active);
     }
   }
   addEventListener('scroll', () => requestAnimationFrame(syncPhones), { passive: true });
   addEventListener('resize', syncPhones);
+  wide.addEventListener('change', () => {
+    for (const g of synced) g.active = undefined;
+    pins.forEach((el) => delete el.dataset.active);
+    hscroll.forEach((h) => (h.active = undefined));
+    measureHscroll();
+    update();
+    syncPhones();
+  });
+
   syncPhones();
 })();

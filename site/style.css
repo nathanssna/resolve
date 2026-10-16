@@ -483,15 +483,16 @@ mark { background: var(--brand-tint); color: var(--ink); padding: 0 3px; border-
 .motion .pl-shot.on { opacity: 1; transform: none; }
 
 @media (min-width: 961px) {
-  .motion .pd-phone [data-r] { opacity: .28; transition: opacity .45s ease, transform .6s cubic-bezier(.2, .8, .2, 1); }
-  .motion .pd-phone .pd-badge { scale: 0; transition: scale .45s cubic-bezier(.34, 1.56, .64, 1); }
-  .motion :is(.pd-phone[data-focus="0"] [data-r="0"], .pd-phone[data-focus="1"] [data-r="1"], .pd-phone[data-focus="2"] [data-r="2"], .pd-phone[data-focus="3"] [data-r="3"]) { opacity: 1; transform: scale(1.04); }
-  .motion :is(.pd-phone[data-focus="0"] [data-r="0"], .pd-phone[data-focus="1"] [data-r="1"], .pd-phone[data-focus="2"] [data-r="2"], .pd-phone[data-focus="3"] [data-r="3"]) .pd-badge { scale: 1; }
-  .motion .pd-phone:not([data-focus]) [data-r] { opacity: 1; }
   .motion .pd-item > * { opacity: .25; transition: opacity .5s ease; }
   .motion .pd-item.on > * { opacity: 1; }
 }
 
+/* Foco do painel: a área explicada acende, as outras apagam. */
+.motion .pd-phone [data-r] { opacity: .28; transition: opacity .45s ease, transform .6s cubic-bezier(.2, .8, .2, 1); }
+.motion .pd-phone .pd-badge { scale: 0; transition: scale .45s cubic-bezier(.34, 1.56, .64, 1); }
+.motion :is(.pd-phone[data-focus="0"] [data-r="0"], .pd-phone[data-focus="1"] [data-r="1"], .pd-phone[data-focus="2"] [data-r="2"], .pd-phone[data-focus="3"] [data-r="3"]) { opacity: 1; transform: scale(1.04); }
+.motion :is(.pd-phone[data-focus="0"] [data-r="0"], .pd-phone[data-focus="1"] [data-r="1"], .pd-phone[data-focus="2"] [data-r="2"], .pd-phone[data-focus="3"] [data-r="3"]) .pd-badge { scale: 1; }
+.motion .pd-phone:not([data-focus]) [data-r] { opacity: 1; }
 .motion .start-n { color: transparent; -webkit-text-stroke: 3px var(--ink); transition: color .6s ease calc(var(--i, 0) * 90ms + .4s); }
 .motion .start-step.in .start-n { color: var(--ink); }
 @media (max-width: 960px) {
@@ -508,3 +509,80 @@ mark { background: var(--brand-tint); color: var(--ink); padding: 0 3px; border-
   .motion .pl-panel { height: 220px; }
   .pl-shot { padding: 18px; }
 }
+
+/* ---------- Celular: passos e painel viram carrosséis de arrastar ---------- */
+:root { --hdr: 68px; }
+.step-dots { display: none; }
+.pd-shot { display: none; }
+@media (max-width: 760px) { :root { --hdr: 60px; } }
+
+@media (max-width: 960px) {
+  .story, .pd { display: block; margin-top: 24px; }
+  :is(.story-stage, .pd-stage) { display: none; }
+  :is(.story-steps, .pd-list) {
+    display: flex; gap: 12px; margin: 0 calc(var(--gutter) * -1); padding: 4px var(--gutter) 8px;
+    overflow-x: auto; scroll-snap-type: x mandatory; scroll-padding: 0 var(--gutter); scrollbar-width: none; overscroll-behavior-x: contain;
+  }
+  :is(.story-steps, .pd-list)::-webkit-scrollbar { display: none; }
+  :is(.story-step, .pd-item) {
+    flex: 0 0 86%; display: flex; flex-direction: column; gap: 18px; min-height: 0; padding: 22px 20px 20px;
+    border-radius: var(--r-xl); background: #fff; scroll-snap-align: start;
+  }
+  .pd-item { align-items: stretch; background: var(--canvas); }
+  :is(.story-step, .pd-item) > * { opacity: 1 !important; transform: none !important; }
+  .story-txt { max-width: none; }
+  :is(.story-step .step-n, .pd-n) { width: 32px; height: 32px; margin-bottom: 12px; font-size: 14px; }
+  :is(.story-txt h3, .pd-item h3) { font-size: 22px; }
+  :is(.story-txt p, .pd-item p) { margin-top: 6px; font-size: 15px; }
+  /* A tela do app num quadro, sem moldura de celular e no tamanho real. */
+  .story-step .phone-sm { display: block; width: 100%; margin-top: auto; padding: 0; border-radius: 18px; background: var(--canvas); box-shadow: none; }
+  .story-step .phone-sm .phone-screen { height: auto; min-height: 340px; border-radius: 18px; background: var(--canvas); }
+  .story-step .phone-sm .m-bar { padding-top: 16px; }
+  .story-step .phone-sm .m-chat { min-height: 0; }
+  .story-step .phone-sm .m-done { height: auto; padding-bottom: 16px; }
+  .story-step .phone-sm .m-btn-full { margin-top: 14px; }
+  .pd-shot { display: grid; gap: 8px; margin-top: auto; padding: 16px 14px; border-radius: 18px; background: #fff; font-size: 13px; line-height: 1.35; color: var(--ink); }
+  .pd-shot-top { gap: 14px; background: var(--brand); }
+  .pd-shot .ph-h { max-width: none; margin: 0; font-size: 15px; color: var(--ink); }
+  .pd-shot .ph-req b { font-size: 15px; }
+  .pd-shot .ph-month { font-size: 13px; }
+  .motion .step-dots { display: flex; justify-content: center; gap: 6px; margin-top: 16px; }
+  /* Barrinhas como as dos stories: enchem continuamente com a rolagem, mesmo com o cartão parado. */
+  .step-dots i { position: relative; width: 44px; height: 4px; overflow: hidden; border-radius: 4px; background: var(--surface-strong); }
+  .step-dots i::after { content: ''; position: absolute; inset: 0; background: var(--ink); transform: scaleX(var(--f, 0)); transform-origin: left; }
+}
+
+/* Serviços em duas colunas no celular */
+@media (max-width: 760px) {
+  .svc-grid { grid-template-columns: 1fr 1fr; }
+  .svc { flex-direction: column; align-items: flex-start; gap: 10px; padding: 14px; }
+  .svc-ico { width: 44px; height: 44px; }
+  .svc b { font-size: 15px; }
+}
+
+/* Resposta ao toque */
+:is(.svc, .card, .faq summary, .store, .btn, .cta-ig) { -webkit-tap-highlight-color: transparent; transition: transform .15s ease; }
+:is(.svc, .card, .store, .btn):active, .faq summary:active { transform: scale(.98); }
+
+/* Celular com movimento: a seção fica presa e a rolagem para baixo leva os cartões para o lado. */
+.hs-pin { display: contents; }
+@media (max-width: 960px) {
+  .motion [data-hscroll] { position: relative; }
+  .motion .hs-pin { position: sticky; top: var(--hdr); display: flex; flex-direction: column; justify-content: center; height: calc(100svh - var(--hdr)); margin: 0 calc(var(--gutter) * -1); overflow: hidden; }
+  .motion [data-hscroll] [data-track] { width: max-content; margin: 0; overflow: visible; scroll-snap-type: none; will-change: transform; }
+  /* O recorte do painel entra quando o cartão para. */
+  .motion .pd-item.on .pd-shot > * { animation: msg-in .5s cubic-bezier(.2, .8, .2, 1) both; }
+  .motion .pd-item.on .pd-shot > :nth-child(2) { animation-delay: .15s; }
+  .motion .pd-item.on .pd-shot > :nth-child(3) { animation-delay: .3s; }
+  .motion [data-hscroll] :is(.story-step, .pd-item) { flex: 0 0 84vw; max-width: 520px; }
+}
+@media (max-width: 960px) and (max-height: 720px) {
+  .motion .story-step .phone-sm .phone-screen { min-height: 260px; }
+  .motion .story-step .phone-sm :is(.m-comment, .m-photos) { display: none; }
+  .motion .story-step .phone-sm .m-check { width: 44px; height: 44px; margin: 0 0 4px; }
+  .motion :is(.story-step, .pd-item) { padding: 18px 18px 16px; gap: 14px; }
+  .motion :is(.story-txt p, .pd-item p) { font-size: 14px; }
+}
+
+/* No celular, o topo fica só com título, texto e a tela do app (os botões das lojas ficam no fim da página). */
+@media (max-width: 760px) { .hero-stores { display: none; } }

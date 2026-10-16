@@ -13,6 +13,7 @@
 <meta property="og:description" content="Encontre eletricista, encanador, montador, faxina e mais perto de você. Peça orçamento, converse pelo chat e combine tudo pelo app Rezolveaê.">
 <meta property="og:image" content="assets/rezolveae-r.png">
 <link rel="icon" type="image/png" href="assets/favicon.png">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
 <link rel="preload" href="assets/fonts/PlusJakartaSans_800ExtraBold.ttf" as="font" type="font/ttf" crossorigin>
 <link rel="stylesheet" href="style.css">
 <script>if (!matchMedia('(prefers-reduced-motion: reduce)').matches) document.documentElement.classList.add('motion');</script>
@@ -39,7 +40,7 @@
     <div class="hero-copy">
       <h1 class="hero-title"><span class="hw" style="--i:0">O</span> <span class="hw" style="--i:1">que</span> <span class="hw" style="--i:2">vamos</span> <span class="hw" style="--i:3">resolver</span> <span class="hw" style="--i:4">hoje?</span></h1>
       <p class="lead hero-fade" style="--d:.55s">Eletricista, encanador, montador, faxina e mais, perto de você. Peça orçamento, converse pelo chat e combine tudo pelo app.</p>
-      <div class="hero-fade" style="--d:.7s">
+      <div class="hero-fade hero-stores" style="--d:.7s">
   <div class="stores">
     <span class="store" aria-label="App Store, em breve"><svg class="ico" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="14" height="20" x="5" y="2" rx="2" ry="2"/> <path d="M12 18h.01"/></svg><span><small>Em breve na</small>App Store</span></span>
     <span class="store" aria-label="Google Play, em breve"><svg class="ico" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="14" height="20" x="5" y="2" rx="2" ry="2"/> <path d="M12 18h.01"/></svg><span><small>Em breve no</small>Google Play</span></span>
@@ -109,8 +110,9 @@
   <div class="wrap">
     <h2 id="como-t" data-reveal>Como funciona</h2>
     <p class="sub" data-reveal style="--i:1">Sem formulário longo e sem intermediário: você fala direto com quem vai fazer.</p>
-    <div class="story">
-      <ol class="story-steps"><li class="story-step" data-step="0">
+    <div class="story" data-carousel data-hscroll data-pin>
+      <div class="hs-pin">
+      <ol class="story-steps" data-track><li class="story-step" data-step="0" data-i="0">
         <div class="story-txt"><span class="step-n">1</span><h3>Escolha o profissional</h3><p>Veja nota, avaliações e tempo de resposta de quem atende o serviço.</p></div>
         <div class="phone phone-sm" aria-hidden="true"><div class="phone-screen"><div class="m-bar"><svg class="ico" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 19-7-7 7-7"/> <path d="M19 12H5"/></svg><b>Eletricista</b></div>
     <div class="m-chips"><span class="on">Mais bem avaliados</span><span>Perto</span><span>Verificados</span></div>
@@ -121,7 +123,7 @@
           <small>Responde em ~30 min</small></div></div><div class="m-card"><span class="m-avatar m-avatar-2">P</span><div class="m-card-txt"><b>Paulo Reis</b>
           <small><span class="m-star"><svg class="ico" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"/></svg></span> <b>4,7</b> (41) · 3,4 km</small>
           <small>Responde em ~1 h</small></div></div></div></div></div>
-      </li><li class="story-step" data-step="1">
+      </li><li class="story-step" data-step="1" data-i="1">
         <div class="story-txt"><span class="step-n">2</span><h3>Conte o que precisa</h3><p>Descreva o problema e converse pelo chat.</p></div>
         <div class="phone phone-sm" aria-hidden="true"><div class="phone-screen"><div class="m-bar"><svg class="ico" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 19-7-7 7-7"/> <path d="M19 12H5"/></svg><b>Carlos</b></div>
     <div class="m-chat">
@@ -132,7 +134,7 @@
       <div class="m-msg out">Lorenzetti, tem uns 3 anos</div>
       <div class="m-typing"><i></i><i></i><i></i></div>
     </div></div></div>
-      </li><li class="story-step" data-step="2">
+      </li><li class="story-step" data-step="2" data-i="2">
         <div class="story-txt"><span class="step-n">3</span><h3>Aceite a proposta</h3><p>Ele manda valor e data. Você aceita e acompanha tudo por aqui.</p></div>
         <div class="phone phone-sm" aria-hidden="true"><div class="phone-screen"><div class="m-bar"><svg class="ico" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 19-7-7 7-7"/> <path d="M19 12H5"/></svg><b>Carlos</b></div>
     <div class="m-chat">
@@ -142,7 +144,7 @@
         <span>Troca da resistência, peça inclusa</span>
         <div class="m-btns"><span class="m-btn">Negociar</span><span class="m-btn m-btn-y">Aceitar</span></div></div>
     </div></div></div>
-      </li><li class="story-step" data-step="3">
+      </li><li class="story-step" data-step="3" data-i="3">
         <div class="story-txt"><span class="step-n">4</span><h3>Confirme e avalie</h3><p>Quando o serviço termina, você confirma que foi feito e dá sua nota. O pagamento é direto com o profissional.</p></div>
         <div class="phone phone-sm" aria-hidden="true"><div class="phone-screen"><div class="m-bar"><svg class="ico" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 19-7-7 7-7"/> <path d="M19 12H5"/></svg><b>Serviço</b></div>
     <div class="m-done">
@@ -154,7 +156,9 @@
       <span class="m-btn m-btn-y m-btn-full">Enviar avaliação</span>
     </div></div></div>
       </li></ol>
-      <div class="story-stage"><div class="phone phone-story" aria-hidden="true"><div class="phone-screen"><div class="story-screen on" data-screen="0"><div class="m-bar"><svg class="ico" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 19-7-7 7-7"/> <path d="M19 12H5"/></svg><b>Eletricista</b></div>
+      <div class="step-dots" aria-hidden="true"><i data-i="0" class="on"></i><i data-i="1"></i><i data-i="2"></i><i data-i="3"></i></div>
+      </div>
+      <div class="story-stage"><div class="phone phone-story" aria-hidden="true"><div class="phone-screen"><div class="story-screen on" data-screen="0" data-i="0"><div class="m-bar"><svg class="ico" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 19-7-7 7-7"/> <path d="M19 12H5"/></svg><b>Eletricista</b></div>
     <div class="m-chips"><span class="on">Mais bem avaliados</span><span>Perto</span><span>Verificados</span></div>
     <div class="m-list"><div class="m-card"><span class="m-avatar m-avatar-0">C<span class="m-seal"><svg class="ico" width="16" height="16" viewBox="0 0 24 24" fill="var(--brand)" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Z"/> <path d="m9 12 2 2 4-4"/></svg></span></span><div class="m-card-txt"><b>Carlos Souza</b>
           <small><span class="m-star"><svg class="ico" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"/></svg></span> <b>4,9</b> (128) · 1,2 km</small>
@@ -162,7 +166,7 @@
           <small><span class="m-star"><svg class="ico" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"/></svg></span> <b>4,8</b> (86) · 2,0 km</small>
           <small>Responde em ~30 min</small></div></div><div class="m-card"><span class="m-avatar m-avatar-2">P</span><div class="m-card-txt"><b>Paulo Reis</b>
           <small><span class="m-star"><svg class="ico" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"/></svg></span> <b>4,7</b> (41) · 3,4 km</small>
-          <small>Responde em ~1 h</small></div></div></div></div><div class="story-screen" data-screen="1"><div class="m-bar"><svg class="ico" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 19-7-7 7-7"/> <path d="M19 12H5"/></svg><b>Carlos</b></div>
+          <small>Responde em ~1 h</small></div></div></div></div><div class="story-screen" data-screen="1" data-i="1"><div class="m-bar"><svg class="ico" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 19-7-7 7-7"/> <path d="M19 12H5"/></svg><b>Carlos</b></div>
     <div class="m-chat">
       <div class="m-req"><small>PEDIDO</small><b>Chuveiro não esquenta</b><span>Liguei e só sai água fria. Disjuntor já foi trocado.</span>
         <div class="m-photos"><i></i><i></i></div>
@@ -170,14 +174,14 @@
       <div class="m-msg in">Oi! Consigo ir sexta à tarde. É chuveiro de qual marca?</div>
       <div class="m-msg out">Lorenzetti, tem uns 3 anos</div>
       <div class="m-typing"><i></i><i></i><i></i></div>
-    </div></div><div class="story-screen" data-screen="2"><div class="m-bar"><svg class="ico" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 19-7-7 7-7"/> <path d="M19 12H5"/></svg><b>Carlos</b></div>
+    </div></div><div class="story-screen" data-screen="2" data-i="2"><div class="m-bar"><svg class="ico" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 19-7-7 7-7"/> <path d="M19 12H5"/></svg><b>Carlos</b></div>
     <div class="m-chat">
       <div class="m-msg in">Provavelmente é a resistência. Te mando a proposta com a peça inclusa.</div>
       <div class="m-prop"><small>PROPOSTA</small><p class="m-price">R$ 180,00</p>
         <span><svg class="ico" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 7.5V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h3.5"/> <path d="M16 2v4"/> <path d="M8 2v4"/> <path d="M3 10h5"/> <path d="M17.5 17.5 16 16.3V14"/> <circle cx="16" cy="16" r="6"/></svg> Sex 17/10, tarde</span>
         <span>Troca da resistência, peça inclusa</span>
         <div class="m-btns"><span class="m-btn">Negociar</span><span class="m-btn m-btn-y">Aceitar</span></div></div>
-    </div></div><div class="story-screen" data-screen="3"><div class="m-bar"><svg class="ico" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 19-7-7 7-7"/> <path d="M19 12H5"/></svg><b>Serviço</b></div>
+    </div></div><div class="story-screen" data-screen="3" data-i="3"><div class="m-bar"><svg class="ico" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 19-7-7 7-7"/> <path d="M19 12H5"/></svg><b>Serviço</b></div>
     <div class="m-done">
       <span class="m-check"><svg class="ico" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg></span>
       <b>Serviço concluído</b>
@@ -228,27 +232,27 @@
   <div class="wrap">
     <h2 id="pd-t" data-reveal>Seu painel, por dentro</h2>
     <p class="sub" data-reveal style="--i:1">É a primeira tela que você vê ao abrir o app.</p>
-    <div class="pd">
-      <div class="pd-stage"><div class="phone pd-phone" role="img" aria-label="Painel do profissional no app Rezolveaê"><div class="phone-screen"><div class="ph-top" data-r="0"><span class="pd-badge">1</span>
-      <div class="ph-hello"><b>Olá, Carlos!</b><span class="m-avatar m-avatar-0">C</span></div>
-      <div class="ph-accept"><span><b><i class="dot"></i>Recebendo pedidos</b><small>Eletricista · até 10 km do Centro</small></span><span class="switch"><i></i></span></div>
-    </div>
-    <div class="ph-body">
-      <div class="ph-block" data-r="1"><span class="pd-badge">2</span>
-        <p class="ph-h">Para responder <span class="ph-count">2</span></p>
+    <div class="pd" data-carousel data-hscroll data-pin>
+      <div class="pd-stage"><div class="phone pd-phone" role="img" aria-label="Painel do profissional no app Rezolveaê"><div class="phone-screen"><div class="ph-top" data-r="0"><span class="pd-badge">1</span><div class="ph-hello"><b>Olá, Carlos!</b><span class="m-avatar m-avatar-0">C</span></div>
+      <div class="ph-accept"><span><b><i class="dot"></i>Recebendo pedidos</b><small>Eletricista · até 10 km do Centro</small></span><span class="switch"><i></i></span></div></div>
+    <div class="ph-body"><div class="ph-block" data-r="1"><span class="pd-badge">2</span><p class="ph-h">Para responder <span class="ph-count">2</span></p>
         <div class="ph-req"><small>PEDIDO NOVO · há 5 min</small><b>Chuveiro não esquenta</b><span>Liguei e só sai água fria.</span><small>Ana · Centro · Esta semana</small>
-          <span class="ph-send">Enviar proposta <svg class="ico" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></span></div>
-      </div>
-      <div class="ph-block" data-r="2"><span class="pd-badge">3</span>
-        <p class="ph-h">Agenda</p>
+          <span class="ph-send">Enviar proposta <svg class="ico" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></span></div></div><div class="ph-block" data-r="2"><span class="pd-badge">3</span><p class="ph-h">Agenda</p>
         <div class="ph-line"><span><b>Hoje, à tarde</b><small>Tomada · Paulo · Jardins</small></span><b>R$ 90</b></div>
-        <div class="ph-line"><span><b>Sex, à tarde</b><small>Lustre · Rita · Pituba</small></span><b>R$ 150</b></div>
+        <div class="ph-line"><span><b>Sex, à tarde</b><small>Lustre · Rita · Pituba</small></span><b>R$ 150</b></div></div><div class="ph-block" data-r="3"><span class="pd-badge">4</span><div class="ph-month"><svg class="ico" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 7.5V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h3.5"/> <path d="M16 2v4"/> <path d="M8 2v4"/> <path d="M3 10h5"/> <path d="M17.5 17.5 16 16.3V14"/> <circle cx="16" cy="16" r="6"/></svg><span>Outubro · 12 serviços · R$ 2.340,00</span><svg class="ico" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></div></div></div></div></div></div>
+      <div class="hs-pin">
+      <ol class="pd-list" data-track><li class="pd-item" data-part="0" data-i="0"><div><span class="pd-n">1</span><h3>Recebendo pedidos</h3><p>Ligado, você aparece para os clientes da sua região, nos serviços que escolheu. Precisa de folga? Desligue e saia das buscas: o que já está combinado continua.</p></div>
+        <div class="pd-shot pd-shot-top" aria-hidden="true"><div class="ph-hello"><b>Olá, Carlos!</b><span class="m-avatar m-avatar-0">C</span></div>
+      <div class="ph-accept"><span><b><i class="dot"></i>Recebendo pedidos</b><small>Eletricista · até 10 km do Centro</small></span><span class="switch"><i></i></span></div></div></li><li class="pd-item" data-part="1" data-i="1"><div><span class="pd-n">2</span><h3>Para responder</h3><p>Os pedidos novos chegam aqui e na notificação, com a descrição, as fotos e o bairro. Os urgentes vêm primeiro.</p></div>
+        <div class="pd-shot" aria-hidden="true"><p class="ph-h">Para responder <span class="ph-count">2</span></p>
+        <div class="ph-req"><small>PEDIDO NOVO · há 5 min</small><b>Chuveiro não esquenta</b><span>Liguei e só sai água fria.</span><small>Ana · Centro · Esta semana</small>
+          <span class="ph-send">Enviar proposta <svg class="ico" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></span></div></div></li><li class="pd-item" data-part="2" data-i="2"><div><span class="pd-n">3</span><h3>Agenda</h3><p>Os serviços combinados em ordem de data. No dia, chega um lembrete; quando terminar, toque em Serviço feito e mande fotos do trabalho pronto.</p></div>
+        <div class="pd-shot" aria-hidden="true"><p class="ph-h">Agenda</p>
+        <div class="ph-line"><span><b>Hoje, à tarde</b><small>Tomada · Paulo · Jardins</small></span><b>R$ 90</b></div>
+        <div class="ph-line"><span><b>Sex, à tarde</b><small>Lustre · Rita · Pituba</small></span><b>R$ 150</b></div></div></li><li class="pd-item" data-part="3" data-i="3"><div><span class="pd-n">4</span><h3>Seu mês</h3><p>Quantos serviços você fez no mês e quanto eles somam. Um toque abre o histórico completo.</p></div>
+        <div class="pd-shot" aria-hidden="true"><div class="ph-month"><svg class="ico" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 7.5V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h3.5"/> <path d="M16 2v4"/> <path d="M8 2v4"/> <path d="M3 10h5"/> <path d="M17.5 17.5 16 16.3V14"/> <circle cx="16" cy="16" r="6"/></svg><span>Outubro · 12 serviços · R$ 2.340,00</span><svg class="ico" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></div></div></li></ol>
+      <div class="step-dots" aria-hidden="true"><i data-i="0" class="on"></i><i data-i="1"></i><i data-i="2"></i><i data-i="3"></i></div>
       </div>
-      <div class="ph-block" data-r="3"><span class="pd-badge">4</span>
-        <div class="ph-month"><svg class="ico" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 7.5V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h3.5"/> <path d="M16 2v4"/> <path d="M8 2v4"/> <path d="M3 10h5"/> <path d="M17.5 17.5 16 16.3V14"/> <circle cx="16" cy="16" r="6"/></svg><span>Outubro · 12 serviços · R$ 2.340,00</span><svg class="ico" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></div>
-      </div>
-    </div></div></div></div>
-      <ol class="pd-list"><li class="pd-item" data-part="0"><div><span class="pd-n">1</span><h3>Recebendo pedidos</h3><p>Ligado, você aparece para os clientes da sua região, nos serviços que escolheu. Precisa de folga? Desligue e saia das buscas: o que já está combinado continua.</p></div></li><li class="pd-item" data-part="1"><div><span class="pd-n">2</span><h3>Para responder</h3><p>Os pedidos novos chegam aqui e na notificação, com a descrição, as fotos e o bairro. Os urgentes vêm primeiro.</p></div></li><li class="pd-item" data-part="2"><div><span class="pd-n">3</span><h3>Agenda</h3><p>Os serviços combinados em ordem de data. No dia, chega um lembrete; quando terminar, toque em Serviço feito e mande fotos do trabalho pronto.</p></div></li><li class="pd-item" data-part="3"><div><span class="pd-n">4</span><h3>Seu mês</h3><p>Quantos serviços você fez no mês e quanto eles somam. Um toque abre o histórico completo.</p></div></li></ol>
     </div>
   </div>
 </section>
@@ -287,7 +291,7 @@
     <span class="store" aria-label="App Store, em breve"><svg class="ico" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="14" height="20" x="5" y="2" rx="2" ry="2"/> <path d="M12 18h.01"/></svg><span><small>Em breve na</small>App Store</span></span>
     <span class="store" aria-label="Google Play, em breve"><svg class="ico" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="14" height="20" x="5" y="2" rx="2" ry="2"/> <path d="M12 18h.01"/></svg><span><small>Em breve no</small>Google Play</span></span>
   </div></div>
-    <a class="cta-ig" href="https://www.instagram.com/rezolveae/" target="_blank" rel="noopener" data-reveal style="--i:4"><svg class="ico" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="20" height="20" x="2" y="2" rx="5" ry="5"/> <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/> <line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/></svg>Enquanto isso, siga <b>@rezolveae</b></a>
+    <a class="cta-ig" href="https://www.instagram.com/rezolveae/" target="_blank" rel="noopener" data-reveal style="--i:4">Enquanto isso, siga <b>@rezolveae</b></a>
   </div>
 </section>
 </main>
@@ -299,7 +303,7 @@
     </div>
     <nav aria-label="Rodapé">
       <a href="mailto:rezolveae@gmail.com">rezolveae@gmail.com</a>
-      <a class="footer-ig" href="https://www.instagram.com/rezolveae/" target="_blank" rel="noopener"><svg class="ico" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="20" height="20" x="2" y="2" rx="5" ry="5"/> <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/> <line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/></svg>@rezolveae</a>
+      <a class="footer-ig" href="https://www.instagram.com/rezolveae/" target="_blank" rel="noopener">@rezolveae</a>
       <a href="termos/">Termos de uso</a>
       <a href="privacidade/">Política de privacidade</a>
       <a href="excluir-conta/">Excluir conta</a>
