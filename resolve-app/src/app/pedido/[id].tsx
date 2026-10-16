@@ -114,7 +114,7 @@ export default function PedidoDetalhe() {
       return confirm(`Pedir ajuda à equipe? Ela vai ler a conversa e pode concluir o serviço por ${name}.`, () => run(() => askTeam(id)), { confirmLabel: 'Pedir' });
   };
 
-  const headline = canceled ? 'Serviço cancelado' : done ? 'Tudo resolvido!' : `Combinado para ${order.when.toLowerCase()}`;
+  const headline = canceled ? 'Serviço cancelado' : done ? 'Tudo resolvido' : `Combinado para ${order.when.toLowerCase()}`;
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
@@ -126,7 +126,7 @@ export default function PedidoDetalhe() {
           </Badge>
           <Text variant="display">{headline}</Text>
           <Text variant="body" color={colors.inkBody}>
-            {service?.title} · {order.address.line}
+            {[service?.title, order.address.line].filter(Boolean).join(' · ')}
           </Text>
         </View>
 
@@ -139,9 +139,10 @@ export default function PedidoDetalhe() {
               <Text variant="labelLg">{order.other.name}</Text>
               {pro ? (
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                  <Icon name="star" size={13} fill={colors.star} color={colors.star} strokeWidth={1} />
+                  {/* Sem avaliações ainda: "Novo" em vez de uma nota 0,0. */}
+                  {pro.reviews ? <Icon name="star" size={13} fill={colors.star} color={colors.star} strokeWidth={1} /> : null}
                   <Text variant="bodySm">
-                    {formatDecimal(pro.rating)} · {pro.role}
+                    {pro.reviews ? formatDecimal(pro.rating) : 'Novo'} · {pro.role}
                   </Text>
                 </View>
               ) : (
@@ -170,7 +171,7 @@ export default function PedidoDetalhe() {
           <View>
             <ListRow icon={service?.icon ?? 'wrench'} label="Serviço" value={service?.title ?? ''} />
             <ListRow icon="calendar-clock" label="Quando" value={order.when} />
-            <ListRow icon="map-pin" label="Onde" value={addressLine({ line: order.address.line, complement: order.address.complement ?? '', area: order.address.area })} />
+            <ListRow icon="map-pin" label="Onde" value={addressLine({ line: order.address.line, complement: order.address.complement ?? '', area: order.address.area }) || 'Não informado'} />
             <ListRow icon="banknote" label={isPro ? 'Valor combinado · pago direto a você' : 'Valor combinado · pago direto ao profissional'} value={formatBRL(order.amount)} />
           </View>
         </View>
@@ -195,7 +196,7 @@ export default function PedidoDetalhe() {
 
         {done && !isPro ? (
           <View style={[styles.block, styles.rate]}>
-            <Text variant="titleSm">{order.rating ? 'Obrigado pela avaliação!' : `Como foi o serviço de ${name}?`}</Text>
+            <Text variant="titleSm">{order.rating ? 'Obrigado pela avaliação' : `Como foi o serviço de ${name}?`}</Text>
             <View style={styles.stars} accessibilityRole="adjustable" accessibilityLabel={`Nota: ${order.rating ?? stars} de 5`}>
               {[1, 2, 3, 4, 5].map((n) => {
                 const on = n <= (order.rating ?? stars);

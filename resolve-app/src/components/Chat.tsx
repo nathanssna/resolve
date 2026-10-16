@@ -379,7 +379,7 @@ export function ConversationRow({
           </Text>
           {unread ? (
             <View style={styles.unread}>
-              <Text variant="overline" style={{ fontSize: 11 }}>
+              <Text variant="overline">
                 {unread}
               </Text>
             </View>

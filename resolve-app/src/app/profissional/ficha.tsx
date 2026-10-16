@@ -239,7 +239,7 @@ export default function Ficha() {
               {STEPS[step].title}
             </Text>
             <Text variant="body" color={colors.inkBody}>
-              {first && step === 0 ? 'Falta pouco! ' : ''}
+              {first && step === 0 ? 'Falta pouco. ' : ''}
               {STEPS[step].hint}
             </Text>
           </View>

@@ -76,6 +76,7 @@ npm run e2e:cleanup            # apaga as contas (sempre, no fim)
 | `suspensa` | conta suspensa: aviso no início, Mensagens, chat e pedido novo; sem prazo; vencida ou reativada, some |
 | `notacliente` | profissional dá estrelas ao cliente no serviço concluído; cliente vê no Perfil só "Aparece depois de 3 avaliações" |
 | `confirma` | "Confirmar" no serviço do dia (cliente), botões do lembrete (`?acao=confirmar` / `?acao=remarcar`) e avisos no chat |
+| `telas` | não confere nada: fotografa todas as telas (visitante, cliente, profissional) em `shots/telas/` para a revisão visual |
 | `busca` | busca por frase na tela Buscar, como visitante (não precisa das contas); sem internet, cai na busca local |
 | `pause` | pausar no painel do profissional; lista, perfil e pedido do lado do cliente |
 | `cancela` | cancelar no prazo e em cima da hora (motivo), histórico do cliente, pausa automática e taxa no perfil |

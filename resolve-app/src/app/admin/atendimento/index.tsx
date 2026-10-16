@@ -33,7 +33,7 @@ export default function AdminAtendimento() {
               badge={
                 Number(t.unread) ? (
                   <View style={styles.count}>
-                    <Text variant="overline" style={{ fontSize: 11 }}>
+                    <Text variant="overline">
                       {String(t.unread)}
                     </Text>
                   </View>

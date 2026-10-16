@@ -15,7 +15,7 @@ export function Rating({ value, count, suffix, size = 14, onBrand }: Props) {
     <View
       style={styles.row}
       accessible
-      accessibilityLabel={`Nota ${formatDecimal(value)}${count != null ? `, ${formatCount(count)} avaliações` : ''}`}
+      accessibilityLabel={`Nota ${formatDecimal(value)}${count != null ? `, ${formatCount(count)} ${count === 1 ? 'avaliação' : 'avaliações'}` : ''}`}
     >
       <Icon name="star" size={size} fill={colors.star} color={colors.star} strokeWidth={1} />
       <Text variant="bodySm" style={{ fontFamily: fonts.bold, fontSize }}>

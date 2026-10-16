@@ -124,19 +124,19 @@ export default function PerfilProfissional() {
                 <Text variant="label">Novo</Text>
               </View>
             )}
-            <Text variant="caption" color={colors.inkMuted}>
+            <Text variant="caption" color={colors.inkMuted} style={styles.statLabel}>
               {pro.reviews === 1 ? '1 avaliação' : pro.reviews ? `${formatCount(pro.reviews)} avaliações` : 'na Rezolveaê'}
             </Text>
           </View>
           <View style={styles.stat}>
             <Text variant="titleSm">{formatCount(pro.jobs)}</Text>
-            <Text variant="caption" color={colors.inkMuted}>
+            <Text variant="caption" color={colors.inkMuted} style={styles.statLabel}>
               {pro.jobs === 1 ? 'serviço feito' : 'serviços feitos'}
             </Text>
           </View>
           <View style={styles.stat}>
             <Text variant="titleSm">~{pro.replyMin} min</Text>
-            <Text variant="caption" color={colors.inkMuted}>
+            <Text variant="caption" color={colors.inkMuted} style={styles.statLabel}>
               para responder
             </Text>
           </View>
@@ -251,6 +251,7 @@ const styles = StyleSheet.create({
   content: { padding: spacing[5], paddingTop: spacing[2], gap: spacing[6], paddingBottom: spacing[8] },
   head: { alignItems: 'center', gap: spacing[2] },
   stats: { flexDirection: 'row', gap: spacing[2] },
+  statLabel: { textAlign: 'center' },
   stat: { flex: 1, padding: spacing[3], borderRadius: radius.lg, backgroundColor: colors.surfaceMuted, gap: 2, alignItems: 'center' },
   lateRate: { flexDirection: 'row', alignItems: 'center', gap: spacing[2], padding: spacing[3], borderRadius: radius.lg, backgroundColor: colors.dangerTint },
   block: { gap: spacing[3] },

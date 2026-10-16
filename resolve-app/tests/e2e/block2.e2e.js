@@ -160,7 +160,7 @@ const login = async (email) => (await (await fetch(`${URL_}/auth/v1/token?grant_
   await cli.type('Conte como foi (opcional)', 'Pontual e caprichoso, recomendo!');
   await cli.page.screenshot({ path: SHOTS + 'b2-2-avaliar.png' });
   await cli.press('Enviar avaliação');
-  ok(await cli.waitText('Obrigado pela avaliação!') && await cli.waitText('“Pontual e caprichoso, recomendo!”'), 'avaliação enviada com o comentário');
+  ok(await cli.waitText('Obrigado pela avaliação') && await cli.waitText('“Pontual e caprichoso, recomendo!”'), 'avaliação enviada com o comentário');
 
   await pro.page.bringToFront();
   await pro.page.goto(`${APP}/pedido/${order.id}`, { waitUntil: 'networkidle0' });

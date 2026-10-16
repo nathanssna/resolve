@@ -93,7 +93,7 @@ export default function Profissionais() {
               avatarUrl={p.avatarUrl}
               rating={p.rating}
               reviews={p.reviews}
-              meta={[dist?.get(p.id) ? `${dist.get(p.id)!.km} km` : null, formatExperience(p.years), `${formatCount(p.jobs)} serviços`].filter(Boolean).join(' · ')}
+              meta={[dist?.get(p.id) ? `${dist.get(p.id)!.km} km` : null, formatExperience(p.years), `${formatCount(p.jobs)} ${p.jobs === 1 ? 'serviço' : 'serviços'}`].filter(Boolean).join(' · ')}
               aside={`~${p.replyMin} min`}
               asideLabel="para responder"
               badge={p.id === best ? 'RECOMENDADO' : p.id === fastest ? 'RESPONDE RÁPIDO' : undefined}

@@ -67,7 +67,7 @@ export default function Telefone() {
         </ScrollView>
         <StickyFooter>
           <Button variant="primary" block iconLeft="check" disabled={!valid || !changed || saving} onPress={save}>
-            {saving ? 'Salvando…' : digits ? 'Salvar telefone' : 'Remover telefone'}
+            {saving ? 'Salvando…' : digits || !profile?.phone ? 'Salvar telefone' : 'Remover telefone'}
           </Button>
         </StickyFooter>
       </KeyboardAvoidingView>

@@ -123,7 +123,7 @@ function MessageCard({ conv }: { conv: Conversation }) {
         </Text>
       </View>
       <View style={styles.count}>
-        <Text variant="overline" style={{ fontSize: 11 }}>
+        <Text variant="overline">
           {conv.unread}
         </Text>
       </View>
@@ -399,7 +399,7 @@ export function ProHome() {
         <View style={styles.heroTop}>
           <View style={{ flex: 1 }}>
             <Text variant="display" accessibilityRole="header" numberOfLines={1}>
-              {`Olá, ${firstName(profile?.full_name || 'profissional')}!`}
+              {`Olá, ${firstName(profile?.full_name || 'profissional')}`}
             </Text>
           </View>
           <Pressable accessibilityRole="button" accessibilityLabel="Meu perfil" onPress={() => router.push('/perfil')}>
