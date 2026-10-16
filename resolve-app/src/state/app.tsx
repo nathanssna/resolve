@@ -140,9 +140,6 @@ export type Order = {
   reschedule?: { when: string; label: string; byMe: boolean };
 };
 
-/** Serviço esperando o cliente confirmar se foi feito. */
-export const awaitingClient = (o: Order) => o.status === 'combinado' && !!o.doneAt;
-
 /** Agenda: o serviço mais próximo primeiro; sem data (propostas antigas), no fim, por ordem de combinado. */
 export const soonestFirst = (a: Order, b: Order) =>
   (a.schedule ? scheduleOrder(a.schedule) : Infinity) - (b.schedule ? scheduleOrder(b.schedule) : Infinity) || a.createdAt - b.createdAt;

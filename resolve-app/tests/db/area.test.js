@@ -9,7 +9,7 @@ let pass = 0, fail = 0; const ok = (c, m) => { c ? pass++ : fail++; console.log(
   const run = (f) => db.query(fs.readFileSync(f, 'utf8').replace(/create extension if not exists pg_net;/, ''));
   await run(__dirname + '/bootstrap.sql');
   for (const m of fs.readdirSync(`${APP}/migrations`).sort()) await run(`${APP}/migrations/${m}`);
-  await run(`${APP}/seed.sql`); await run(`${APP}/seeds/demo_professionals.sql`); await run(`${APP}/seeds/demo_professionals.sql`);
+  await run(`${APP}/seed.sql`); await run(`${__dirname}/fixtures/professionals.sql`); await run(`${__dirname}/fixtures/professionals.sql`);
   const as = async (uid, sql, params = []) => {
     await db.query('begin');
     try { await db.query(`set local role ${uid ? 'authenticated' : 'anon'}`); await db.query(`select set_config('request.jwt.claim.sub', $1, true)`, [uid ?? '']); const r = await db.query(sql, params); await db.query('commit'); return r; }

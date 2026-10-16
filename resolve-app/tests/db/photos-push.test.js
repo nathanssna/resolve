@@ -9,7 +9,7 @@ let pass = 0, fail = 0; const ok = (c, m) => { c ? pass++ : fail++; console.log(
   const run = (f, tx = (s) => s) => db.query(tx(fs.readFileSync(f, 'utf8')));
   await run(__dirname + '/bootstrap.sql');
   for (const m of fs.readdirSync(`${APP}/migrations`).sort()) await run(`${APP}/migrations/${m}`, (s) => s.replace(/create extension if not exists pg_net;/, ''));
-  await run(`${APP}/seed.sql`); await run(`${APP}/seeds/demo_professionals.sql`); await run(`${APP}/seeds/demo_bot.sql`);
+  await run(`${APP}/seed.sql`); await run(`${__dirname}/fixtures/professionals.sql`);
   console.log('4 migrations + seeds');
 
   const as = async (uid, sql, params = []) => {
@@ -69,10 +69,13 @@ let pass = 0, fail = 0; const ok = (c, m) => { c ? pass++ : fail++; console.log(
   await as(cli, "select public.register_push_token('ExponentPushToken[cliente]', 'android')");
   await db.query('delete from net.calls');
   ok(!(await req(cli, conv, [`${conv}/1.jpg`, `${conv}/2.jpg`])).error, 'pedido com 2 fotos da própria conversa');
+  ok((await db.query('select count(*)::int n from net.calls')).rows[0].n === 0, 'sem push para o próprio cliente (nem para quem não tem aparelho)');
+  await as(marcos, "insert into public.messages (conversation_id, body) values ($1, 'Oi! Vi seu pedido e consigo te ajudar.')", [conv]);
+  await as(marcos, "insert into public.proposals (conversation_id, amount, scheduled_label) values ($1, 120, 'Hoje, manhã')", [conv]);
   const calls = (await db.query('select body from net.calls order by id')).rows.map((r) => r.body);
   const flat = calls.flat();
-  ok(calls.length === 2, `2 envios para a Expo (saudação + proposta do robô), sem push para o próprio cliente: ${calls.length}`);
-  ok(flat[0]?.to === 'ExponentPushToken[cliente]' && flat[0]?.title === 'Marcos Oliveira' && flat[0]?.body === 'Oi! Aqui é Marcos. Vi seu pedido e consigo te ajudar.', 'saudação: título com o nome, texto da mensagem');
+  ok(calls.length === 2, `2 envios para a Expo (mensagem + proposta do profissional): ${calls.length}`);
+  ok(flat[0]?.to === 'ExponentPushToken[cliente]' && flat[0]?.title === 'Marcos Oliveira' && flat[0]?.body === 'Oi! Vi seu pedido e consigo te ajudar.', 'mensagem: título com o nome, texto da mensagem');
   ok(flat[1]?.body === 'Proposta: R$ 120,00 · Hoje, manhã', `proposta: "${flat[1]?.body}"`);
   ok(flat[0]?.data?.url === `/chat/${conv}` && flat[0]?.channelId === 'mensagens', 'abre o chat certo ao tocar; canal "mensagens"');
   ok((await db.query("select url from net.calls limit 1")).rows[0].url === 'https://exp.host/--/api/v2/push/send', 'URL da API de push da Expo');
@@ -80,8 +83,7 @@ let pass = 0, fail = 0; const ok = (c, m) => { c ? pass++ : fail++; console.log(
   await db.query('delete from net.calls');
   const pid = (await as(cli, "select id from public.proposals where conversation_id = $1 and status = 'pending'", [conv])).rows[0].id;
   await as(cli, 'select public.accept_proposal($1)', [pid]);
-  const c2 = (await db.query('select body from net.calls')).rows.map((r) => r.body).flat();
-  ok(c2.length === 1 && c2[0].body.startsWith('Perfeito, combinado!'), 'aceite: o cliente (quem aceitou) não recebe o aviso de sistema, só a resposta do robô');
+  ok((await db.query('select count(*)::int n from net.calls')).rows[0].n === 0, 'aceite: o cliente (quem aceitou) não recebe o aviso de sistema');
 
   await db.query('delete from net.calls');
   await as(pro, "select public.register_push_token('ExponentPushToken[pro]', 'ios')");

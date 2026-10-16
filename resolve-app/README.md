@@ -1,7 +1,7 @@
-# Resolve — app
+# Rezolveaê — app
 
-App de serviços para a casa, feito com **Expo (SDK 57) + React Native + TypeScript + Expo Router**.
-Visual e componentes seguem o design system **Resolve**.
+App de serviços para a casa, feito com **Expo (SDK 57) + React Native + TypeScript + Expo Router**,
+com back-end no **Supabase** (Postgres, login por código, Realtime, Storage e pg_cron).
 
 ## Rodar no seu celular (5 minutos)
 
@@ -48,19 +48,21 @@ A negociação acontece **no chat, entre o cliente e o profissional**. A platafo
 | Pedidos / detalhe | `src/app/(tabs)/pedidos.tsx` · `src/app/pedido/[id].tsx` |
 | Perfil / Favoritos | `src/app/(tabs)/perfil.tsx` · `src/app/(tabs)/favoritos.tsx` |
 
-> **Simulação:** as respostas do profissional no chat são simuladas em `src/state/app.tsx` (`proSays`). Se você mandar uma mensagem com um valor (ex.: "faz por 120?"), ele responde com uma proposta nova. Com back-end, troque isso por mensagens em tempo real.
-
 ## Estrutura
 
 ```
 src/
   app/          telas (cada arquivo é uma rota do Expo Router)
-  components/   componentes do design system (Button, ServiceCard, ProfessionalCard…)
+  components/   componentes do design system (Button, ServiceCard, Chat, ServicePanel…)
+  screens/      telas grandes reaproveitadas pelas rotas (painel do profissional, admin)
+  state/        dados do Supabase: auth, catálogo, conversas/pedidos (app.tsx, com Realtime), endereços
+  lib/          cliente Supabase, tipos gerados do banco, fotos, push, CEP
+  content/      textos: termos, privacidade, Ajuda, dados da empresa
   theme/        tokens.ts — cores, espaçamentos, raios, tipografia
-  data/         catalog.ts — dados de exemplo (trocar pela API)
-  state/        app.tsx — conversas, propostas, pedidos e favoritos (em memória)
-  utils/        formatação no padrão brasileiro (4,8 · 1.245 · 2,3 km)
-assets/logo/    logo em vetor (SVG) — o app usa src/components/Logo.tsx
+  utils/        datas e períodos, ordem dos profissionais, formatação no padrão brasileiro
+supabase/       migrations (o banco inteiro), seed.sql (catálogo de serviços)
+tests/          testes do banco e de ponta a ponta (veja tests/README.md)
+assets/logo/    logo (PNG) e a arte original do R — o app usa src/components/Logo.tsx
 ```
 
 ### Regras do design system
@@ -73,18 +75,11 @@ assets/logo/    logo em vetor (SVG) — o app usa src/components/Logo.tsx
 - Ícones de serviço usam o estilo duotone (`<Icon duotone />`), dentro de blocos com cantos bem arredondados.
 - Os ícones são da biblioteca Lucide (`<Icon name="…" />`). Para adicionar um, copie o SVG em https://lucide.dev para `src/components/iconPaths.ts`.
 
-## O que trocar antes de publicar
+## Antes de publicar
 
-- **Logo:** agora é vetor (`src/components/Logo.tsx` e `assets/logo/*.svg`), refeito a partir do mockup. Os PNGs antigos em `assets/images/` não são mais usados e podem ser apagados.
-- **Ícone do app e splash:** `assets/icon.png`, `assets/splash-icon.png` e os `android-icon-*` ainda são os padrões do Expo.
-- **Textos e números de exemplo** em `src/data/catalog.ts` e os valores das propostas simuladas em `src/state/app.tsx`.
-- **Fonte:** usei a Plus Jakarta Sans (Google Fonts) como substituta da fonte do mockup.
-
-## Próximos passos sugeridos
-
-1. **Back-end e login.** Supabase ou Firebase são os caminhos mais rápidos. Troque `src/data/catalog.ts` por chamadas à API, mantendo os mesmos tipos.
-2. **Telas que faltam:** perfil público do profissional, login/cadastro, envio de fotos no pedido e área do profissional (receber pedidos e mandar propostas).
-3. **Publicar nas lojas** com o EAS: `npx eas-cli@latest build` gera os apps para iOS e Android na nuvem, sem precisar de Xcode ou Android Studio. Você vai precisar de uma conta Apple Developer e de uma conta Google Play.
+- **Textos legais:** razão social, CNPJ e contato em `src/content/company.ts`; ainda há `[placeholders]` em `src/content/legal.ts`.
+- **E-mail de login:** configurar SMTP próprio no Supabase (o padrão tem limite de envios por hora).
+- **Lojas:** build com o EAS (`npx eas-cli@latest build`), push real exige development build e credenciais FCM/APNs.
 
 ## Painel de moderação (no app)
 
@@ -118,5 +113,6 @@ pedidos de selo Verificado, com as ações: aprovar/recusar o selo, resolver den
 ```bash
 npx expo start           # servidor de desenvolvimento
 npm run typecheck        # checagem de tipos
+npm run lint             # lint
 npx expo install <pkg>   # sempre use este para adicionar bibliotecas
 ```

@@ -1,12 +1,8 @@
 -- =============================================================================
--- Profissionais de DEMONSTRAÇÃO (os mesmos do antigo src/data/catalog.ts).
---
--- Servem para testar as listas até existir o modo profissional (etapa F).
--- São contas sem senha com e-mail @exemplo.invalid: ninguém consegue entrar
--- nelas. Todas têm raw_app_meta_data.demo = true.
+-- Profissionais de exemplo, só para os testes do banco (tests/db).
+-- Contas sem senha com e-mail @exemplo.invalid e raw_app_meta_data.demo = true.
 --
 -- Pode rodar de novo (ids fixos, sem duplicar).
--- Para apagar tudo: supabase/demo_cleanup.sql
 -- =============================================================================
 
 create temporary table _demo_pros (

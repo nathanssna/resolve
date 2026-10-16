@@ -99,8 +99,6 @@ export function formatSchedule(s: Schedule, now = Date.now()) {
   return `${head}, ${AT[s.period]}`;
 }
 
-export const isToday = (s: Schedule, now = Date.now()) => daysFrom(s.day, now) === 0;
-
 /** Prazo para cancelar sem consequência, antes do começo do período. */
 export const CANCEL_NOTICE_HOURS = 12;
 

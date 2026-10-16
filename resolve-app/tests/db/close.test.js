@@ -10,7 +10,7 @@ let pass = 0, fail = 0; const ok = (c, m) => { c ? pass++ : fail++; console.log(
   const run = (f) => db.query(fs.readFileSync(f, 'utf8').replace(/create extension if not exists pg_net;/, ''));
   await run(__dirname + '/bootstrap.sql');
   for (const m of fs.readdirSync(`${APP}/migrations`).sort()) await run(`${APP}/migrations/${m}`);
-  await run(`${APP}/seed.sql`); await run(`${APP}/seeds/demo_professionals.sql`); await run(`${APP}/seeds/demo_bot.sql`);
+  await run(`${APP}/seed.sql`); await run(`${__dirname}/fixtures/professionals.sql`);
   const as = async (uid, sql, params = []) => {
     await db.query('begin');
     try { await db.query(`set local role ${uid ? 'authenticated' : 'anon'}`); await db.query(`select set_config('request.jwt.claim.sub', $1, true)`, [uid ?? '']); const r = await db.query(sql, params); await db.query('commit'); return r; }
@@ -67,17 +67,6 @@ let pass = 0, fail = 0; const ok = (c, m) => { c ? pass++ : fail++; console.log(
   ok((await one(pro, 'select public.get_contact_phone($1) p', [conv])).p === '+5511912345678', 'profissional vê o telefone (serviço concluído)');
   ok(!(await as(cli, "insert into public.favorites (service_id) values ('limpeza')")).error && (await as(cli, 'select service_id from public.favorites')).rows.length === 1, 'favorita');
   ok((await as(cli, "delete from public.favorites where service_id = 'limpeza'")).rowCount === 1, 'desfavorita');
-
-  console.log('\nRobô de demonstração');
-  const marcos = (await db.query("select md5('resolve-demo:marcos')::uuid id")).rows[0].id;
-  const dconv = (await one(cli, 'select * from public.open_conversation($1)', [marcos])).id;
-  const dr = (await one(cli, "select * from public.create_request($1, 'encanador', 'Ralo', 'Hoje')", [dconv])).request_id;
-  await one(cli, 'select 1 x from public.close_request($1)', [dr]);
-  const dm = (await as(cli, 'select body from public.messages where conversation_id = $1 order by created_at desc limit 1', [dconv])).rows[0].body;
-  ok(dm === 'Tudo bem! Se precisar, é só chamar por aqui.', `robô responde ao cancelamento: ${dm}`);
-  await one(cli, "insert into public.messages (conversation_id, body) values ($1, 'faz por 50?') returning 1 x", [dconv]);
-  const dm2 = (await as(cli, 'select body from public.messages where conversation_id = $1 order by created_at desc limit 1', [dconv])).rows[0].body;
-  ok(dm2 === 'Combinado! Qualquer coisa é só chamar por aqui.', 'valor no texto não reabre pedido cancelado');
 
   console.log(`\n${pass} ok, ${fail} falhas`); await db.end(); process.exit(fail ? 1 : 0);
 })().catch((e) => { console.error('ERRO', e.message, e.where ?? ''); process.exit(2); });

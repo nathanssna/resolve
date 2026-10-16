@@ -2,7 +2,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 
 import { colors, fonts, radius, shadows, spacing } from '@/theme/tokens';
 import { formatDecimal } from '@/utils/format';
-import { Avatar } from './ProfessionalCard';
+import { Avatar } from './Avatar';
 import { Icon, type IconName } from './Icon';
 import { Badge } from './Surfaces';
 import { Text } from './Text';

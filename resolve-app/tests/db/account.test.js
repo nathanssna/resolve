@@ -10,7 +10,7 @@ let pass = 0, fail = 0; const ok = (c, m) => { c ? pass++ : fail++; console.log(
   const run = (f) => db.query(fs.readFileSync(f, 'utf8').replace(/create extension if not exists pg_net;/, ''));
   await run(__dirname + '/bootstrap.sql');
   for (const m of fs.readdirSync(`${APP}/migrations`).sort()) await run(`${APP}/migrations/${m}`);
-  await run(`${APP}/seed.sql`); await run(`${APP}/seeds/demo_professionals.sql`); await run(`${APP}/seeds/demo_bot.sql`);
+  await run(`${APP}/seed.sql`); await run(`${__dirname}/fixtures/professionals.sql`);
   const as = async (uid, sql, params = []) => {
     await db.query('begin');
     try { await db.query(`set local role ${uid ? 'authenticated' : 'anon'}`); await db.query(`select set_config('request.jwt.claim.sub', $1, true)`, [uid ?? '']); const r = await db.query(sql, params); await db.query('commit'); return r; }
@@ -100,8 +100,6 @@ let pass = 0, fail = 0; const ok = (c, m) => { c ? pass++ : fail++; console.log(
   await one(x, 'select * from public.open_conversation($1)', [marcos]);
   await db.query('delete from auth.users where id = $1', [x]);
   ok(await n('select count(*) n from public.profiles where id = $1', [x]) === 0 && await n('select count(*) n from public.conversations where client_id = $1', [x]) === 0, 'apagar no painel remove profile e conversas (como antes)');
-  await run(`${APP}/demo_cleanup.sql`);
-  ok(await n("select count(*) n from public.professionals p join public.profiles pr on pr.id = p.id where pr.full_name = 'Marcos Oliveira'") === 0, 'demo_cleanup.sql continua apagando os demo');
 
   console.log(`\n${pass} ok, ${fail} falhas`); await db.end(); process.exit(fail ? 1 : 0);
 })().catch((e) => { console.error('ERRO', e.message, e.where ?? ''); process.exit(2); });

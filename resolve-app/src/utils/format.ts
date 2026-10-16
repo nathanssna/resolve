@@ -8,11 +8,6 @@ export function formatCount(n: number) {
   return String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
 }
 
-/** 2.3 → "2,3 km de você" */
-export function formatDistance(km: number) {
-  return `${formatDecimal(km)} km de você`;
-}
-
 /** 1 → "1 ano de experiência", 5 → "5 anos de experiência" */
 export function formatExperience(years: number) {
   return `${years} ${years === 1 ? 'ano' : 'anos'} de experiência`;

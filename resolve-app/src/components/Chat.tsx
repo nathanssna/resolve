@@ -5,7 +5,7 @@ import { colors, fonts, radius, shadows, spacing } from '@/theme/tokens';
 import { formatBRL, formatTime } from '@/utils/format';
 import { Icon, type IconName } from './Icon';
 import { PhotoThumbs } from './Photos';
-import { Avatar } from './ProfessionalCard';
+import { Avatar } from './Avatar';
 import { Badge } from './Surfaces';
 import { Text } from './Text';
 

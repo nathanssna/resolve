@@ -173,7 +173,9 @@ async function main() {
   ok(!!(await as(cli, 'select public.rate_order($1, 5)', [order.id])).error, 'não avalia duas vezes');
   let pr = (await db.query('select rating, review_count from public.professionals where id = $1', [pro])).rows[0];
   ok(Number(pr.rating) === 4 && pr.review_count === 1, `nota média atualizada (${pr.rating}, ${pr.review_count})`);
-  ok((await as(null, 'select * from public.reviews')).rows.length === 1, 'avaliações são públicas');
+  ok((await as(null, 'select * from public.reviews')).error, 'anon não lê a tabela de avaliações');
+  ok((await as(other, 'select * from public.reviews')).rows.length === 0, 'quem não participou não lê a avaliação');
+  ok((await as(cli, 'select * from public.reviews')).rows.length === 1 && (await as(pro, 'select * from public.reviews')).rows.length === 1, 'cliente e profissional leem a avaliação');
 
   // Segundo pedido na mesma conversa: recusar e cancelar
   const conv2 = (await one(cli, 'select * from public.open_conversation($1)', [pro])).id;
@@ -197,6 +199,16 @@ async function main() {
   const rls = (await db.query("select count(*)::int as n from pg_tables where schemaname = 'public' and not rowsecurity")).rows[0].n;
   ok(rls === 0, 'RLS ativo em todas as tabelas de public');
   ok(!!(await as(cli, 'select private.handle_new_user()')).error, 'funções internas não são chamáveis');
+
+  console.log('\nPermissões (segunda camada além do RLS)');
+  ok(!!(await as(null, "insert into public.services (id, title, icon) values ('x', 'X', 'wrench')")).error, 'anon não insere serviço');
+  ok(!!(await as(cli, "update public.services set title = 'X'")).error, 'usuário não altera o catálogo');
+  ok(!!(await as(cli, "insert into public.support_messages (user_id, body) values ($1, 'oi')", [cli])).error, 'mensagem ao suporte só pela RPC');
+  ok(!!(await as(cli, 'delete from public.messages')).error, 'ninguém apaga mensagens');
+  const trunc = (await db.query("select count(*)::int n from pg_class c join pg_namespace s on s.oid = c.relnamespace where s.nspname = 'public' and c.relkind = 'r' and (has_table_privilege('anon', c.oid, 'truncate') or has_table_privilege('authenticated', c.oid, 'truncate'))")).rows[0].n;
+  ok(trunc === 0, `nenhuma tabela aceita TRUNCATE de anon/authenticated (${trunc})`);
+  const anonWrites = (await db.query("select count(*)::int n from pg_class c join pg_namespace s on s.oid = c.relnamespace where s.nspname = 'public' and c.relkind = 'r' and (has_table_privilege('anon', c.oid, 'insert') or has_table_privilege('anon', c.oid, 'update') or has_table_privilege('anon', c.oid, 'delete'))")).rows[0].n;
+  ok(anonWrites === 0, `anon não escreve em nenhuma tabela (${anonWrites})`);
 
   console.log(`\n${pass} ok, ${fail} falhas`);
   await db.end();

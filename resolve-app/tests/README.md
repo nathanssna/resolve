@@ -1,9 +1,10 @@
-# Testes do Resolve
+# Testes da Rezolveaê
 
 Duas partes, fora do app (não entram no bundle):
 
 - **`db/`**: testes do banco. Cada suíte cria um banco do zero num Postgres 17 local,
-  aplica todas as migrations de `supabase/migrations` e os seeds, e confere RLS, RPCs,
+  aplica todas as migrations de `supabase/migrations` e o `seed.sql` (algumas suítes
+  também carregam `db/fixtures/professionals.sql`, 13 profissionais de exemplo), e confere RLS, RPCs,
   triggers e regras de negócio como cliente, profissional, estranho e anônimo.
   O `bootstrap.sql` imita o mínimo do Supabase (`auth`, `storage`, `net`, papéis) e
   `db/stubs` traz um `pg_cron` falso (o `db:start` instala no Postgres embutido).
@@ -24,9 +25,7 @@ npm run db:stop
 
 | Suíte | O que cobre |
 |---|---|
-| `schema` | cadastro, catálogo, ficha, endereços, conversa, propostas, pedido, avaliação, realtime |
-| `bot` | robô de demonstração (seeds/demo_bot.sql) |
-| `demo` | seed dos profissionais de demonstração e `demo_cleanup.sql` |
+| `schema` | cadastro, catálogo, ficha, endereços, conversa, propostas, pedido, avaliação, realtime, permissões das tabelas |
 | `photos-push` | buckets, políticas de Storage e push pela API da Expo |
 | `addr` | endereço completo só depois de combinar |
 | `merge` | migration de "uma conversa por profissional" sobre dados antigos |
@@ -65,7 +64,6 @@ npm run e2e:cleanup            # apaga as contas (sempre, no fim)
 | `pair` | dois pedidos ao mesmo profissional na mesma conversa |
 | `block2` | favoritos, telefone, perfil, escolha de serviço, cancelar/recusar, avaliação |
 | `block3` | termos, denunciar, bloquear, excluir conta |
-| `area` | lista por distância e área na ficha |
 | `alert` | quando uma mensagem deixa o painel do profissional em alerta |
 | `notif` | Notificações (preferências gravadas no banco) e Ajuda, para cliente e profissional |
 | `chat` | "Negociar" preenche o campo; "digitando…" com os pontos animados |
