@@ -17,7 +17,6 @@ import {
   PhotoViewer,
   ProposalCard,
   ProposalSheet,
-  serviceStage,
   RequestCard,
   SystemNote,
   Text,
@@ -35,6 +34,7 @@ import { useSignedUrls } from '@/state/photoUrls';
 import { useTyping } from '@/state/typing';
 import { colors, radius, shadows, spacing } from '@/theme/tokens';
 import { formatBRL, formatDayDivider } from '@/utils/format';
+import { serviceStage } from '@/utils/serviceStage';
 import { supabase } from '@/lib/supabase';
 import { confirm, notify } from '@/utils/dialog';
 

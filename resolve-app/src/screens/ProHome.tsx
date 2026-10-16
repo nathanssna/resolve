@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { Pressable, RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { Avatar, Badge, Button, CatalogFallback, Icon, ProgressBar, serviceStage, Text, type ServiceStage } from '@/components';
+import { Avatar, Badge, Button, CatalogFallback, Icon, ProgressBar, Text } from '@/components';
 import { supabase } from '@/lib/supabase';
 import { soonestFirst, useApp, type Conversation, type Job, type Order } from '@/state/app';
 import { useAuth } from '@/state/auth';
@@ -11,6 +11,7 @@ import { useCatalog, type Professional } from '@/state/catalog';
 import { colors, fonts, radius, spacing } from '@/theme/tokens';
 import { confirm, notify } from '@/utils/dialog';
 import { firstName, formatBRL, formatDay, timeAgo } from '@/utils/format';
+import { serviceStage, type ServiceStage } from '@/utils/serviceStage';
 
 /*
  * Painel do profissional: o que ele tem que fazer agora.

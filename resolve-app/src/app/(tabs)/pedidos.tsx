@@ -3,11 +3,12 @@ import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { Badge, Button, CatalogFallback, EmptyState, Icon, Segmented, serviceStage, Text } from '@/components';
+import { Badge, Button, CatalogFallback, EmptyState, Icon, Segmented, Text } from '@/components';
 import { soonestFirst, useApp, type Order } from '@/state/app';
 import { useCatalog } from '@/state/catalog';
 import { colors, radius, shadows, spacing } from '@/theme/tokens';
 import { formatBRL } from '@/utils/format';
+import { serviceStage } from '@/utils/serviceStage';
 
 const statusBadge: Record<Order['status'], { tone: 'brand' | 'success' | 'muted'; label: string }> = {
   combinado: { tone: 'brand', label: 'COMBINADO' },

@@ -61,7 +61,7 @@ src/
   theme/        tokens.ts — cores, espaçamentos, raios, tipografia
   utils/        datas e períodos, ordem dos profissionais, formatação no padrão brasileiro
 supabase/       migrations (o banco inteiro), seed.sql (catálogo de serviços)
-tests/          testes do banco e de ponta a ponta (veja tests/README.md)
+tests/          testes do banco e de ponta a ponta (veja tests/README.md); os da lógica ficam em src/**/__tests__
 assets/logo/    logo (PNG) e a arte original do R — o app usa src/components/Logo.tsx
 ```
 
@@ -114,5 +114,6 @@ pedidos de selo Verificado, com as ações: aprovar/recusar o selo, resolver den
 npx expo start           # servidor de desenvolvimento
 npm run typecheck        # checagem de tipos
 npm run lint             # lint
+npm test                 # testes da lógica do app (src/**/__tests__)
 npx expo install <pkg>   # sempre use este para adicionar bibliotecas
 ```

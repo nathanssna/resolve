@@ -16,11 +16,9 @@ import {
   PhotoViewer,
   RescheduleSheet,
   ServicePanel,
-  serviceStage,
   Text,
   Timeline,
   TopBar,
-  type ServiceAction,
   type TimelineStep,
 } from '@/components';
 import { authErrorMessage } from '@/lib/authErrors';
@@ -32,6 +30,7 @@ import { useCatalog } from '@/state/catalog';
 import { colors, radius, spacing } from '@/theme/tokens';
 import { firstName, formatBRL, formatDecimal } from '@/utils/format';
 import { cancelIsLate } from '@/utils/schedule';
+import { serviceStage, type ServiceAction } from '@/utils/serviceStage';
 import { notify, confirm } from '@/utils/dialog';
 
 export default function PedidoDetalhe() {

@@ -1,4 +1,4 @@
-# Confere o app (tipos e lint) e roda os testes do banco a cada push e pull request.
+# Confere o app (tipos, lint e testes da lógica) e roda os testes do banco a cada push e pull request.
 name: CI
 
 on:
@@ -22,6 +22,7 @@ jobs:
       - run: npm ci
       - run: npm run typecheck
       - run: npm run lint
+      - run: npm test
 
   db:
     runs-on: ubuntu-latest

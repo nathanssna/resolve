@@ -12,7 +12,6 @@ import {
   PromoCard,
   SearchTrigger,
   SectionHeader,
-  serviceStage,
   ServiceTile,
   Text,
 } from '@/components';
@@ -25,6 +24,7 @@ import { ProHome } from '@/screens/ProHome';
 import { colors, fonts, radius, spacing } from '@/theme/tokens';
 import { firstName, formatBRL, formatDecimal } from '@/utils/format';
 import { sortProfessionals } from '@/utils/rankProfessionals';
+import { serviceStage } from '@/utils/serviceStage';
 import { notify } from '@/utils/dialog';
 
 /** Profissional vê o painel dele; cliente, o catálogo. */

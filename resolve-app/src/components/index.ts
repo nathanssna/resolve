@@ -21,4 +21,4 @@ export { ProposalSheet } from './ProposalSheet';
 export { goBack, IconButton, TopBar, type TopBarAction } from './TopBar';
 export { SchedulePicker } from './SchedulePicker';
 export { DoneSheet, RescheduleSheet } from './ServiceSheets';
-export { serviceStage, ServicePanel, type ServiceAction, type ServiceStage } from './ServicePanel';
+export { ServicePanel } from './ServicePanel';
