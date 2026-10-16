@@ -30,7 +30,7 @@ const CLIENT: HelpSection = {
     },
     {
       q: 'Quem vê meu endereço e telefone?',
-      a: 'Antes de combinar, o profissional vê só o bairro e a cidade. O endereço completo e o telefone aparecem para ele depois que você aceita uma proposta.',
+      a: 'Antes de combinar, o profissional vê só o bairro e a cidade. O endereço completo e o telefone aparecem para ele depois que você aceita uma proposta. Até lá, telefone, e-mail e perfis escritos no chat aparecem como "[contato oculto]".',
     },
     {
       q: 'Como cancelo ou mudo a data?',
@@ -81,7 +81,7 @@ const PRO: HelpSection = {
     },
     {
       q: 'Quando vejo o endereço e o telefone do cliente?',
-      a: 'Depois que o cliente aceita sua proposta. Antes disso, você vê só o bairro e a cidade.',
+      a: 'Depois que o cliente aceita sua proposta. Antes disso, você vê só o bairro e a cidade, e telefone, e-mail e perfis escritos no chat aparecem como "[contato oculto]".',
     },
     {
       q: 'Como ganho o selo Verificado?',

@@ -7,6 +7,7 @@ import { colors, radius, spacing } from '@/theme/tokens';
 import { parseBRLInput } from '@/utils/format';
 import { periodEnded, soonest, type Schedule } from '@/utils/schedule';
 import { Button } from './Button';
+import { ContactNotice } from './Chat';
 import { Field } from './Fields';
 import { pickerDays, SchedulePicker } from './SchedulePicker';
 import { OptionChip } from './Surfaces';
@@ -32,7 +33,10 @@ export function ProposalSheet({
   initialJobId,
   onClose,
   onSubmit,
+  hidesContact = false,
 }: {
+  /** Antes de combinar: avisa que contato na observação vai escondido. */
+  hidesContact?: boolean;
   /** Pedido que já vem escolhido (senão, o mais recente). */
   initialJobId?: string;
   visible: boolean;
@@ -141,6 +145,7 @@ export function ProposalSheet({
             returnKeyType="done"
             onSubmitEditing={Keyboard.dismiss}
           />
+          {hidesContact ? <ContactNotice text={note} /> : null}
           {tooHigh ? (
             <Text variant="bodySm" color={colors.danger} accessibilityLiveRegion="polite">
               O valor máximo de uma proposta é R$ 50.000,00.

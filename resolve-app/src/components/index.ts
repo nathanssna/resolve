@@ -1,7 +1,7 @@
 export { AuthLayout } from './AuthLayout';
 export { Button } from './Button';
 export { Card } from './Card';
-export { Bubble, Composer, ConversationRow, ProposalCard, RequestCard, SystemNote, TypingBubble } from './Chat';
+export { Bubble, Composer, ContactNotice, ConversationRow, ProposalCard, RequestCard, SystemNote, TypingBubble } from './Chat';
 export { FilterChip, Tag } from './Chips';
 export { ActiveOrderCard, ProfessionalOption, ProgressBar, PromoCard, ServiceTile, Timeline, type TimelineStep } from './Commerce';
 export { Field, SearchTrigger } from './Fields';

@@ -1,0 +1,26 @@
+{
+  "hide": [
+    ["me chama no (11) 98765-4321", "me chama no [contato oculto]"],
+    ["11987654321", "[contato oculto]"],
+    ["+55 11 9 8765 4321 whats", "[contato oculto] whats"],
+    ["liga 98765-4321", "liga [contato oculto]"],
+    ["fixo 3456-7890", "fixo [contato oculto]"],
+    ["11.98765.4321", "[contato oculto]"],
+    ["cpf 123.456.789-09", "cpf [contato oculto]"],
+    ["manda pra joao.silva@gmail.com", "manda pra [contato oculto]"],
+    ["insta @marcos.reparos", "insta [contato oculto]"],
+    ["https://wa.me/5511987654321", "[contato oculto]"],
+    ["chama em api.whatsapp.com/send?phone=55 aí", "chama em [contato oculto] aí"],
+    ["11 98765\n4321", "[contato oculto]"]
+  ],
+  "keep": [
+    "Posso ir amanhã às 14:30",
+    "Fica R$ 1.500,00 com material",
+    "Fica 1.500.000 ou 15.000",
+    "CEP 01310-100",
+    "Dia 17/10/2026, entre 8 e 12",
+    "Torneira de 3/4, 2 peças de 25 mm",
+    "Apartamento 1203, bloco 4",
+    "Pode me mandar foto? @ tarde fica bom"
+  ]
+}

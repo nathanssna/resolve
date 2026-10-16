@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Animated, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 
 import { colors, fonts, radius, shadows, spacing } from '@/theme/tokens';
+import { hasContact } from '@/utils/contact';
 import { formatBRL, formatTime } from '@/utils/format';
 import { Icon, type IconName } from './Icon';
 import { PhotoThumbs } from './Photos';
@@ -227,6 +228,19 @@ export function TypingBubble() {
   );
 }
 
+/** Aviso quando o texto tem telefone, e-mail ou perfil e ainda não há serviço combinado (o banco esconde). */
+export function ContactNotice({ text }: { text: string }) {
+  if (!hasContact(text)) return null;
+  return (
+    <View style={styles.contactNotice} accessibilityLiveRegion="polite">
+      <Icon name="shield-check" size={16} strokeWidth={2.25} color={colors.inkMuted} />
+      <Text variant="caption" color={colors.inkMuted} style={{ flex: 1 }}>
+        Telefone, e-mail e perfis vão escondidos até vocês combinarem um serviço. Depois do aceite, o botão Ligar libera o telefone.
+      </Text>
+    </View>
+  );
+}
+
 /** Campo de mensagem com respostas rápidas (o toque preenche o campo; enviar é com o botão). */
 export function Composer({
   onSend,
@@ -234,8 +248,11 @@ export function Composer({
   quickReplies = [],
   prefill,
   placeholder = 'Escreva uma mensagem',
+  hidesContact = false,
 }: {
   placeholder?: string;
+  /** Antes de combinar: avisa que telefone, e-mail e perfis vão escondidos (o banco esconde). */
+  hidesContact?: boolean;
   onSend: (text: string) => void;
   /** Chamado enquanto a pessoa digita (para o "digitando…" do outro lado). */
   onTyping?: () => void;
@@ -282,6 +299,7 @@ export function Composer({
           ))}
         </ScrollView>
       ) : null}
+      {hidesContact ? <ContactNotice text={text} /> : null}
       <View style={styles.composer}>
         <TextInput
           ref={ref}
@@ -414,6 +432,7 @@ const styles = StyleSheet.create({
   composerWrap: { gap: spacing[2] },
   quick: { flexDirection: 'row', gap: spacing[2] },
   quickChip: { height: 34, paddingHorizontal: spacing[3], borderRadius: radius.pill, backgroundColor: colors.surfaceMuted, justifyContent: 'center' },
+  contactNotice: { flexDirection: 'row', alignItems: 'flex-start', gap: spacing[2], paddingHorizontal: spacing[2] },
   composer: { flexDirection: 'row', alignItems: 'center', gap: spacing[2] },
   composerInput: {
     flex: 1,

@@ -408,7 +408,7 @@ export default function Chat() {
                   {hasPending ? 'Enviar nova proposta' : 'Enviar proposta'}
                 </Button>
               ) : null}
-              <Composer quickReplies={quick} prefill={prefill} onSend={send} onTyping={notifyTyping} />
+              <Composer quickReplies={quick} prefill={prefill} onSend={send} onTyping={notifyTyping} hidesContact={!combined} />
             </>
           )}
         </View>
@@ -421,6 +421,7 @@ export default function Chat() {
           jobs={proposalJobs}
           initialJobId={proposta}
           onClose={() => setProposing(false)}
+          hidesContact={!combined}
           onSubmit={(jobId, input) => sendProposal(conv.id, jobId, input)}
         />
       ) : null}

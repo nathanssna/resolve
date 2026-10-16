@@ -7,6 +7,7 @@ import {
   Avatar,
   Button,
   CatalogFallback,
+  ContactNotice,
   EmptyState,
   Field,
   goBack,
@@ -48,7 +49,10 @@ export default function NovoPedido() {
   // O cliente pode trocar o serviço (entre os que o profissional faz).
   const [pickedService, setPickedService] = useState<string>();
   const service = getService(pickedService ?? (pro && !pro.serviceIds.includes(serviceId) ? pro.serviceIds[0] : serviceId));
-  const { startRequest } = useApp();
+  const { startRequest, conversations, orders } = useApp();
+  // Já combinaram antes nesta conversa: o contato não é escondido.
+  const convId = conversations.find((c) => c.proId === proId)?.id;
+  const combined = orders.some((o) => o.conversationId === convId && (o.status === 'combinado' || o.status === 'concluido'));
   const { session } = useAuth();
 
   const [step, setStep] = useState(0);
@@ -233,6 +237,7 @@ export default function NovoPedido() {
                   multiline
                   maxLength={500}
                 />
+                {!combined ? <ContactNotice text={description} /> : null}
                 <View style={styles.chips}>
                   {service.examples.map((e) => (
                     <Pressable
