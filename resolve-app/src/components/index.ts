@@ -8,7 +8,7 @@ export { Field, SearchTrigger } from './Fields';
 export { Icon, type IconName } from './Icon';
 export { CatalogFallback } from './CatalogFallback';
 export { DialogHost } from './DialogHost';
-export { CheckItem, EmptyState, InfoBanner } from './Info';
+export { CheckItem, EmptyState, InfoBanner, SuspendedNotice } from './Info';
 export { Logo, LogoMark } from './Logo';
 export { PhotoThumbs, PhotoViewer } from './Photos';
 export { Avatar } from './Avatar';

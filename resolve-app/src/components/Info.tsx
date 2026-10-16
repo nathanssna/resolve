@@ -1,6 +1,9 @@
+import { router } from 'expo-router';
 import { StyleSheet, View } from 'react-native';
 
 import { colors, fonts, radius, spacing } from '@/theme/tokens';
+import { formatDay } from '@/utils/format';
+import { Button } from './Button';
 import { Icon, type IconName } from './Icon';
 import { Text } from './Text';
 
@@ -35,6 +38,30 @@ export function InfoBanner({ icon = 'shield-check', title, description }: { icon
           </Text>
         ) : null}
       </View>
+    </View>
+  );
+}
+
+/** Conta suspensa pela moderação: o que vale enquanto isso e o caminho para falar com a equipe. */
+export function SuspendedNotice({ until, compact = false }: { until: number; compact?: boolean }) {
+  return (
+    <View style={styles.suspended} accessibilityRole="alert">
+      <View style={{ flexDirection: 'row', gap: spacing[3], alignItems: 'flex-start' }}>
+        <Icon name="ban" size={22} strokeWidth={2} color={colors.danger} />
+        <View style={{ flex: 1, gap: 2 }}>
+          <Text variant="labelLg" color={colors.danger}>
+            {`Sua conta está suspensa${until === Infinity ? '' : ` até ${formatDay(until)}`}`}
+          </Text>
+          {!compact ? (
+            <Text variant="bodySm" color={colors.inkBody}>
+              Enquanto isso, você não faz pedidos nem envia propostas ou mensagens. Se acha que foi um engano, fale com a equipe.
+            </Text>
+          ) : null}
+        </View>
+      </View>
+      <Button variant="dark" size="md" iconLeft="message-circle" onPress={() => router.push('/suporte')} style={{ alignSelf: 'flex-start' }}>
+        Falar com a Rezolveaê
+      </Button>
     </View>
   );
 }
@@ -77,6 +104,7 @@ const styles = StyleSheet.create({
     borderRadius: radius.md,
     backgroundColor: colors.surfaceMuted,
   },
+  suspended: { gap: spacing[3], padding: spacing[4], borderRadius: radius.md, backgroundColor: colors.dangerTint },
   empty: {
     alignItems: 'center',
     gap: spacing[2],

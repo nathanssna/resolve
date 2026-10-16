@@ -17,6 +17,7 @@ import {
   ProgressBar,
   Segmented,
   StickyFooter,
+  SuspendedNotice,
   Text,
   TopBar,
 } from '@/components';
@@ -53,7 +54,7 @@ export default function NovoPedido() {
   // Já combinaram antes nesta conversa: o contato não é escondido.
   const convId = conversations.find((c) => c.proId === proId)?.id;
   const combined = orders.some((o) => o.conversationId === convId && (o.status === 'combinado' || o.status === 'concluido'));
-  const { session } = useAuth();
+  const { session, suspendedUntil } = useAuth();
 
   const [step, setStep] = useState(0);
   const [description, setDescription] = useState('');
@@ -98,6 +99,17 @@ export default function NovoPedido() {
           ) : (
             <CatalogFallback status={status} onRetry={refresh} />
           )}
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (suspendedUntil) {
+    return (
+      <SafeAreaView style={{ flex: 1, backgroundColor: colors.surface }}>
+        <TopBar title="Pedir orçamento" />
+        <View style={{ padding: spacing[5] }}>
+          <SuspendedNotice until={suspendedUntil} />
         </View>
       </SafeAreaView>
     );

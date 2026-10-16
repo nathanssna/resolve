@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { Pressable, RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { Avatar, Badge, Button, CatalogFallback, Icon, ProgressBar, Text } from '@/components';
+import { Avatar, Badge, Button, CatalogFallback, Icon, ProgressBar, SuspendedNotice, Text } from '@/components';
 import { supabase } from '@/lib/supabase';
 import { soonestFirst, useApp, type Conversation, type Job, type Order } from '@/state/app';
 import { useAuth } from '@/state/auth';
@@ -349,7 +349,7 @@ function Accepting({ me }: { me: Professional }) {
 /** Início do profissional. */
 export function ProHome() {
   const insets = useSafeAreaInsets();
-  const { profile, session } = useAuth();
+  const { profile, session, suspendedUntil } = useAuth();
   const { status, refresh, conversations, orders } = useApp();
   const { getProfessional, refreshing, refresh: refreshCatalog } = useCatalog();
   // Só aparece no catálogo quem tem nome e pelo menos um serviço.
@@ -410,6 +410,7 @@ export function ProHome() {
       </View>
 
       <View style={styles.body}>
+        {suspendedUntil ? <SuspendedNotice until={suspendedUntil} /> : null}
         {me ? (
           <ProfileSteps me={me} />
         ) : (

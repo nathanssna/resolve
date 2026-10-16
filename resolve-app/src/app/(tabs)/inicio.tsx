@@ -13,6 +13,7 @@ import {
   SearchTrigger,
   SectionHeader,
   ServiceTile,
+  SuspendedNotice,
   Text,
 } from '@/components';
 import { useAddresses } from '@/state/addresses';
@@ -82,6 +83,7 @@ function ClientHome() {
   const addressText = primary ? `${primary.label} · ${primary.line}` : 'Adicionar endereço';
   const insets = useSafeAreaInsets();
   const { conversations, orders, blocked } = useApp();
+  const { suspendedUntil } = useAuth();
   const { services, professionals, getService, getProfessional, status, refresh, refreshing } = useCatalog();
 
   // Card de destaque: proposta esperando resposta > serviço combinado
@@ -167,6 +169,7 @@ function ClientHome() {
       </View>
 
       <View style={styles.body}>
+        {suspendedUntil ? <SuspendedNotice until={suspendedUntil} /> : null}
         {highlight ? <ActiveOrderCard {...highlight} /> : null}
 
         <View style={{ gap: spacing[3] }}>

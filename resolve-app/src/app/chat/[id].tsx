@@ -18,6 +18,7 @@ import {
   ProposalCard,
   ProposalSheet,
   RequestCard,
+  SuspendedNotice,
   SystemNote,
   Text,
   TopBar,
@@ -46,7 +47,7 @@ export default function Chat() {
   const { id, proposta } = useLocalSearchParams<{ id: string; proposta?: string }>();
   const { status, role, refresh, conversations, orders, sendText, respondProposal, sendProposal, markRead, loadOlder, closeRequest, block, unblock } = useApp();
   const isPro = role === 'profissional';
-  const { session } = useAuth();
+  const { session, suspendedUntil } = useAuth();
   const focused = useIsFocused();
   const { getProfessional, getService } = useCatalog();
   const conv = conversations.find((c) => c.id === id);
@@ -401,6 +402,8 @@ export default function Chat() {
                 </Button>
               ) : null}
             </View>
+          ) : suspendedUntil ? (
+            <SuspendedNotice until={suspendedUntil} compact />
           ) : (
             <>
               {isPro && openCount ? (

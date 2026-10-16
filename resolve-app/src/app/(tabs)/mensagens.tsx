@@ -3,8 +3,9 @@ import { Fragment, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { Button, CatalogFallback, ConversationRow, EmptyState, Icon, Text } from '@/components';
+import { Button, CatalogFallback, ConversationRow, EmptyState, Icon, SuspendedNotice, Text } from '@/components';
 import { useApp, type Message } from '@/state/app';
+import { useAuth } from '@/state/auth';
 import { useCatalog } from '@/state/catalog';
 import { useSupport } from '@/state/support';
 import { colors, fonts, radius, spacing } from '@/theme/tokens';
@@ -30,6 +31,7 @@ function preview(m: Message) {
 export default function Mensagens() {
   const { getService, getProfessional } = useCatalog();
   const { status, role, refresh, conversations } = useApp();
+  const { suspendedUntil } = useAuth();
   const support = useSupport();
   const [query, setQuery] = useState('');
   const lastSupport = support.messages.at(-1);
@@ -94,6 +96,11 @@ export default function Mensagens() {
         </Text>
       </View>
       <ScrollView contentContainerStyle={{ paddingBottom: spacing[6] }}>
+        {suspendedUntil ? (
+          <View style={styles.searchWrap}>
+            <SuspendedNotice until={suspendedUntil} compact />
+          </View>
+        ) : null}
         {rows.length ? (
           <View style={styles.searchWrap}>
             <View style={styles.search}>

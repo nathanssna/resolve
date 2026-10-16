@@ -10,6 +10,7 @@
  */
 import type { Session } from '@supabase/supabase-js';
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { AppState } from 'react-native';
 
 import { uploadPhoto, type LocalPhoto } from '@/lib/photos';
 import { unregisterPush } from '@/lib/push';
@@ -22,6 +23,8 @@ type AuthValue = {
   profile: Profile | null;
   /** Logado, mas ainda sem nome/papel. */
   needsOnboarding: boolean;
+  /** Conta suspensa pela moderação: até quando (Infinity = sem prazo); null se não está. */
+  suspendedUntil: number | null;
   /** Envia o código de 6 dígitos. Cria a conta se o e-mail for novo. */
   sendCode: (email: string) => Promise<void>;
   /** Confere o código e devolve o perfil (null se não deu para ler). */
@@ -34,6 +37,13 @@ type AuthValue = {
 };
 
 const Ctx = createContext<AuthValue | null>(null);
+
+/** Suspensão ainda valendo: até quando (Infinity = sem prazo), ou null. */
+function activeSuspension(raw: string | null | undefined) {
+  if (!raw) return null;
+  const until = raw === 'infinity' ? Infinity : Date.parse(raw);
+  return until > Date.now() ? until : null;
+}
 
 async function fetchMyProfile(): Promise<Profile | null> {
   const { data, error } = await supabase.rpc('get_my_profile');
@@ -68,6 +78,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Sem rede: segue logado sem perfil; refreshProfile tenta de novo.
       .catch(() => setLoaded({ uid: userId, profile: null }));
   }, [userId, loaded?.uid]);
+
+  // Volta ao app: relê o perfil (a moderação pode ter suspendido ou reativado a conta).
+  useEffect(() => {
+    if (!userId) return;
+    const sub = AppState.addEventListener('change', (s) => {
+      if (s !== 'active') return;
+      fetchMyProfile()
+        .then((p) => p && setLoaded({ uid: userId, profile: p }))
+        .catch(() => {});
+    });
+    return () => sub.remove();
+  }, [userId]);
 
   const sendCode = useCallback(async (email: string) => {
     // E-mail temporário: o banco nem cria a conta. Avisa antes, com uma mensagem clara.
@@ -125,10 +147,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const ready = sessionReady && (!userId || loaded?.uid === userId);
   const needsOnboarding = !!profile && profile.full_name.trim() === '';
+  // Conferido quando o perfil é lido (o app relê ao voltar para a frente).
+  const suspendedUntil = useMemo(() => activeSuspension(profile?.suspended_until), [profile?.suspended_until]);
 
   const value = useMemo<AuthValue>(
-    () => ({ ready, session, profile, needsOnboarding, sendCode, verifyCode, completeOnboarding, refreshProfile, setAvatar, signOut }),
-    [ready, session, profile, needsOnboarding, sendCode, verifyCode, completeOnboarding, refreshProfile, setAvatar, signOut],
+    () => ({ ready, session, profile, needsOnboarding, suspendedUntil, sendCode, verifyCode, completeOnboarding, refreshProfile, setAvatar, signOut }),
+    [ready, session, profile, needsOnboarding, suspendedUntil, sendCode, verifyCode, completeOnboarding, refreshProfile, setAvatar, signOut],
   );
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
