@@ -85,7 +85,7 @@ const login = async (email) => (await (await fetch(`${URL_}/auth/v1/token?grant_
   ok(!(await cli.text()).includes('Direto a ele, no valor combinado'), 'respostas começam fechadas');
   await cli.pressText('Como pago o profissional?');
   ok(await cli.waitText('Direto a ele, no valor combinado'), 'tocar na pergunta abre a resposta');
-  ok(await cli.waitText('Ainda precisa de ajuda?') && await cli.waitText('Escrever e-mail'), 'contato no fim');
+  ok(await cli.waitText('Ainda precisa de ajuda?') && await cli.waitText('Falar com a Rezolveaê'), 'contato no fim (canal oficial)');
   await cli.page.screenshot({ path: SHOTS + 'notif-2-ajuda.png', fullPage: true });
   await cli.pressText('Como pago o profissional?');
   ok(await cli.waitGone('Direto a ele, no valor combinado'), 'tocar de novo fecha');

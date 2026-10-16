@@ -42,7 +42,8 @@ const login = async (email) => (await (await fetch(`${URL_}/auth/v1/token?grant_
     const pressText = async (label, { exact = false, last = true } = {}) => {
       const find = (l, exact) => [...document.querySelectorAll('[role="button"]')].filter((e) => (exact ? e.innerText.trim() === l : e.innerText.includes(l)));
       await page.waitForFunction((l, ex, f) => new Function('return ' + f)()(l, ex).length > 0, { timeout: 10000, polling: 300 }, label, exact, find.toString());
-      const el = await page.evaluateHandle((l, ex, last, f) => { const all = new Function('return ' + f)()(l, ex); return last ? all.at(-1) : all[0]; }, label, exact, last, find.toString());
+      // Pela posição na tela (a lista do chat é invertida: a ordem no documento é a contrária).
+      const el = await page.evaluateHandle((l, ex, last, f) => { const all = new Function('return ' + f)()(l, ex).sort((x, y) => x.getBoundingClientRect().top - y.getBoundingClientRect().top); return last ? all.at(-1) : all[0]; }, label, exact, last, find.toString());
       await el.asElement().focus(); await page.keyboard.press('Enter');
     };
     const type = async (label, value) => {
@@ -147,8 +148,10 @@ const login = async (email) => (await (await fetch(`${URL_}/auth/v1/token?grant_
   ok(phone === '+5511912345678', `profissional recebe o telefone do cliente depois de combinar (${phone})`);
   const [order] = await api(cliS, `/rest/v1/orders?request_id=eq.${reqEle}&select=id`);
   // O profissional marca "Serviço feito" (só a partir do começo do período combinado) e o cliente confirma.
+  // A proposta fica para o dia pedido (amanhã): no banco, o serviço de teste passa a ter começado há 1 hora.
+  require('child_process').execSync(`npx supabase db query --linked "update public.orders set scheduled_at = now() - interval '1 hour' where id = '${order.id}'"`, { cwd: __dirname + '/../..', stdio: 'ignore' });
   const marked = await rpc(proS, 'mark_order_done', { p_order_id: order.id });
-  if (marked?.message) console.log(`  (o período combinado ainda não começou: ${marked.message})`);
+  ok(!marked?.message, 'profissional marca "Serviço feito"' + (marked?.message ? `: ${marked.message}` : ''));
   await cli.page.goto(`${APP}/pedido/${order.id}`, { waitUntil: 'networkidle0' });
   ok(await cli.waitText('marcou o serviço como feito'), 'cliente vê "Pro marcou o serviço como feito"');
   await cli.press('Sim, foi feito');

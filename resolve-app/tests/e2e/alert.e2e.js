@@ -26,13 +26,13 @@ const login = async (e) => (await (await fetch(`${U}/auth/v1/token?grant_type=pa
   await p.evaluateOnNewDocument((k, v) => localStorage.setItem(k, v), `sb-${REF}-auth-token`, JSON.stringify(pro));
   const wait = (t, ms = 15000) => p.waitForFunction((t) => document.body.innerText.includes(t), { timeout: ms, polling: 300 }, t).then(() => true, () => false);
   await p.goto('http://localhost:8099/inicio', { waitUntil: 'networkidle0' });
-  ok(await wait('Nenhum pedido no momento') && !(await p.evaluate(() => document.body.innerText)).includes('Precisa de você'), '"Obrigado!" depois de concluído: painel calmo');
+  ok(await wait('Nenhum pedido no momento') && !(await p.evaluate(() => document.body.innerText)).includes('Obrigado!'), '"Obrigado!" depois de concluído: painel calmo');
   ok(await p.evaluate(() => [...document.querySelectorAll('[role="tab"], a, [role="link"], [role="button"]')].some((e) => /Mensagens/.test(e.innerText) && /1/.test(e.innerText))), 'mas a aba Mensagens mostra 1 não lida');
 
   await deal('Chuveiro');
   await rpc(pro, 'mark_conversation_read', { p_conversation_id: conv });
   await call(cli, '/rest/v1/messages', { conversation_id: conv, body: 'Consegue vir às 14h?' });
-  ok(await wait('1 mensagem sem resposta') && await wait('Consegue vir às 14h?'), 'com serviço combinado: alerta na hora (Realtime)');
+  ok(await wait('Para responder') && await wait('Consegue vir às 14h?'), 'com serviço combinado: alerta na hora (Realtime)');
   fs.mkdirSync(__dirname + '/shots', { recursive: true });
   await p.screenshot({ path: __dirname + '/shots/alert-msg.png' });
   await b.close();

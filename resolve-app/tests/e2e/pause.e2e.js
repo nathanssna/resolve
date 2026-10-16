@@ -65,13 +65,15 @@ const login = async (email) => (await (await fetch(`${URL_}/auth/v1/token?grant_
   ok(await pro.waitText('Pausar os pedidos?'), 'pede confirmação para pausar');
   await pro.pressText('Pausar');
   ok(await until(async () => (await paused()) === true), 'gravado no banco');
-  ok(await pro.waitText('Pausado: você não aparece nas buscas') && (await sw(pro)) === 'false', 'painel mostra pausado');
+  ok(await pro.waitText('Pedidos pausados') && await pro.waitText('Você não aparece nas buscas') && (await sw(pro)) === 'false', 'painel mostra pausado');
   await pro.page.screenshot({ path: SHOTS + 'pause-1-painel.png' });
 
   console.log('\nO cliente');
   const cli = await device(cliS, 'cliente');
   await cli.page.goto(`${APP}/profissionais/encanador`, { waitUntil: 'networkidle0' });
-  ok(await cli.waitText('Marcos') && !(await cli.text()).includes('Pro Teste'), 'some da lista do serviço');
+  // O banco de produção não tem outros profissionais: espera a lista carregar e confere que ele não está.
+  await cli.waitText('Encanador'); await sleep(2000);
+  ok(!(await cli.text()).includes('Pro Teste'), 'some da lista do serviço');
   await cli.page.goto(`${APP}/profissional/${proId}`, { waitUntil: 'networkidle0' });
   ok(await cli.waitText('Não está recebendo pedidos agora') && !(await cli.text()).includes('Pedir orçamento a Pro'), 'perfil: botão "Não está recebendo pedidos agora" no lugar do pedido');
   const disabled = await cli.page.evaluate(() => [...document.querySelectorAll('[role="button"]')].find((e) => e.innerText.includes('Não está recebendo pedidos agora'))?.getAttribute('aria-disabled'));

@@ -129,7 +129,8 @@ const login = async (email) => (await (await fetch(`${URL_}/auth/v1/token?grant_
   await adm.page.screenshot({ path: SHOTS + 'admin-4-denuncia.png', fullPage: true });
   await adm.pressText('Resolver denúncia');
   await adm.pressText('Avisei a pessoa');
-  ok(await adm.waitText('Denúncia resolvida') && await adm.waitText('Tudo em dia'), 'resolvida; o painel fica em dia');
+  // A fila pode ter itens reais da produção (ex.: atendimento): confere só que a denúncia saiu.
+  ok(await adm.waitText('Denúncia resolvida') && await adm.waitGone('Pediu pagamento fora do combinado'), 'resolvida; sai da fila');
 
   console.log('\nSuspender e reativar');
   await adm.type('Buscar pessoa', 'teste+pro');
