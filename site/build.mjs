@@ -528,7 +528,7 @@ ${proSection()}
 
   return layout({
     root: true,
-    title: 'Rezolveaê — profissionais para a sua casa',
+    title: 'Rezolveae',
     description: 'Encontre eletricista, encanador, montador, faxina e mais perto de você. Peça orçamento, converse pelo chat e combine tudo pelo app Rezolveaê.',
     body,
   });
