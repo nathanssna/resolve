@@ -35,7 +35,7 @@ import { notify, confirm } from '@/utils/dialog';
 
 export default function PedidoDetalhe() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { role, orders, markDone, confirmDone, requestReschedule, respondReschedule, disputeOrder, askTeam, cancelOrder, rateOrder } = useApp();
+  const { role, orders, markDone, confirmDone, requestReschedule, respondReschedule, disputeOrder, askTeam, cancelOrder, rateOrder, rateClient } = useApp();
   const isPro = role === 'profissional';
   const { getProfessional, getService } = useCatalog();
   const order = orders.find((o) => o.id === id);
@@ -225,6 +225,30 @@ export default function PedidoDetalhe() {
                 ) : null}
               </>
             ) : null}
+          </View>
+        ) : null}
+
+        {done && isPro ? (
+          <View style={[styles.block, styles.rate]}>
+            <Text variant="titleSm">{order.clientRating ? 'Avaliação enviada' : `Como foi atender ${name}?`}</Text>
+            <View style={styles.stars} accessibilityRole="adjustable" accessibilityLabel={`Nota: ${order.clientRating ?? stars} de 5`}>
+              {[1, 2, 3, 4, 5].map((n) => {
+                const on = n <= (order.clientRating ?? stars);
+                return (
+                  <Pressable key={n} accessibilityRole="button" accessibilityLabel={`${n} estrelas`} disabled={!!order.clientRating} onPress={() => setStars(n)} hitSlop={6}>
+                    <Icon name="star" size={36} strokeWidth={1.75} fill={on ? colors.star : 'none'} color={on ? colors.star : colors.inkMuted} />
+                  </Pressable>
+                );
+              })}
+            </View>
+            {!order.clientRating ? (
+              <Button variant="dark" block disabled={!stars || busy} onPress={() => run(() => rateClient(order.id, stars))}>
+                Enviar avaliação
+              </Button>
+            ) : null}
+            <Text variant="caption" color={colors.inkMuted} style={{ textAlign: 'center' }}>
+              {`${name} não vê a sua nota: só a média de todas, depois de 3 avaliações.`}
+            </Text>
           </View>
         ) : null}
 

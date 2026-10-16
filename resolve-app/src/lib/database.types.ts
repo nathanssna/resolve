@@ -131,6 +131,52 @@ export type Database = {
           },
         ]
       }
+      client_reviews: {
+        Row: {
+          client_id: string
+          created_at: string
+          order_id: string
+          professional_id: string
+          rating: number
+        }
+        Insert: {
+          client_id: string
+          created_at?: string
+          order_id: string
+          professional_id: string
+          rating: number
+        }
+        Update: {
+          client_id?: string
+          created_at?: string
+          order_id?: string
+          professional_id?: string
+          rating?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_reviews_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_reviews_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: true
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_reviews_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       conversations: {
         Row: {
           client_id: string
@@ -1391,6 +1437,8 @@ export type Database = {
           has_phone: boolean
           identity_verified: boolean
           late_cancels: number
+          rating: number
+          ratings: number
           wrong_contests: number
         }[]
       }
@@ -1711,6 +1759,13 @@ export type Database = {
         }
       }
       mark_support_read: { Args: never; Returns: undefined }
+      my_client_rating: {
+        Args: never
+        Returns: {
+          rating: number
+          reviews: number
+        }[]
+      }
       my_pause: {
         Args: never
         Returns: {
@@ -1758,6 +1813,22 @@ export type Database = {
           late_cancels_90d: number
           orders_90d: number
         }[]
+      }
+      rate_client: {
+        Args: { p_order_id: string; p_rating: number }
+        Returns: {
+          client_id: string
+          created_at: string
+          order_id: string
+          professional_id: string
+          rating: number
+        }
+        SetofOptions: {
+          from: "*"
+          to: "client_reviews"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       rate_order: {
         Args: { p_comment?: string; p_order_id: string; p_rating: number }

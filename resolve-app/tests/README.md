@@ -43,6 +43,7 @@ npm run db:stop
 | `support` | canal oficial: a pessoa escreve para a equipe, a equipe responde pelo painel (segundo fator), push, registro, limite |
 | `admin` | painel de moderação: só administrador com segundo fator; números, pessoas, serviços, denúncias, selo, suspensão, registro |
 | `contact` | contato escondido antes de combinar: telefone, e-mail, @perfil e links no chat, no pedido e na proposta; liberado depois do aceite |
+| `rateclient` | profissional avalia o cliente: só depois de concluído, uma vez; o cliente não lê as notas; média só com 3 avaliações (cliente e profissionais) |
 
 ## Ponta a ponta
 
@@ -71,6 +72,7 @@ npm run e2e:cleanup            # apaga as contas (sempre, no fim)
 | `historico` | conversa longa abre com as 50 mensagens mais recentes; "Carregar mensagens anteriores" até o começo; tempo real e lista |
 | `contato` | telefone no chat antes de combinar: aviso no campo, "[contato oculto]" para os dois; depois do aceite, aparece |
 | `suspensa` | conta suspensa: aviso no início, Mensagens, chat e pedido novo; sem prazo; vencida ou reativada, some |
+| `notacliente` | profissional dá estrelas ao cliente no serviço concluído; cliente vê no Perfil só "Aparece depois de 3 avaliações" |
 | `busca` | busca por frase na tela Buscar, como visitante (não precisa das contas); sem internet, cai na busca local |
 | `pause` | pausar no painel do profissional; lista, perfil e pedido do lado do cliente |
 | `cancela` | cancelar no prazo e em cima da hora (motivo), histórico do cliente, pausa automática e taxa no perfil |

@@ -34,7 +34,7 @@ import { addressLine } from '@/state/addresses';
 import { useSignedUrls } from '@/state/photoUrls';
 import { useTyping } from '@/state/typing';
 import { colors, radius, shadows, spacing } from '@/theme/tokens';
-import { formatBRL, formatDayDivider } from '@/utils/format';
+import { formatBRL, formatDayDivider, formatDecimal } from '@/utils/format';
 import { serviceStage } from '@/utils/serviceStage';
 import { supabase } from '@/lib/supabase';
 import { confirm, notify } from '@/utils/dialog';
@@ -107,13 +107,13 @@ export default function Chat() {
 
   // Profissional: histórico do cliente, no pedido em aberto (serviços concluídos, cancelamentos em cima da hora).
   const clientId = isPro ? conv?.clientId : undefined;
-  const [record, setRecord] = useState<{ clientId: string; done: number; late: number; phone: boolean; verified: boolean; wrong: number } | null>(null);
+  const [record, setRecord] = useState<{ clientId: string; done: number; late: number; phone: boolean; verified: boolean; wrong: number; rating: number | null } | null>(null);
   useEffect(() => {
     if (!clientId) return;
     let alive = true;
     supabase.rpc('client_track_record', { p_client_id: clientId }).then(({ data }) => {
       const r = data?.[0];
-      if (alive && r) setRecord({ clientId, done: r.done, late: r.late_cancels, phone: r.has_phone, verified: r.identity_verified, wrong: r.wrong_contests });
+      if (alive && r) setRecord({ clientId, done: r.done, late: r.late_cancels, phone: r.has_phone, verified: r.identity_verified, wrong: r.wrong_contests, rating: r.rating == null ? null : Number(r.rating) });
     });
     return () => {
       alive = false;
@@ -434,18 +434,20 @@ export default function Chat() {
 
 /**
  * O que se sabe do cliente: "Identidade confirmada · telefone informado · 3 serviços concluídos ·
- * 1 cancelamento em cima da hora · 1 contestação indevida" (ou "Cliente novo na Rezolveaê").
+ * nota 4,8 como cliente · 1 cancelamento em cima da hora · 1 contestação indevida" (ou "Cliente novo na Rezolveaê").
+ * A nota só vem com 3 avaliações ou mais.
  */
-function describeClient({ done, late, phone, verified, wrong }: { done: number; late: number; phone: boolean; verified: boolean; wrong: number }) {
+function describeClient({ done, late, phone, verified, wrong, rating }: { done: number; late: number; phone: boolean; verified: boolean; wrong: number; rating: number | null }) {
   const parts = [
     verified ? 'Identidade confirmada' : null,
     phone ? 'telefone informado' : 'sem telefone',
     done || late ? `${done} ${done === 1 ? 'serviço concluído' : 'serviços concluídos'}` : 'cliente novo na Rezolveaê',
+    rating != null ? `nota ${formatDecimal(rating)} como cliente` : null,
     late ? `${late} ${late === 1 ? 'cancelamento' : 'cancelamentos'} em cima da hora` : null,
     wrong ? `${wrong} ${wrong === 1 ? 'contestação indevida' : 'contestações indevidas'}` : null,
   ].filter(Boolean) as string[];
   const text = parts.join(' · ');
-  return { text: text.charAt(0).toUpperCase() + text.slice(1), warn: late > 0 || wrong > 0 };
+  return { text: text.charAt(0).toUpperCase() + text.slice(1), warn: late > 0 || wrong > 0 || (rating != null && rating < 4) };
 }
 
 const styles = StyleSheet.create({

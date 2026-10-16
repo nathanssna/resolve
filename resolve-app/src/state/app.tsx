@@ -139,6 +139,8 @@ export type Order = {
   canceledLate?: boolean;
   cancelReason?: string;
   rating?: number;
+  /** Profissional: a nota que ele deu ao cliente neste serviço. */
+  clientRating?: number;
   /** Comentário da avaliação, se houver. */
   comment?: string;
   createdAt: number;
@@ -211,6 +213,8 @@ type AppValue = {
   /** `reason`: obrigatório em cima da hora (ver cancelIsLate); vai para o chat. */
   cancelOrder: (orderId: string, reason?: string) => Promise<void>;
   rateOrder: (orderId: string, stars: number, comment?: string) => Promise<void>;
+  /** Profissional avalia o cliente (o cliente vê só a média, a partir de 3). */
+  rateClient: (orderId: string, stars: number) => Promise<void>;
   /** Cliente cancela / profissional recusa um pedido ainda sem serviço combinado. */
   closeRequest: (jobId: string) => Promise<void>;
   /** Só com login (a tela leva para o login antes). */
@@ -257,7 +261,7 @@ async function fetchStore(uid: string, role: UserRole): Promise<Store> {
       job_messages:messages!messages_conversation_id_fkey(${MESSAGE_COLS}),
       recent_messages:messages!messages_conversation_id_fkey(${MESSAGE_COLS}),
       proposals!proposals_conversation_id_fkey(id, conversation_id, request_id, amount, scheduled_label, scheduled_at, note, status),
-      orders!orders_conversation_id_fkey(id, conversation_id, request_id, professional_id, service_id, amount, scheduled_label, scheduled_at, address, status, created_at, completed_at, canceled_late, cancel_reason, done_at, done_photos, done_blocked, disputed_at, help_requested_at, completed_by, reschedule_at, reschedule_label, reschedule_by, review:reviews(rating, comment))`,
+      orders!orders_conversation_id_fkey(id, conversation_id, request_id, professional_id, service_id, amount, scheduled_label, scheduled_at, address, status, created_at, completed_at, canceled_late, cancel_reason, done_at, done_photos, done_blocked, disputed_at, help_requested_at, completed_by, reschedule_at, reschedule_label, reschedule_by, review:reviews(rating, comment), client_review:client_reviews(rating))`,
     )
     .eq(role === 'profissional' ? 'professional_id' : 'client_id', uid)
     // Pedidos e propostas: todas (os pedidos dependem delas). O resto: só a página mais recente.
@@ -273,7 +277,8 @@ async function fetchStore(uid: string, role: UserRole): Promise<Store> {
     Object.assign(store.messages, byId(job_messages), byId(recent_messages));
     store.history[conv.id] = pageStart(recent_messages);
     Object.assign(store.proposals, byId(proposals));
-    for (const { review, ...o } of orders) store.orders[o.id] = { ...o, rating: review?.rating, comment: review?.comment };
+    // client_review: só a nota que o próprio profissional deu (o cliente não lê a tabela).
+    for (const { review, client_review, ...o } of orders) store.orders[o.id] = { ...o, rating: review?.rating, comment: review?.comment, clientRating: client_review?.rating };
   }
   return store;
 }
@@ -581,6 +586,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
           canceledLate: o.canceled_late,
           cancelReason: o.cancel_reason ?? undefined,
           rating: o.rating,
+          clientRating: o.clientRating,
           comment: o.comment ?? undefined,
           createdAt: time(o.created_at),
           completedAt: o.completed_at ? time(o.completed_at) : undefined,
@@ -856,6 +862,15 @@ export function AppProvider({ children }: { children: ReactNode }) {
     [update],
   );
 
+  const rateClient = useCallback(
+    async (orderId: string, stars: number) => {
+      const { data: review, error } = await supabase.rpc('rate_client', { p_order_id: orderId, p_rating: stars });
+      if (error) throw error;
+      update((s) => (s.orders[orderId] ? { ...s, orders: { ...s.orders, [orderId]: { ...s.orders[orderId], clientRating: review.rating } } } : s));
+    },
+    [update],
+  );
+
   const closeRequest = useCallback(
     async (jobId: string) => {
       const { data: r, error } = await supabase.rpc('close_request', { p_request_id: jobId });
@@ -927,6 +942,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       askTeam,
       cancelOrder,
       rateOrder,
+      rateClient,
       closeRequest,
       toggleFavorite,
       blocked,
@@ -934,7 +950,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       unblock,
       isFavorite: (sid) => favorites.includes(sid),
     }),
-    [status, role, load, conversations, orders, favorites, startRequest, sendText, respondProposal, sendProposal, markRead, loadOlder, markDone, confirmDone, requestReschedule, respondReschedule, disputeOrder, askTeam, cancelOrder, rateOrder, closeRequest, toggleFavorite, blocked, block, unblock],
+    [status, role, load, conversations, orders, favorites, startRequest, sendText, respondProposal, sendProposal, markRead, loadOlder, markDone, confirmDone, requestReschedule, respondReschedule, disputeOrder, askTeam, cancelOrder, rateOrder, rateClient, closeRequest, toggleFavorite, blocked, block, unblock],
   );
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;

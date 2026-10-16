@@ -60,6 +60,7 @@ export const LEGAL: Record<'termos' | 'privacidade', LegalDoc> = {
         title: 'Avaliações',
         body: [
           'Depois de um serviço concluído, o cliente pode avaliar o profissional. A avaliação aparece no perfil público dele, com o primeiro nome de quem avaliou. Avaliações falsas ou ofensivas podem ser removidas.',
+          'O profissional também pode dar uma nota de 1 a 5 ao cliente. A nota de cada profissional não é mostrada: o cliente vê só a média de todas, a partir de 3 avaliações, e os profissionais que ele chamar veem a mesma média.',
         ],
       },
       {
@@ -109,6 +110,7 @@ export const LEGAL: Record<'termos' | 'privacidade', LegalDoc> = {
         body: [
           'Cliente e profissional veem o nome e a foto um do outro. Antes de combinar, o profissional vê só o bairro e a cidade do pedido. O endereço completo e o telefone só aparecem depois que vocês combinam um serviço.',
           'O perfil do profissional e as avaliações são públicos. Nas avaliações aparece só o primeiro nome de quem avaliou.',
+          'A média de notas de um cliente aparece só para ele e para os profissionais com quem ele conversa, e só a partir de 3 avaliações.',
         ],
       },
       {

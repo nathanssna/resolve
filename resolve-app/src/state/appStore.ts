@@ -53,7 +53,7 @@ export type OrderRow = Pick<
   | 'reschedule_at'
   | 'reschedule_label'
   | 'reschedule_by'
-> & { rating?: number; comment?: string | null };
+> & { rating?: number; comment?: string | null; clientRating?: number };
 
 export type Store = {
   convs: Record<string, ConvRow>;

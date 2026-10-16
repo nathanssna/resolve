@@ -45,6 +45,10 @@ const CLIENT: HelpSection = {
       a: 'Depois que você confirma que o serviço foi feito, abra-o em Pedidos e dê sua nota. A avaliação aparece no perfil do profissional com o seu primeiro nome.',
     },
     {
+      q: 'Os profissionais me avaliam?',
+      a: 'Sim. Depois de cada serviço concluído, o profissional dá uma nota de 1 a 5. Você não vê a nota de cada um: só a média de todas, no Perfil, a partir de 3 avaliações. Os profissionais que você chamar veem a mesma média.',
+    },
+    {
       id: 'selo',
       q: 'O que é o selo Verificado?',
       a: 'O profissional enviou um documento com foto e uma selfie segurando o documento, e nossa equipe confirmou a identidade dele. O selo não garante a qualidade do serviço: veja também as avaliações.',
@@ -74,6 +78,10 @@ const PRO: HelpSection = {
     {
       q: 'Como concluo um serviço?',
       a: 'A partir do dia e período combinados, abra o serviço e toque em Serviço feito. Anexe fotos do trabalho pronto: o cliente confirma e, se ele não responder em 7 dias, o serviço é concluído sozinho. Sem foto, só o cliente conclui; depois de 7 dias sem resposta, você pode pedir ajuda à equipe.',
+    },
+    {
+      q: 'Posso avaliar o cliente?',
+      a: 'Sim. Com o serviço concluído, abra o serviço em Pedidos e dê uma nota de 1 a 5. O cliente não vê a sua nota: só a média de todas, a partir de 3 avaliações. Você também vê essa média no pedido de cada cliente.',
     },
     {
       q: 'E se o cliente disser que o serviço não foi feito?',

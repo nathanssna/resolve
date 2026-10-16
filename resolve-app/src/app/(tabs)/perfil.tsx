@@ -45,11 +45,17 @@ export default function Perfil() {
   // Equipe da Rezolveaê: entrada do painel de moderação. Cliente: verificação pedida pela moderação.
   const [admin, setAdmin] = useState(false);
   const [identity, setIdentity] = useState<{ required: boolean; verified: boolean } | null>(null);
+  // Cliente: média das notas dos profissionais (só a partir de 3 avaliações).
+  const [clientRating, setClientRating] = useState<{ rating: number | null; reviews: number } | null>(null);
   useEffect(() => {
     if (!session || !focused) return;
     let alive = true;
     supabase.rpc('am_i_admin').then(({ data }) => alive && setAdmin(!!data));
     supabase.rpc('my_verification').then(({ data }) => alive && setIdentity(data?.[0] ?? null));
+    supabase.rpc('my_client_rating').then(({ data }) => {
+      const r = data?.[0];
+      if (alive && r) setClientRating({ rating: r.rating == null ? null : Number(r.rating), reviews: r.reviews });
+    });
     return () => {
       alive = false;
     };
@@ -176,6 +182,22 @@ export default function Perfil() {
                 label="Verificação de identidade"
                 value={identity.verified ? 'Confirmada' : verification === 'pending' ? 'Em análise' : 'Necessária para fazer pedidos'}
                 onPress={() => router.push('/verificacao')}
+              />
+            ) : null}
+            {session && clientRating ? (
+              <ListRow
+                icon="star"
+                label="Sua nota como cliente"
+                value={
+                  clientRating.rating != null
+                    ? `${formatDecimal(clientRating.rating)} · ${formatCount(clientRating.reviews)} avaliações`
+                    : 'Aparece depois de 3 avaliações'
+                }
+                onPress={() =>
+                  notify(
+                    'Depois de cada serviço concluído, o profissional dá uma nota de 1 a 5. Você vê só a média de todas, a partir de 3 avaliações, e os profissionais que você chamar veem a mesma média.',
+                  )
+                }
               />
             ) : null}
             <ListRow
