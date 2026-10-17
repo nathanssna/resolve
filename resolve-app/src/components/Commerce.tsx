@@ -360,7 +360,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   dotDone: { backgroundColor: colors.ink, borderColor: colors.ink },
-  dotCurrent: { borderColor: colors.ink, borderWidth: 6, backgroundColor: colors.brand },
+  // Etapa atual: bolinha amarela com contorno fino, como as outras.
+  dotCurrent: { borderColor: colors.ink, backgroundColor: colors.brand },
   rail: { flex: 1, width: 2, backgroundColor: colors.surfaceStrong, marginVertical: 2 },
   railDone: { backgroundColor: colors.ink },
 });

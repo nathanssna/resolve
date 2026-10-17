@@ -14,6 +14,7 @@ import {
   Icon,
   ListRow,
   PhotoViewer,
+  Rating,
   RescheduleSheet,
   ServicePanel,
   Text,
@@ -27,8 +28,8 @@ import { useApp } from '@/state/app';
 import { useSignedUrls } from '@/state/photoUrls';
 import { addressLine } from '@/state/addresses';
 import { useCatalog } from '@/state/catalog';
-import { colors, radius, spacing } from '@/theme/tokens';
-import { firstName, formatBRL, formatDecimal } from '@/utils/format';
+import { colors, fonts, radius, spacing } from '@/theme/tokens';
+import { firstName, formatBRL } from '@/utils/format';
 import { cancelIsLate } from '@/utils/schedule';
 import { serviceStage, type ServiceAction } from '@/utils/serviceStage';
 import { notify, confirm } from '@/utils/dialog';
@@ -142,14 +143,27 @@ export default function PedidoDetalhe() {
           <View style={styles.proTop}>
             <Avatar size={56} uri={order.other.avatarUrl} />
             <View style={{ flex: 1, gap: 2 }}>
-              <Text variant="labelLg">{order.other.name}</Text>
+              <View style={styles.nameRow}>
+                <Text variant="labelLg" numberOfLines={1} style={{ flexShrink: 1 }}>
+                  {order.other.name}
+                </Text>
+                {pro?.verified ? <Icon name="badge-check" size={18} fill={colors.brand} label="Verificado" /> : null}
+              </View>
               {pro ? (
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                <View style={styles.nameRow}>
                   {/* Sem avaliações ainda: "Novo" em vez de uma nota 0,0. */}
-                  {pro.reviews ? <Icon name="star" size={13} fill={colors.star} color={colors.star} strokeWidth={1} /> : null}
-                  <Text variant="bodySm">
-                    {pro.reviews ? formatDecimal(pro.rating) : 'Novo'} · {pro.role}
-                  </Text>
+                  {pro.reviews ? (
+                    <Rating value={pro.rating} size={13} />
+                  ) : (
+                    <Text variant="bodySm" style={{ fontFamily: fonts.bold }}>
+                      Novo
+                    </Text>
+                  )}
+                  {pro.role ? (
+                    <Text variant="bodySm" color={colors.inkMuted} numberOfLines={1} style={{ flexShrink: 1 }}>
+                      {`· ${pro.role}`}
+                    </Text>
+                  ) : null}
                 </View>
               ) : (
                 <Text variant="bodySm" color={colors.inkMuted}>
@@ -157,7 +171,6 @@ export default function PedidoDetalhe() {
                 </Text>
               )}
             </View>
-            {pro?.verified ? <Badge tone="success" icon="badge-check">VERIFICADO</Badge> : null}
           </View>
           <View style={styles.actions}>
             <ActionButton icon="message-circle" label="Mensagem" onPress={() => router.push({ pathname: '/chat/[id]', params: { id: order.conversationId } })} />
@@ -316,6 +329,7 @@ const styles = StyleSheet.create({
   status: { padding: spacing[5], borderRadius: radius.xl, backgroundColor: colors.brand, gap: spacing[2] },
   proCard: { padding: spacing[4], borderRadius: radius.xl, backgroundColor: colors.surfaceMuted, gap: spacing[4] },
   proTop: { flexDirection: 'row', alignItems: 'center', gap: spacing[3] },
+  nameRow: { flexDirection: 'row', alignItems: 'center', gap: spacing[1] },
   actions: { flexDirection: 'row', justifyContent: 'space-between' },
   block: { gap: spacing[3] },
   rate: { padding: spacing[4], borderRadius: radius.xl, backgroundColor: colors.brandTint, alignItems: 'center' },
