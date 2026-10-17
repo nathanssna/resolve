@@ -1,6 +1,6 @@
 import { router } from 'expo-router';
-import { Fragment, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
+import { useState } from 'react';
+import { FlatList, Pressable, StyleSheet, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button, CatalogFallback, ConversationRow, EmptyState, Icon, SuspendedNotice, Text } from '@/components';
@@ -95,77 +95,88 @@ export default function Mensagens() {
           Mensagens
         </Text>
       </View>
-      <ScrollView contentContainerStyle={{ paddingBottom: spacing[6] }}>
-        {suspendedUntil ? (
-          <View style={styles.searchWrap}>
-            <SuspendedNotice until={suspendedUntil} compact />
-          </View>
-        ) : null}
-        {rows.length ? (
-          <View style={styles.searchWrap}>
-            <View style={styles.search}>
-              <Icon name="search" size={18} color={colors.inkMuted} />
-              <TextInput
-                value={query}
-                onChangeText={setQuery}
-                placeholder="Buscar conversa"
-                placeholderTextColor={colors.inkMuted}
-                accessibilityLabel="Buscar conversa"
-                returnKeyType="search"
-                autoCorrect={false}
-                style={styles.searchInput}
-              />
-              {query ? (
-                <Pressable accessibilityRole="button" accessibilityLabel="Limpar busca" hitSlop={8} onPress={() => setQuery('')}>
-                  <Icon name="x" size={18} color={colors.inkMuted} />
-                </Pressable>
-              ) : null}
-            </View>
-          </View>
-        ) : null}
-        {q && !shown.length ? (
-          <Text variant="bodySm" color={colors.inkMuted} style={{ textAlign: 'center', padding: spacing[5] }}>
-            Nenhuma conversa encontrada.
-          </Text>
-        ) : null}
-        {shown.map((row, i) => (
-          <Fragment key={row.key}>
-            {/* Linha fina entre conversas, começando no nome (depois da foto). */}
-            {i > 0 ? <View style={styles.divider} /> : null}
-            {row.node}
-          </Fragment>
-        ))}
-        {status === 'idle' ? (
-          <View style={{ padding: spacing[5], gap: spacing[4] }}>
-            <EmptyState icon="message-circle" title="Entre para ver suas conversas" description="Seus pedidos de orçamento e as conversas com os profissionais ficam aqui." />
-            <Button variant="primary" block onPress={() => router.push('/entrar')}>
-              Entrar ou criar conta
-            </Button>
-          </View>
-        ) : null}
-        {status === 'loading' || status === 'error' ? (
-          <View style={{ padding: spacing[5] }}>
-            <CatalogFallback status={status} onRetry={refresh} />
-          </View>
-        ) : null}
-        {status === 'ready' && sorted.length === 0 && !lastSupport ? (
-          <View style={{ padding: spacing[5], gap: spacing[4] }}>
-            {role === 'profissional' ? (
-              <EmptyState icon="message-circle" title="Nenhuma conversa ainda" description="Quando um cliente pedir um orçamento, a conversa aparece aqui." />
-            ) : (
-              <>
-                <EmptyState icon="message-circle" title="Nenhuma conversa ainda" description="Peça um orçamento e a conversa com o profissional aparece aqui." />
-                <Button variant="primary" block onPress={() => router.push('/buscar')}>
-                  Encontrar um serviço
+      {/* Só desenha as conversas que aparecem na tela (com centenas, a rolagem continua leve). */}
+      <FlatList
+        data={shown}
+        keyExtractor={(row) => row.key}
+        renderItem={({ item }) => item.node}
+        ItemSeparatorComponent={Divider}
+        keyboardShouldPersistTaps="handled"
+        contentContainerStyle={{ paddingBottom: spacing[6] }}
+        ListHeaderComponent={
+          <>
+            {suspendedUntil ? (
+              <View style={styles.searchWrap}>
+                <SuspendedNotice until={suspendedUntil} compact />
+              </View>
+            ) : null}
+            {rows.length ? (
+              <View style={styles.searchWrap}>
+                <View style={styles.search}>
+                  <Icon name="search" size={18} color={colors.inkMuted} />
+                  <TextInput
+                    value={query}
+                    onChangeText={setQuery}
+                    placeholder="Buscar conversa"
+                    placeholderTextColor={colors.inkMuted}
+                    accessibilityLabel="Buscar conversa"
+                    returnKeyType="search"
+                    autoCorrect={false}
+                    style={styles.searchInput}
+                  />
+                  {query ? (
+                    <Pressable accessibilityRole="button" accessibilityLabel="Limpar busca" hitSlop={8} onPress={() => setQuery('')}>
+                      <Icon name="x" size={18} color={colors.inkMuted} />
+                    </Pressable>
+                  ) : null}
+                </View>
+              </View>
+            ) : null}
+            {q && !shown.length ? (
+              <Text variant="bodySm" color={colors.inkMuted} style={{ textAlign: 'center', padding: spacing[5] }}>
+                Nenhuma conversa encontrada.
+              </Text>
+            ) : null}
+          </>
+        }
+        ListFooterComponent={
+          <>
+            {status === 'idle' ? (
+              <View style={{ padding: spacing[5], gap: spacing[4] }}>
+                <EmptyState icon="message-circle" title="Entre para ver suas conversas" description="Seus pedidos de orçamento e as conversas com os profissionais ficam aqui." />
+                <Button variant="primary" block onPress={() => router.push('/entrar')}>
+                  Entrar ou criar conta
                 </Button>
-              </>
-            )}
-          </View>
-        ) : null}
-      </ScrollView>
+              </View>
+            ) : null}
+            {status === 'loading' || status === 'error' ? (
+              <View style={{ padding: spacing[5] }}>
+                <CatalogFallback status={status} onRetry={refresh} />
+              </View>
+            ) : null}
+            {status === 'ready' && sorted.length === 0 && !lastSupport ? (
+              <View style={{ padding: spacing[5], gap: spacing[4] }}>
+                {role === 'profissional' ? (
+                  <EmptyState icon="message-circle" title="Nenhuma conversa ainda" description="Quando um cliente pedir um orçamento, a conversa aparece aqui." />
+                ) : (
+                  <>
+                    <EmptyState icon="message-circle" title="Nenhuma conversa ainda" description="Peça um orçamento e a conversa com o profissional aparece aqui." />
+                    <Button variant="primary" block onPress={() => router.push('/buscar')}>
+                      Encontrar um serviço
+                    </Button>
+                  </>
+                )}
+              </View>
+            ) : null}
+          </>
+        }
+      />
     </SafeAreaView>
   );
 }
+
+/** Linha fina entre conversas, começando no nome (depois da foto). */
+const Divider = () => <View style={styles.divider} />;
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.surface },

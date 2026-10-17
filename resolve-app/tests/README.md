@@ -75,6 +75,7 @@ npm run e2e:cleanup            # apaga as contas (sempre, no fim)
 | `contato` | telefone no chat antes de combinar: aviso no campo, "[contato oculto]" para os dois; depois do aceite, aparece |
 | `suspensa` | conta suspensa: aviso no início, Mensagens, chat e pedido novo; sem prazo; vencida ou reativada, some |
 | `notacliente` | profissional dá estrelas ao cliente no serviço concluído; cliente vê no Perfil só "Aparece depois de 3 avaliações" |
+| `sincroniza` | ao abrir, uma busca completa só; de volta ao app (depois de 30 s), só o que mudou, e a mensagem nova aparece |
 | `confirma` | "Confirmar" no serviço do dia (cliente), botões do lembrete (`?acao=confirmar` / `?acao=remarcar`) e avisos no chat |
 | `telas` | não confere nada: fotografa todas as telas (visitante, cliente, profissional) em `shots/telas/` para a revisão visual |
 | `busca` | busca por frase na tela Buscar, como visitante (não precisa das contas); sem internet, cai na busca local |

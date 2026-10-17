@@ -25,6 +25,14 @@ import {
   isTmp,
   MESSAGE_COLS,
   mergeFresh,
+  mergeChanges,
+  changesSince,
+  orderFromDb,
+  CHANGES_MAX,
+  REQUEST_COLS,
+  PROPOSAL_COLS,
+  ORDER_COLS,
+  type Changes,
   unreadCount,
   mergeOlder,
   PAGE,
@@ -170,7 +178,6 @@ export type Order = {
 export const soonestFirst = (a: Order, b: Order) =>
   (a.schedule ? scheduleOrder(a.schedule) : Infinity) - (b.schedule ? scheduleOrder(b.schedule) : Infinity) || a.createdAt - b.createdAt;
 
-const PROPOSAL_COLS = 'id, conversation_id, request_id, amount, scheduled_label, scheduled_at, note, status';
 
 export type AppStatus = 'idle' | 'loading' | 'ready' | 'error';
 
@@ -255,19 +262,51 @@ function toAddress(value: Json | null): Address {
   };
 }
 
+/**
+ * Só o que mudou desde `since` (ver changesSince): ao voltar para o app e ao reconectar.
+ * `null`: mudou demais para valer a pena (melhor buscar tudo).
+ */
+async function fetchChanges(uid: string, role: UserRole, since: string): Promise<Changes | null> {
+  const mine = role === 'profissional' ? 'professional_id' : 'client_id';
+  // O RLS já limita a linhas das conversas desta pessoa.
+  const [convs, messages, requests, proposals, orders, reviews, clientReviews] = await Promise.all([
+    supabase.from('conversations').select('id, client_last_read_at, professional_last_read_at, updated_at').eq(mine, uid).gt('updated_at', since),
+    supabase.from('messages').select(MESSAGE_COLS).gt('created_at', since).order('created_at').limit(CHANGES_MAX),
+    supabase.from('requests').select(REQUEST_COLS).gt('updated_at', since).limit(CHANGES_MAX),
+    supabase.from('proposals').select(PROPOSAL_COLS).gt('updated_at', since).limit(CHANGES_MAX),
+    supabase.from('orders').select(ORDER_COLS).gt('updated_at', since).limit(CHANGES_MAX),
+    supabase.from('reviews').select('order_id, rating, comment').eq(mine, uid).gt('created_at', since),
+    role === 'profissional'
+      ? supabase.from('client_reviews').select('order_id, rating').gt('created_at', since)
+      : Promise.resolve({ data: [] as { order_id: string; rating: number }[], error: null }),
+  ]);
+  for (const r of [convs, messages, requests, proposals, orders, reviews, clientReviews]) if (r.error) throw r.error;
+  const rows = [messages.data!, requests.data!, proposals.data!, orders.data!];
+  if (rows.some((r) => r.length >= CHANGES_MAX)) return null;
+  return {
+    convs: convs.data!,
+    messages: messages.data!,
+    requests: requests.data!,
+    proposals: proposals.data!,
+    orders: orders.data!.map(orderFromDb),
+    reviews: reviews.data!,
+    clientReviews: clientReviews.data!,
+  };
+}
+
 async function fetchStore(uid: string, role: UserRole): Promise<Store> {
   // As tabelas filhas também se ligam ao pedido (request_id): o !fkey diz que o caminho é pela conversa.
   const { data, error } = await supabase
     .from('conversations')
     .select(
-      `id, professional_id, client_id, client_last_read_at, professional_last_read_at,
+      `id, professional_id, client_id, client_last_read_at, professional_last_read_at, updated_at,
       client:profiles!conversations_client_id_fkey(full_name, avatar_url, deleted_at),
       professional:professionals!conversations_professional_id_fkey(profile:profiles!professionals_id_fkey(full_name, avatar_url, deleted_at)),
-      requests!requests_conversation_id_fkey(id, conversation_id, service_id, created_at, closed_at, closed_by, request_address:request_addresses(address)),
+      requests!requests_conversation_id_fkey(${REQUEST_COLS}),
       job_messages:messages!messages_conversation_id_fkey(${MESSAGE_COLS}),
       recent_messages:messages!messages_conversation_id_fkey(${MESSAGE_COLS}),
-      proposals!proposals_conversation_id_fkey(id, conversation_id, request_id, amount, scheduled_label, scheduled_at, note, status),
-      orders!orders_conversation_id_fkey(id, conversation_id, request_id, professional_id, service_id, amount, scheduled_label, scheduled_at, address, status, created_at, completed_at, canceled_late, cancel_reason, done_at, done_photos, done_blocked, disputed_at, help_requested_at, completed_by, reschedule_at, reschedule_label, reschedule_by, client_confirmed_at, pro_confirmed_at, review:reviews(rating, comment), client_review:client_reviews(rating))`,
+      proposals!proposals_conversation_id_fkey(${PROPOSAL_COLS}),
+      orders!orders_conversation_id_fkey(${ORDER_COLS})`,
     )
     .eq(role === 'profissional' ? 'professional_id' : 'client_id', uid)
     // Pedidos e propostas: todas (os pedidos dependem delas). O resto: só a página mais recente.
@@ -283,8 +322,7 @@ async function fetchStore(uid: string, role: UserRole): Promise<Store> {
     Object.assign(store.messages, byId(job_messages), byId(recent_messages));
     store.history[conv.id] = pageStart(recent_messages);
     Object.assign(store.proposals, byId(proposals));
-    // client_review: só a nota que o próprio profissional deu (o cliente não lê a tabela).
-    for (const { review, client_review, ...o } of orders) store.orders[o.id] = { ...o, rating: review?.rating, comment: review?.comment, clientRating: client_review?.rating };
+    for (const o of orders) store.orders[o.id] = orderFromDb(o);
   }
   // Não lidas antes das 50 carregadas (raro): o banco conta.
   await Promise.all(
@@ -339,11 +377,17 @@ export function AppProvider({ children }: { children: ReactNode }) {
     [owner],
   );
 
-  /** Busca do banco (abertura, reconexão do Realtime, app de volta, "Tentar de novo"): pedidos inteiros e a página mais recente de cada conversa. */
+  // Quando foi a última busca (relógio do aparelho, só para não repetir à toa) e se o Realtime
+  // conectou enquanto a busca completa ainda estava no ar.
+  const lastFetch = useRef(0);
+  const syncAfterLoad = useRef(false);
+
+  /** Busca completa (abertura, conversa nova, "Tentar de novo"): pedidos inteiros e a página mais recente de cada conversa. */
   const load = useCallback(() => {
     if (!uid || !owner) return;
     const buffer: ((s: Store) => Store)[] = [];
     replay.current = buffer;
+    lastFetch.current = Date.now();
     fetchStore(uid, role)
       .then((fresh) => {
         setData((d) => {
@@ -359,6 +403,38 @@ export function AppProvider({ children }: { children: ReactNode }) {
         if (replay.current === buffer) replay.current = null;
       });
   }, [uid, owner, role]);
+
+  /**
+   * Só o que mudou (app de volta, Realtime reconectado): poucos KB em vez de todas as
+   * conversas. Sem nada carregado, com conversa nova ou com mudança demais, busca tudo.
+   */
+  const sync = useCallback(() => {
+    if (!uid || !owner) return;
+    // Busca completa no ar: o que chegar pelo Realtime é reaplicado; ao terminar, sincroniza.
+    if (replay.current) {
+      syncAfterLoad.current = true;
+      return;
+    }
+    const since = changesSince(storeRef.current);
+    if (!since || !Object.keys(storeRef.current.convs).length) return load();
+    lastFetch.current = Date.now();
+    fetchChanges(uid, role, since)
+      .then((changes) => {
+        if (!changes) return load();
+        let full = false;
+        update((s) => mergeChanges(s, changes) ?? ((full = true), s));
+        if (full) load();
+      })
+      .catch(() => {});
+  }, [uid, owner, role, load, update]);
+
+  // A busca completa terminou e o Realtime conectou no meio dela: pega o que ficou entre as duas.
+  useEffect(() => {
+    if (loaded && syncAfterLoad.current && !replay.current) {
+      syncAfterLoad.current = false;
+      sync();
+    }
+  }, [loaded, data, sync]);
 
   // Carga inicial (e a cada troca de conta).
   useEffect(() => {
@@ -445,19 +521,20 @@ export function AppProvider({ children }: { children: ReactNode }) {
         );
       })
       .subscribe((state) => {
-        // Conectou (ou reconectou): busca o que pode ter chegado antes da conexão.
-        if (state === 'SUBSCRIBED') load();
+        // Conectou (ou reconectou): busca só o que pode ter chegado antes da conexão.
+        if (state === 'SUBSCRIBED') sync();
       });
 
+    // De volta ao app: o que mudou enquanto estava fora (não repete se buscou há menos de 30 s).
     const appState = AppState.addEventListener('change', (s) => {
-      if (s === 'active') load();
+      if (s === 'active' && Date.now() - lastFetch.current > 30_000) sync();
     });
 
     return () => {
       appState.remove();
       supabase.removeChannel(channel);
     };
-  }, [uid, role, update, load, refreshCatalog]);
+  }, [uid, role, update, load, sync, refreshCatalog]);
 
   // ----- leitura -----
 
@@ -675,6 +752,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
             conversation_id: conv.id,
             service_id: serviceId,
             created_at: msg.created_at,
+            updated_at: msg.created_at,
             closed_at: null,
             closed_by: null,
             request_address: { address: fullAddress },

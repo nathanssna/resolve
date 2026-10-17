@@ -1,4 +1,4 @@
-import { EMPTY, mergeFresh, mergeOlder, PAGE, pageStart, time, unreadCount, type MessageRow, type Store } from '../appStore';
+import { changesSince, EMPTY, mergeChanges, mergeFresh, mergeOlder, PAGE, pageStart, time, unreadCount, type Changes, type MessageRow, type OrderRow, type Store } from '../appStore';
 
 // Minuto `n` de um dia qualquer, no formato do banco.
 const at = (n: number) => new Date(Date.UTC(2026, 9, 15, 0, n)).toISOString().replace('Z', '+00:00');
@@ -17,7 +17,7 @@ const msg = (id: string, conv: string, minute: number, kind: MessageRow['kind'] 
 });
 /** Página do mais novo para o mais antigo, de `newest` para trás. */
 const page = (conv: string, newest: number, size: number) => Array.from({ length: size }, (_, i) => msg(`${conv}-${newest - i}`, conv, newest - i));
-const conv = (id: string) => ({ id, professional_id: 'p', client_id: 'c', client_last_read_at: at(0), professional_last_read_at: at(0), client: null, professional: null });
+const conv = (id: string) => ({ id, professional_id: 'p', client_id: 'c', client_last_read_at: at(0), professional_last_read_at: at(0), updated_at: at(0), client: null, professional: null });
 
 /** Busca completa como fetchStore devolve: a página mais recente de cada conversa. */
 function fetched(pages: Record<string, MessageRow[]>, extra: MessageRow[] = []): Store {
@@ -146,5 +146,58 @@ describe('unreadCount', () => {
 
   it('depois de ler, as antigas não contam mais', () => {
     expect(unreadCount([...loaded, msg('novo', 'c1', 150)], me, time(at(149)), { before: at(100), n: 10 })).toBe(1);
+  });
+});
+
+describe('changesSince', () => {
+  it('nada carregado: busca completa', () => {
+    expect(changesSince(EMPTY)).toBeNull();
+  });
+
+  it('a marca mais recente do banco, 1 minuto antes', () => {
+    const s = fetched({ a: page('a', 120, 3) });
+    s.convs.a = { ...s.convs.a, updated_at: at(130) };
+    expect(changesSince(s)).toBe(new Date(time(at(129))).toISOString());
+  });
+
+  it('ignora a mensagem ainda não confirmada (hora do aparelho)', () => {
+    const s = fetched({ a: page('a', 120, 3) }, [{ ...msg('tmp:x', 'a', 999) }]);
+    expect(changesSince(s)).toBe(new Date(time(at(119))).toISOString());
+  });
+});
+
+describe('mergeChanges', () => {
+  const none: Changes = { convs: [], messages: [], requests: [], proposals: [], orders: [], reviews: [], clientReviews: [] };
+  const order = (id: string, conv: string, o: Partial<OrderRow> = {}) => ({ id, conversation_id: conv, status: 'combinado', updated_at: at(1), ...o }) as OrderRow;
+
+  it('junta mensagens novas e leitura, sem mexer no histórico', () => {
+    const s = fetched({ a: page('a', 200, PAGE) });
+    const next = mergeChanges(s, { ...none, messages: [msg('a-201', 'a', 201)], convs: [{ id: 'a', client_last_read_at: at(201), professional_last_read_at: at(0), updated_at: at(201) }] })!;
+    expect(idsOf(next, 'a')).toContain('a-201');
+    expect(next.history.a).toBe(s.history.a);
+    expect(next.convs.a.client_last_read_at).toBe(at(201));
+    expect(next.convs.a.client).toBeNull();
+  });
+
+  it('serviço atualizado e avaliações novas', () => {
+    const s = { ...fetched({ a: page('a', 10, 2) }), orders: { o1: order('o1', 'a') } };
+    const next = mergeChanges(s, {
+      ...none,
+      orders: [order('o1', 'a', { status: 'concluido' })],
+      reviews: [{ order_id: 'o1', rating: 5, comment: 'Ótimo' }],
+      clientReviews: [{ order_id: 'o1', rating: 4 }],
+    })!;
+    expect(next.orders.o1).toMatchObject({ status: 'concluido', rating: 5, comment: 'Ótimo', clientRating: 4 });
+  });
+
+  it('conversa nova: pede a busca completa', () => {
+    const s = fetched({ a: page('a', 10, 2) });
+    expect(mergeChanges(s, { ...none, messages: [msg('b-1', 'b', 1)] })).toBeNull();
+    expect(mergeChanges(s, { ...none, convs: [{ id: 'b', client_last_read_at: at(0), professional_last_read_at: at(0), updated_at: at(1) }] })).toBeNull();
+  });
+
+  it('sem mudanças: o mesmo conteúdo', () => {
+    const s = fetched({ a: page('a', 10, 2) });
+    expect(mergeChanges(s, none)).toEqual(s);
   });
 });

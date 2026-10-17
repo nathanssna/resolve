@@ -691,6 +691,7 @@ export type Database = {
           scheduled_at: string | null
           scheduled_label: string
           status: Database["public"]["Enums"]["proposal_status"]
+          updated_at: string
         }
         Insert: {
           amount: number
@@ -704,6 +705,7 @@ export type Database = {
           scheduled_at?: string | null
           scheduled_label: string
           status?: Database["public"]["Enums"]["proposal_status"]
+          updated_at?: string
         }
         Update: {
           amount?: number
@@ -717,6 +719,7 @@ export type Database = {
           scheduled_at?: string | null
           scheduled_label?: string
           status?: Database["public"]["Enums"]["proposal_status"]
+          updated_at?: string
         }
         Relationships: [
           {
@@ -889,6 +892,7 @@ export type Database = {
           created_at: string
           id: string
           service_id: string
+          updated_at: string
         }
         Insert: {
           closed_at?: string | null
@@ -897,6 +901,7 @@ export type Database = {
           created_at?: string
           id?: string
           service_id: string
+          updated_at?: string
         }
         Update: {
           closed_at?: string | null
@@ -905,6 +910,7 @@ export type Database = {
           created_at?: string
           id?: string
           service_id?: string
+          updated_at?: string
         }
         Relationships: [
           {
@@ -1463,6 +1469,7 @@ export type Database = {
           created_at: string
           id: string
           service_id: string
+          updated_at: string
         }
         SetofOptions: {
           from: "*"
@@ -1680,6 +1687,7 @@ export type Database = {
           scheduled_at: string | null
           scheduled_label: string
           status: Database["public"]["Enums"]["proposal_status"]
+          updated_at: string
         }
         SetofOptions: {
           from: "*"
