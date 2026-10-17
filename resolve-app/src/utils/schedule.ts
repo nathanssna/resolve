@@ -18,6 +18,8 @@ export const PERIODS: { id: PeriodId; label: string; hint: string; hour: number 
 ];
 const AT: Record<PeriodId, string> = { manha: 'de manhã', tarde: 'à tarde', noite: 'à noite' };
 const periodOf = (id: PeriodId) => PERIODS.find((p) => p.id === id) ?? PERIODS[0];
+/** "de manhã", "à tarde", "à noite". */
+export const periodAt = (id: PeriodId) => AT[id];
 
 const midnight = (ts: number) => {
   const d = new Date(ts);

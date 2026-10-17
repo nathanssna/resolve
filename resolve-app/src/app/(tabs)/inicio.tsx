@@ -1,5 +1,5 @@
 import { router } from 'expo-router';
-import { useMemo } from 'react';
+import { useMemo, type ComponentProps } from 'react';
 import { Pressable, RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -25,8 +25,18 @@ import { ProHome } from '@/screens/ProHome';
 import { colors, fonts, radius, spacing } from '@/theme/tokens';
 import { firstName, formatBRL, formatDecimal } from '@/utils/format';
 import { sortProfessionals } from '@/utils/rankProfessionals';
+import { periodAt, WEEK, type Schedule } from '@/utils/schedule';
 import { serviceStage } from '@/utils/serviceStage';
 import { notify } from '@/utils/dialog';
+
+/** Bloco do dia na caixa de destaque: "SEX" / "17". Sem data (proposta antiga), nenhum. */
+const dayTile = (s?: Schedule) => {
+  if (!s) return undefined;
+  const d = new Date(s.day);
+  return { top: WEEK[d.getDay()].toUpperCase(), big: String(d.getDate()) };
+};
+
+const plural = (n: number, one: string, many: string) => (n > 0 ? `${n} ${n === 1 ? one : many}` : '');
 
 /** Profissional vê o painel dele; cliente, o catálogo. */
 export default function Inicio() {
@@ -97,13 +107,14 @@ function ClientHome() {
     .map((o) => ({ o, stage: serviceStage(o, false, firstName(getProfessional(o.proId)?.name ?? o.other.name)) }))
     .find((x) => x.stage?.tone === 'action');
 
-  let highlight: { title: string; subtitle: string; progress: number; onPress: () => void } | null = null;
+  let highlight: ComponentProps<typeof ActiveOrderCard> | null = null;
   if (toAnswer?.stage) {
     const { o, stage } = toAnswer;
     highlight = {
       title: stage.title,
       subtitle: `${getService(o.serviceId)?.title} · Toque para responder`,
-      progress: 0.9,
+      avatarUrl: getProfessional(o.proId)?.avatarUrl ?? o.other.avatarUrl,
+      tile: dayTile(o.schedule),
       onPress: () => router.push({ pathname: '/pedido/[id]', params: { id: o.id } }),
     };
   } else if (pendingConv && pendingJob?.pending) {
@@ -111,19 +122,33 @@ function ClientHome() {
     const p = pendingJob.pending;
     highlight = {
       title: `${firstName(pro?.name ?? '')} enviou uma proposta`,
-      subtitle: `${formatBRL(p.amount)} · ${p.when} · Toque para responder`,
-      progress: 0.5,
+      subtitle: [getService(pendingJob.serviceId)?.title, p.when].filter(Boolean).join(' · '),
+      avatarUrl: pro?.avatarUrl,
+      // Só o número: "180" ou "1.250,50".
+      tile: { top: 'R$', big: formatBRL(p.amount).slice(3).replace(/,00$/, '') },
       onPress: () => router.push({ pathname: '/chat/[id]', params: { id: pendingConv.id } }),
     };
   } else if (activeOrder) {
     const pro = getProfessional(activeOrder.proId);
+    const service = getService(activeOrder.serviceId)?.title;
     highlight = {
       title: `Combinado com ${firstName(pro?.name ?? '')}`,
-      subtitle: `${getService(activeOrder.serviceId)?.title} · ${activeOrder.when}`,
-      progress: 0.75,
+      // Com data, o dia vai no bloco amarelo e aqui fica só o período.
+      subtitle: `${service} · ${activeOrder.schedule ? periodAt(activeOrder.schedule.period) : activeOrder.when}`,
+      avatarUrl: pro?.avatarUrl ?? activeOrder.other.avatarUrl,
+      tile: dayTile(activeOrder.schedule),
       onPress: () => router.push({ pathname: '/pedido/[id]', params: { id: activeOrder.id } }),
     };
   }
+
+  // O resto que está em andamento fica numa linha embaixo da caixa, até Pedidos.
+  const combined = orders.filter((o) => o.status === 'combinado').length;
+  const proposals = conversations.flatMap((c) => c.jobs).filter((j) => j.state === 'proposta' && j.pending).length;
+  const shownProposal = !toAnswer?.stage && !!pendingConv && !!pendingJob?.pending;
+  const more = [
+    plural(combined - (highlight && !shownProposal ? 1 : 0), 'serviço combinado', 'serviços combinados'),
+    plural(proposals - (shownProposal ? 1 : 0), 'proposta', 'propostas'),
+  ].filter(Boolean);
 
   // Perto de você: quem tem o endereço principal dentro do raio de atendimento, do mais perto ao mais longe.
   const dist = useDistances(primary?.coords);
@@ -170,7 +195,19 @@ function ClientHome() {
 
       <View style={styles.body}>
         {suspendedUntil ? <SuspendedNotice until={suspendedUntil} /> : null}
-        {highlight ? <ActiveOrderCard {...highlight} /> : null}
+        {highlight ? (
+          <View style={styles.highlight}>
+            <ActiveOrderCard {...highlight} />
+            {more.length ? (
+              <Pressable accessibilityRole="button" hitSlop={8} onPress={() => router.push('/pedidos')} style={styles.more}>
+                <Text variant="label" color={colors.inkMuted} style={{ fontSize: 13 }}>
+                  {`+ ${more.join(' e ')} · Ver pedidos`}
+                </Text>
+                <Icon name="chevron-right" size={14} color={colors.inkMuted} />
+              </Pressable>
+            ) : null}
+          </View>
+        ) : null}
 
         <View style={{ gap: spacing[3] }}>
           <SectionHeader title="Serviços" action="Ver todos" onAction={() => router.push('/buscar')} />
@@ -288,5 +325,7 @@ const styles = StyleSheet.create({
   nearMeta: { flexDirection: 'row', alignItems: 'center', gap: 3, marginTop: 2 },
   invite: { flexDirection: 'row', alignItems: 'center', gap: spacing[3], padding: spacing[3], borderRadius: radius.lg, backgroundColor: colors.surfaceMuted },
   inviteIcon: { width: 36, height: 36, borderRadius: radius.md, backgroundColor: colors.surface, alignItems: 'center', justifyContent: 'center' },
+  highlight: { gap: spacing[1] },
+  more: { flexDirection: 'row', alignItems: 'center', gap: 2, alignSelf: 'flex-start', minHeight: 32, paddingHorizontal: spacing[1] },
   promos: { paddingHorizontal: spacing[5], paddingTop: spacing[6], gap: spacing[3] },
 });

@@ -115,37 +115,44 @@ export function ProgressBar({ value, tone = 'ink' }: { value: number; tone?: 'in
 export function ActiveOrderCard({
   title,
   subtitle,
-  progress,
+  avatarUrl,
+  tile,
   onPress,
 }: {
   title: string;
   subtitle: string;
-  progress: number;
+  /** Foto do profissional; sem foto, o bonequinho. */
+  avatarUrl?: string;
+  /** Bloco amarelo à direita: o dia ("SEX" / "17") ou o valor ("R$" / "180"). Sem ele, a seta. */
+  tile?: { top: string; big: string };
   onPress?: () => void;
 }) {
   return (
     <Pressable
       accessibilityRole="button"
+      accessibilityLabel={`${title}. ${subtitle}`}
       onPress={onPress}
       style={({ pressed }) => [styles.active, pressed && { opacity: 0.94 }]}
     >
-      <View style={styles.activeTop}>
-        <View style={styles.activeIcon}>
-          <Icon name="timer" size={22} color={colors.onBrand} />
-        </View>
-        <View style={{ flex: 1, gap: 2 }}>
-          <Text variant="labelLg" color={colors.onInk}>
-            {title}
+      <Avatar size={52} uri={avatarUrl} />
+      <View style={{ flex: 1, gap: 2 }}>
+        <Text variant="labelLg" color={colors.onInk} style={{ fontSize: 16, lineHeight: 21 }}>
+          {title}
+        </Text>
+        <Text variant="bodySm" color={colors.onInkMuted}>
+          {subtitle}
+        </Text>
+      </View>
+      {tile ? (
+        <View style={styles.activeTile}>
+          <Text variant="overline">{tile.top}</Text>
+          <Text variant="titleMd" style={{ fontFamily: fonts.extrabold }}>
+            {tile.big}
           </Text>
-          <Text variant="bodySm" color={colors.onInkMuted}>
-            {subtitle}
-          </Text>
         </View>
+      ) : (
         <Icon name="chevron-right" size={20} color={colors.onInk} />
-      </View>
-      <View style={styles.activeTrack}>
-        <View style={[styles.activeFill, { width: `${Math.max(6, progress * 100)}%` }]} />
-      </View>
+      )}
     </Pressable>
   );
 }
@@ -308,18 +315,26 @@ const styles = StyleSheet.create({
   promoCta: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 4 },
   track: { height: 6, borderRadius: radius.pill, backgroundColor: colors.surfaceStrong, overflow: 'hidden' },
   fill: { height: '100%', borderRadius: radius.pill },
-  active: { backgroundColor: colors.ink, borderRadius: radius.xl, padding: spacing[4], gap: spacing[4], boxShadow: shadows.card },
-  activeTop: { flexDirection: 'row', alignItems: 'center', gap: spacing[3] },
-  activeIcon: {
-    width: 44,
-    height: 44,
-    borderRadius: 14,
+  active: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing[3],
+    backgroundColor: colors.ink,
+    borderRadius: radius.xl,
+    paddingVertical: 14,
+    paddingLeft: spacing[4],
+    paddingRight: 14,
+    boxShadow: shadows.card,
+  },
+  activeTile: {
+    minWidth: 64,
+    height: 64,
+    paddingHorizontal: spacing[2],
+    borderRadius: radius.lg,
     backgroundColor: colors.brand,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  activeTrack: { height: 6, borderRadius: radius.pill, backgroundColor: colors.inkSoft, overflow: 'hidden' },
-  activeFill: { height: '100%', borderRadius: radius.pill, backgroundColor: colors.brand },
   option: {
     flexDirection: 'row',
     alignItems: 'center',

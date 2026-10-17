@@ -94,8 +94,9 @@ export default function PedidoDetalhe() {
 
   const stage = serviceStage(order, isPro, name);
   const photoUris = order.donePhotos.map((p) => donePhotos[p]);
-  // Remarcar e cancelar ficam embaixo enquanto o serviço está só combinado (sem esperar resposta nem análise).
+  // Enquanto o serviço está só combinado (sem esperar resposta nem análise): Remarcar no cartão do topo, Cancelar discreto embaixo.
   const open = !done && !canceled && !order.doneAt && !order.disputed;
+  const canReschedule = open && stage?.primary !== 'reschedule' && stage?.secondary !== 'reschedule' && !order.reschedule;
   const act = (a: ServiceAction) => {
     const id = order.id;
     if (a === 'done') return setDoneOpen(true);
@@ -128,6 +129,11 @@ export default function PedidoDetalhe() {
           <Text variant="body" color={colors.inkBody}>
             {[service?.title, order.address.line].filter(Boolean).join(' · ')}
           </Text>
+          {canReschedule ? (
+            <Button variant="dark" size="md" iconLeft="calendar" style={styles.reschedule} onPress={() => setRescheduleOpen(true)}>
+              Remarcar
+            </Button>
+          ) : null}
         </View>
 
         {stage ? <ServicePanel stage={stage} photoUris={photoUris} busy={busy} onAction={act} onOpenPhoto={setViewer} /> : null}
@@ -265,13 +271,9 @@ export default function PedidoDetalhe() {
 
         {open ? (
           <View style={styles.links}>
-            {stage?.primary !== 'reschedule' && stage?.secondary !== 'reschedule' && !order.reschedule ? (
-              <Button variant="link" onPress={() => setRescheduleOpen(true)}>
-                Remarcar
-              </Button>
-            ) : null}
-            <Button
-              variant="link"
+            <Pressable
+              accessibilityRole="button"
+              hitSlop={12}
               onPress={() =>
                 // Em cima da hora: tela própria, com motivo. No prazo: só confirma.
                 cancelIsLate(order.schedule, { pro: isPro, contested: order.doneBlocked })
@@ -282,8 +284,10 @@ export default function PedidoDetalhe() {
                     })
               }
             >
-              Cancelar serviço
-            </Button>
+              <Text variant="label" color={colors.inkMuted} style={styles.cancel}>
+                Cancelar serviço
+              </Text>
+            </Pressable>
           </View>
         ) : null}
       </ScrollView>
@@ -317,5 +321,7 @@ const styles = StyleSheet.create({
   rate: { padding: spacing[4], borderRadius: radius.xl, backgroundColor: colors.brandTint, alignItems: 'center' },
   stars: { flexDirection: 'row', gap: spacing[2], paddingVertical: spacing[2] },
   quote: { textAlign: 'center', fontStyle: 'italic' },
-  links: { flexDirection: 'row', justifyContent: 'center', gap: spacing[6] },
+  reschedule: { alignSelf: 'flex-start', marginTop: spacing[2] },
+  links: { flexDirection: 'row', justifyContent: 'center' },
+  cancel: { textDecorationLine: 'underline' },
 });

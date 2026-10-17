@@ -292,7 +292,8 @@ const styles = StyleSheet.create({
     width: 52,
     height: 52,
     borderRadius: radius.pill,
-    backgroundColor: colors.surfaceMuted,
+    // Branco: o atalho fica sobre o cartão cinza do pedido.
+    backgroundColor: colors.surface,
     alignItems: 'center',
     justifyContent: 'center',
   },
