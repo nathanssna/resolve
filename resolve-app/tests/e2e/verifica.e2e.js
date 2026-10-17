@@ -92,7 +92,7 @@ const login = async (email) => (await (await fetch(`${URL_}/auth/v1/token?grant_
   ok(await pro.page.evaluate(() => [...document.querySelectorAll('[role="button"]')].filter((e) => e.innerText.trim() === 'Trocar').length) === 2, 'as duas fotos escolhidas');
   const send = () => pro.page.evaluate(() => [...document.querySelectorAll('[role="button"]')].filter((e) => e.innerText.trim() === 'Enviar para análise').at(-1)?.getAttribute('aria-disabled'));
   ok((await send()) === 'true', 'sem autorizar, não envia');
-  await pro.pressText('Autorizo o uso das fotos só para confirmar minha identidade');
+  await pro.press('Autorizo o uso das fotos só para confirmar minha identidade', 'checkbox');
   await pro.page.screenshot({ path: SHOTS + 'verifica-1-fotos.png' });
   await pro.pressText('Enviar para análise');
   ok(await pro.waitText('Em análise') && await pro.waitText('Você recebe um aviso quando a análise terminar.'), 'mostra "Em análise"');
