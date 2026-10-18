@@ -56,3 +56,7 @@ create function net.http_post(url text, body jsonb default '{}', params jsonb de
 returns bigint language sql as $$ insert into net.calls (url, body, headers) values (url, body, headers) returning id $$;
 -- Respostas: o teste insere aqui o que a Expo "respondeu" (id = net.calls.id).
 create table net._http_response (id bigint, status_code int, content_type text, headers jsonb, content text, timed_out boolean, error_msg text, created timestamptz not null default now());
+
+-- As suítes antigas não dependem do teste de conhecimento nem da identidade para o profissional
+-- aparecer (ver private.qualification_skipped). A suíte `quiz` desliga isto para testar a regra.
+set rezolveae.skip_qualification = 'on';

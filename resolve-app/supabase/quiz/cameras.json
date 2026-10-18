@@ -1,0 +1,409 @@
+{
+  "service": "cameras",
+  "title": "Câmeras de segurança",
+  "draw": 15,
+  "pass": 11,
+  "minutes": 15,
+  "sources": {
+    "dvr": "Intelbras — Manual do usuário dos gravadores MHDX 1004/1008/1016 (cuidados e segurança, cabos, HD, senha). https://backend.intelbras.com/sites/default/files/2020-10/Manual_MHDX_1004_1008_1016_NSO_04-20_site.pdf",
+    "camera": "Intelbras — manuais e datasheets das câmeras VIP (área externa, posicionamento) e guia Elsys (fonte em local coberto). https://backend.intelbras.com/sites/default/files/2020-07/Manual-do-usuario-vip-1120-b-vip-1120-d.pdf",
+    "mibo": "Intelbras — datasheet e guia das câmeras Wi-Fi Mibo (rede 2,4 GHz, chave de acesso). https://www.dicomp.com.br/downloads/materiais_apoio/datasheet/19512-2.pdf",
+    "condominio": "Câmeras em condomínio e LGPD: aprovação em assembleia, limites de captação e áudio (Rota Jurídica e Correio Braziliense). https://www.rotajuridica.com.br/?p=157813",
+    "certbr": "CERT.br — Cartilha de Segurança para Internet, fascículo Redes (senhas padrão, atualizações). https://cartilha.cert.br/guardiao/fasciculo-redes-egc.pdf",
+    "nr35": "NR-35 — Trabalho em altura, item 35.1.2. https://saude.sp.gov.br/resources/crh/qualidade-de-vida/saude-e-seguranca/normas-regulamentadoras/nr35_-_trabalho_em_altura.pdf",
+    "nr10": "NR-10 — desligar e confirmar a ausência de tensão antes de mexer em circuito elétrico.",
+    "pratica": "Prática de instalação consolidada (sem norma específica); revisar com um instalador."
+  },
+  "questions": [
+    {
+      "id": "cam-01",
+      "topic": "gravador",
+      "question": "Como deve estar o gravador (DVR) na hora de ligar os cabos das câmeras atrás dele?",
+      "options": [
+        "Desligado",
+        "Ligado, para já ver a imagem aparecer",
+        "Ligado, mas com o monitor desligado",
+        "Tanto faz, os conectores são de baixa tensão"
+      ],
+      "why": "O fabricante avisa que conectar com o DVR ligado pode queimar as entradas e as saídas e tira a garantia.",
+      "source": "dvr"
+    },
+    {
+      "id": "cam-02",
+      "topic": "gravador",
+      "question": "Quando ligar o DVR na tomada pela primeira vez?",
+      "options": [
+        "Só depois de completar a instalação",
+        "Antes de tudo",
+        "Depois de instalar só a primeira câmera",
+        "Assim que tirar da caixa, para testar"
+      ],
+      "why": "O manual pede não energizar o DVR antes de completar a instalação.",
+      "source": "dvr"
+    },
+    {
+      "id": "cam-03",
+      "topic": "gravador",
+      "question": "Onde instalar o DVR?",
+      "options": [
+        "Em lugar seco e fresco, sem tapar a ventilação",
+        "Dentro de um armário fechado",
+        "Em cima do roteador, para ficar perto da internet",
+        "Na garagem"
+      ],
+      "why": "O manual pede ambiente frio e seco, longe de calor e de sol direto, sem objetos em cima e sem bloquear as aberturas de ventilação.",
+      "source": "dvr"
+    },
+    {
+      "id": "cam-04",
+      "topic": "gravador",
+      "question": "O que o manual do DVR exige da instalação elétrica?",
+      "options": [
+        "Aterramento conforme a NBR 5410",
+        "Nada, porque o gravador funciona com fonte de 12 V",
+        "Só um estabilizador",
+        "Uma tomada de 20 A exclusiva"
+      ],
+      "why": "Mesmo com fonte, o fabricante pede o aparelho ligado a um sistema de aterramento conforme a NBR 5410 e alerta para o risco de incêndio com tomadas sobrecarregadas.",
+      "source": "dvr"
+    },
+    {
+      "id": "cam-05",
+      "topic": "gravador",
+      "question": "Vai instalar o HD dentro do DVR. Como fazer?",
+      "options": [
+        "Com o DVR desligado",
+        "Com o DVR ligado, para ele reconhecer na hora",
+        "Com o DVR em modo de gravação",
+        "Com o DVR ligado e o cabo de rede tirado"
+      ],
+      "why": "O manual pede o DVR desligado para colocar o HD, senão os componentes podem queimar.",
+      "source": "dvr"
+    },
+    {
+      "id": "cam-06",
+      "topic": "seguranca",
+      "question": "No primeiro acesso, o DVR pede para criar a senha do administrador. Qual senha usar?",
+      "options": [
+        "Uma senha forte, combinada com o cliente",
+        "123456, que o cliente consegue lembrar com facilidade",
+        "A mesma senha que você usa em todos os clientes, para dar suporte",
+        "O número da casa do cliente com o ano de nascimento"
+      ],
+      "why": "Câmera com senha fraca ou repetida pode ser invadida pela internet. O manual pede uma senha de 8 a 32 caracteres.",
+      "source": "dvr"
+    },
+    {
+      "id": "cam-07",
+      "topic": "seguranca",
+      "question": "O que configurar logo depois da senha do DVR?",
+      "options": [
+        "E-mail ou perguntas de recuperação",
+        "O papel de parede e o idioma da tela do gravador",
+        "O volume do alarme e o som das teclas do mouse",
+        "Nada, porque o técnico reseta a senha quando precisar"
+      ],
+      "why": "Na Intelbras não é permitido resetar a senha do administrador. Se o cliente esquecer, a recuperação depende do e-mail ou das perguntas cadastradas.",
+      "source": "dvr"
+    },
+    {
+      "id": "cam-08",
+      "topic": "seguranca",
+      "question": "E o firmware (sistema) do gravador e das câmeras?",
+      "options": [
+        "Manter atualizado pelo site do fabricante",
+        "Nunca atualizar",
+        "Atualizar com arquivos de fóruns",
+        "Atualizar só quando a imagem de alguma câmera sumir"
+      ],
+      "why": "O fabricante publica atualizações no site. Elas corrigem falhas, inclusive de segurança.",
+      "source": "dvr"
+    },
+    {
+      "id": "cam-09",
+      "topic": "cabos",
+      "question": "Qual cabo coaxial usar numa câmera HD (HDCVI) para não ter problema de imagem?",
+      "options": [
+        "Coaxial com 85% ou mais de cobre, homologado",
+        "Qualquer coaxial de antena de TV, que é o mais barato",
+        "Cabo de som blindado, que é mais fino e fácil de passar",
+        "Fio paralelo de luz, que já tem dois condutores"
+      ],
+      "why": "O manual pede cabo com no mínimo 85% de cobre e malha de cobre. Cabo de liga barata dá chuvisco e perde imagem.",
+      "source": "dvr"
+    },
+    {
+      "id": "cam-10",
+      "topic": "cabos",
+      "question": "Vai usar cabo de rede (UTP) em vez de coaxial nas câmeras HDCVI. O que precisa?",
+      "options": [
+        "Balun passivo nas duas pontas",
+        "Balun ativo",
+        "Conversor de fibra comum no meio do caminho",
+        "Nada, é só emendar o UTP direto no conector da câmera"
+      ],
+      "why": "O fabricante indica balun passivo. Balun ativo e conversor de mídia comum distorcem o sinal HD.",
+      "source": "dvr"
+    },
+    {
+      "id": "cam-11",
+      "topic": "diagnostico",
+      "question": "A imagem de uma câmera aparece com chuvisco e listras. O que verificar primeiro?",
+      "options": [
+        "Conectores, emendas e cabo",
+        "A senha do DVR",
+        "O tamanho do HD",
+        "A data e a hora do gravador, que podem estar erradas"
+      ],
+      "why": "O manual aponta conectores e emendas ruins como causa de ruído e interferência na imagem.",
+      "source": "dvr"
+    },
+    {
+      "id": "cam-12",
+      "topic": "instalacao",
+      "question": "A câmera vai ficar na fachada, pegando chuva. O que conferir no modelo?",
+      "options": [
+        "Se é para área externa (ex.: IP66)",
+        "Só a resolução",
+        "Se a cor combina com a fachada para não chamar atenção",
+        "Se é a mais barata"
+      ],
+      "why": "Câmera de área interna não aguenta chuva. Para área externa, o modelo precisa ter grau de proteção indicado, como IP66.",
+      "source": "camera"
+    },
+    {
+      "id": "cam-13",
+      "topic": "instalacao",
+      "question": "Onde deixar a fonte de energia de uma câmera externa?",
+      "options": [
+        "Em área coberta ou caixa hermética",
+        "Pendurada no próprio cabo, do lado de fora da parede",
+        "Enterrada no jardim, protegida dentro de um saco plástico",
+        "Enrolada em fita isolante, que impede a água de entrar"
+      ],
+      "why": "A câmera pode ser à prova d'água, mas a fonte normalmente não é. Fonte molhada queima e dá curto.",
+      "source": "camera"
+    },
+    {
+      "id": "cam-14",
+      "topic": "instalacao",
+      "question": "Por que evitar apontar a câmera para árvores e arbustos que balançam?",
+      "options": [
+        "Atrapalham a imagem e disparam gravações à toa",
+        "Porque as folhas encostam e riscam a lente da câmera",
+        "Porque o verde das folhas estraga o sensor de imagem",
+        "Não há motivo técnico"
+      ],
+      "why": "O manual da Intelbras pede evitar folhagens em movimento: atrapalham a visão e fazem a câmera gravar e alertar à toa.",
+      "source": "camera"
+    },
+    {
+      "id": "cam-15",
+      "topic": "instalacao",
+      "question": "A câmera foi instalada virada para o sol da tarde ou para uma lâmpada forte. O que acontece?",
+      "options": [
+        "A imagem fica escura ou estourada",
+        "A imagem fica mais nítida",
+        "A câmera grava por mais tempo sem precisar de HD",
+        "Nada muda"
+      ],
+      "why": "Contra a luz, o sensor não equilibra claro e escuro, e o rosto de quem passa fica escuro. Escolha um ângulo com a luz atrás ou de lado.",
+      "source": "pratica"
+    },
+    {
+      "id": "cam-16",
+      "topic": "instalacao",
+      "question": "O cliente quer a câmera dentro de casa, filmando a rua pelo vidro da janela. O que avisar?",
+      "options": [
+        "À noite o infravermelho reflete no vidro",
+        "Que o vidro protege e melhora a imagem durante a noite",
+        "Que basta limpar bem o vidro uma vez por semana",
+        "Que funciona igual a uma câmera externa"
+      ],
+      "why": "A luz infravermelha da câmera bate no vidro e volta para a lente. De noite, a imagem fica só reflexo.",
+      "source": "pratica"
+    },
+    {
+      "id": "cam-17",
+      "topic": "wifi",
+      "question": "A câmera Wi-Fi não aparece no aplicativo na hora de adicionar. O que verificar primeiro?",
+      "options": [
+        "Se o celular está numa rede Wi-Fi de 2,4 GHz",
+        "Se o celular está na rede de 5 GHz, que é mais rápida",
+        "Se a câmera está com a lente limpa",
+        "Se o celular está no modo avião"
+      ],
+      "why": "As câmeras Mibo, como muitas outras, só funcionam em 2,4 GHz. Pela rede de 5 GHz não dá para adicionar.",
+      "source": "mibo"
+    },
+    {
+      "id": "cam-18",
+      "topic": "wifi",
+      "question": "O roteador usa o mesmo nome para as redes de 2,4 e 5 GHz, e a câmera não conecta. O que fazer?",
+      "options": [
+        "Separar os nomes das redes",
+        "Desligar a rede de 2,4 GHz para forçar a de 5 GHz",
+        "Trocar a câmera por outra marca, porque é incompatível",
+        "Colocar a câmera mais longe do roteador para não interferir"
+      ],
+      "why": "Os fabricantes recomendam nomes diferentes para cada faixa, para o celular ficar na de 2,4 GHz durante a configuração.",
+      "source": "mibo"
+    },
+    {
+      "id": "cam-19",
+      "topic": "seguranca",
+      "question": "A etiqueta da câmera Wi-Fi tem uma chave de acesso. O que fazer com ela?",
+      "options": [
+        "Entregar ao cliente para guardar",
+        "Anotar no seu caderno de clientes para dar suporte depois",
+        "Colar na parede ao lado da câmera para não perder",
+        "Jogar fora junto com a caixa"
+      ],
+      "why": "A chave é a senha de criptografia das imagens e permite ver as câmeras de outro celular. Ela é do cliente.",
+      "source": "mibo"
+    },
+    {
+      "id": "cam-20",
+      "topic": "seguranca",
+      "question": "Terminado o serviço, de quem devem ser a conta do aplicativo e as senhas?",
+      "options": [
+        "Do cliente",
+        "Suas, para dar suporte depois sem precisar pedir senha",
+        "Do vizinho, que indicou o serviço e vai acompanhar",
+        "Da loja que vendeu a câmera, por causa da garantia"
+      ],
+      "why": "Quem tem a conta vê as imagens da casa. Ficar com acesso depois do serviço expõe o cliente e você.",
+      "source": "pratica"
+    },
+    {
+      "id": "cam-21",
+      "topic": "privacidade",
+      "question": "A câmera do portão está pegando a janela do vizinho. O que fazer?",
+      "options": [
+        "Ajustar o ângulo ou usar máscara de privacidade",
+        "Deixar assim, porque a câmera é do cliente e está no imóvel dele",
+        "Aumentar o zoom na janela para identificar quem mora lá",
+        "Avisar o vizinho por escrito e deixar gravando do mesmo jeito"
+      ],
+      "why": "A captação deve se limitar ao necessário para proteger o imóvel. Os gravadores têm máscara de privacidade para cobrir áreas da imagem.",
+      "source": "condominio"
+    },
+    {
+      "id": "cam-22",
+      "topic": "privacidade",
+      "question": "O síndico quer câmeras nas áreas comuns do prédio. O que é necessário?",
+      "options": [
+        "Aprovação em assembleia e aviso aos moradores",
+        "Só a decisão do síndico",
+        "Autorização da delegacia de polícia do bairro",
+        "Nada, porque área comum pode ser filmada à vontade"
+      ],
+      "why": "A instalação em áreas comuns depende de aprovação em assembleia, registrada em ata, e de comunicação clara aos moradores.",
+      "source": "condominio"
+    },
+    {
+      "id": "cam-23",
+      "topic": "privacidade",
+      "question": "Um morador quer uma câmera no corredor apontada para a porta do vizinho. O que você faz?",
+      "options": [
+        "Filmar só a própria porta",
+        "Instalo como ele pediu",
+        "Instalo escondida num vaso, para não gerar briga",
+        "Instalo com áudio"
+      ],
+      "why": "Mesmo em área privativa, a câmera não deve registrar corredores nem portas de outros imóveis. Senão o morador pode ser obrigado a retirá-la.",
+      "source": "condominio"
+    },
+    {
+      "id": "cam-24",
+      "topic": "privacidade",
+      "question": "A câmera tem opção de gravar áudio. O que considerar?",
+      "options": [
+        "Gravar conversa é mais sensível que imagem",
+        "Que o áudio deve ficar sempre ligado para servir de prova",
+        "Que áudio não conta como dado pessoal",
+        "Que ligar o áudio melhora a qualidade da imagem"
+      ],
+      "why": "Captar imagem já é tratar dado pessoal. Gravar voz vai além, porque conversas revelam muito mais sobre as pessoas.",
+      "source": "condominio"
+    },
+    {
+      "id": "cam-25",
+      "topic": "seguranca",
+      "question": "A câmera vai ficar a 4 metros de altura no muro. Que regra vale?",
+      "options": [
+        "A NR-35, de trabalho em altura",
+        "Nenhuma, porque é só a instalação de uma câmera pequena",
+        "Só as instruções do fabricante da câmera",
+        "Só vale alguma regra acima de 10 metros de altura"
+      ],
+      "why": "A NR-35 trata como trabalho em altura toda atividade acima de 2 m do nível inferior com risco de queda.",
+      "source": "nr35"
+    },
+    {
+      "id": "cam-26",
+      "topic": "seguranca",
+      "question": "Precisa puxar energia de uma caixa de tomada para alimentar a câmera. Qual é o cuidado?",
+      "options": [
+        "Desligar o disjuntor e testar se não há tensão",
+        "Mexer com a tomada ligada, com cuidado e luva comum",
+        "Fazer as emendas só com fita crepe",
+        "Ligar direto na fiação da parede, sem usar caixa"
+      ],
+      "why": "Mexer em circuito elétrico pede desligar e confirmar a ausência de tensão. Se o serviço for além disso, é trabalho de eletricista.",
+      "source": "nr10"
+    },
+    {
+      "id": "cam-27",
+      "topic": "gravador",
+      "question": "Como escolher o tamanho do HD do gravador?",
+      "options": [
+        "Câmeras, resolução e dias de gravação",
+        "O maior HD que couber no gravador, sempre",
+        "O menor possível",
+        "Tanto faz"
+      ],
+      "why": "Os dias de gravação dependem de quantas câmeras, de qual resolução e do modo de gravação. O fabricante tem calculadora de HD.",
+      "source": "dvr"
+    },
+    {
+      "id": "cam-28",
+      "topic": "seguranca",
+      "question": "O cliente quer ver as câmeras pelo celular fora de casa. Qual é o jeito mais seguro?",
+      "options": [
+        "Pelo app oficial, com senha forte",
+        "Abrindo portas no roteador e deixando a senha padrão",
+        "Compartilhando a senha num grupo de mensagens da família",
+        "Por um aplicativo genérico de outra loja, que é mais leve"
+      ],
+      "why": "Abrir portas do roteador e deixar senha padrão facilita invasão. O app oficial com senha forte é o caminho indicado.",
+      "source": "certbr"
+    },
+    {
+      "id": "cam-29",
+      "topic": "gravador",
+      "question": "Qual cabo HDMI usar entre o DVR e o monitor?",
+      "options": [
+        "Certificado, de até uns 5 metros",
+        "Qualquer um, mesmo com 20 metros, se for grosso",
+        "Cabo de rede com um adaptador barato de HDMI",
+        "Dois cabos HDMI emendados com fita isolante"
+      ],
+      "why": "O manual pede cabo HDMI certificado e recomenda no máximo 5 metros para não ter problema de imagem.",
+      "source": "dvr"
+    },
+    {
+      "id": "cam-30",
+      "topic": "gravador",
+      "question": "Como limpar o gravador?",
+      "options": [
+        "Desligado da tomada, com pano seco",
+        "Com pano molhado e detergente",
+        "Com spray de limpeza direto nas aberturas",
+        "Ligado, para não perder a gravação"
+      ],
+      "why": "O manual pede desligar da tomada e usar só pano seco, sem detergente líquido ou em aerossol.",
+      "source": "dvr"
+    }
+  ]
+}

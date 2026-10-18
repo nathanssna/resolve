@@ -38,6 +38,11 @@ let pass = 0, fail = 0; const ok = (c, m) => { c ? pass++ : fail++; console.log(
     ['ar pingando água', 'ar-condicionado'],
     ['fiquei trancado pra fora de casa', 'chaveiro'],
     ['perdi a chave', 'chaveiro'],
+    ['instalar câmera no portão', 'cameras'],
+    ['ver as câmeras pelo celular', 'cameras'],
+    ['configurar a alexa', 'casa-inteligente'],
+    ['lâmpada inteligente', 'casa-inteligente'],
+    ['configurar impressora no wifi', 'informatica'],
     // sem acento, pela metade e com erro de digitação
     ['instalacao de chuveiro', 'encanador'],
     ['eletrica', 'eletricista'],

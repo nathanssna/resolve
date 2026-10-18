@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { Avatar, Button, CatalogFallback, EmptyState, Icon, Rating, SectionHeader, StickyFooter, Tag, Text, TopBar } from '@/components';
+import { AreaBadge, Avatar, Button, CatalogFallback, EmptyState, Icon, Rating, SectionHeader, StickyFooter, Tag, Text, TopBar } from '@/components';
 import type { Database } from '@/lib/database.types';
 import { GENERIC_PLACE } from '@/lib/geo';
 import { supabase } from '@/lib/supabase';
@@ -84,7 +84,7 @@ export default function PerfilProfissional() {
 
   const isMe = session?.user.id === pro.id;
   // Pedir orçamento: no serviço de onde o cliente veio (se ele faz), senão no primeiro.
-  const requestService = serviceId && pro.serviceIds.includes(serviceId) ? serviceId : pro.serviceIds[0];
+  const requestService = serviceId && pro.approvedIds.includes(serviceId) ? serviceId : pro.approvedIds[0];
   const written = list?.filter((r) => r.comment) ?? [];
 
   return (
@@ -110,6 +110,13 @@ export default function PerfilProfissional() {
               <Text variant="bodySm" color={colors.inkMuted}>
                 {`Atende ${pro.area.split(',')[0]} e até ${pro.radiusKm} km`}
               </Text>
+            </View>
+          ) : null}
+          {pro.approvedIds.length ? (
+            <View style={styles.badges}>
+              {pro.approvedIds.map((sid) => (
+                <AreaBadge key={sid} label={`Aprovado em ${getService(sid)?.testLabel ?? sid}`} />
+              ))}
             </View>
           ) : null}
         </View>
@@ -168,7 +175,8 @@ export default function PerfilProfissional() {
         <View style={styles.block}>
           <SectionHeader title="Serviços" />
           <View style={styles.tags}>
-            {pro.serviceIds.map((sid) => (
+            {/* Só as áreas aprovadas: é o que o cliente vê (as outras ainda não aparecem). */}
+            {pro.approvedIds.map((sid) => (
               <Tag key={sid}>{getService(sid)?.title ?? sid}</Tag>
             ))}
             {pro.tags.map((t) => (
@@ -250,6 +258,7 @@ const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.surface },
   content: { padding: spacing[5], paddingTop: spacing[2], gap: spacing[6], paddingBottom: spacing[8] },
   head: { alignItems: 'center', gap: spacing[2] },
+  badges: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: spacing[2], marginTop: spacing[1] },
   stats: { flexDirection: 'row', gap: spacing[2] },
   statLabel: { textAlign: 'center' },
   stat: { flex: 1, padding: spacing[3], borderRadius: radius.lg, backgroundColor: colors.surfaceMuted, gap: 2, alignItems: 'center' },

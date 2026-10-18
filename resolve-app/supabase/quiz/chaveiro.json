@@ -1,0 +1,411 @@
+{
+  "service": "chaveiro",
+  "title": "Chaveiro",
+  "draw": 15,
+  "pass": 11,
+  "minutes": 15,
+  "sources": {
+    "cp": "Código Penal — art. 150 (violação de domicílio) e art. 155, § 4º, III (furto com emprego de chave falsa).",
+    "cdc": "Código de Defesa do Consumidor (Lei nº 8.078/1990) — art. 40 (orçamento prévio na prestação de serviço).",
+    "porto": "Porto Seguro — condições do serviço de chaveiro: maior de 18 anos responsável presente no local. https://www.portoseguro.com.br/content/dam/documentos/porto-servi%C3%A7o/Chaveiro.pdf",
+    "df": "Distrito Federal — Portaria SSPDS nº 111/2005, cadastro e fiscalização de prestadores de serviço de chaveiro. https://www.contabeis.com.br/legislacao/39271/portaria-sspds-111-2005/",
+    "nbr14913": "ABNT NBR 14913 (fechadura de embutir: requisitos, classificação e ensaios, inclusive de tentativa de arrombamento) e NBR 16833 (seleção, instalação e manutenção). https://www.target.com.br/produtos/normas-tecnicas/27278/nbr14913-fechadura-de-embutir-requisitos-classificacao-e-metodos-de-ensaio",
+    "porta": "Olhar Digital — segurança da porta depende de lingueta, cilindro, folha e batente. https://olhardigital.com.br/curiosidades/?p=18008",
+    "stam": "Stam — orientações de manutenção e limpeza das fechaduras (texto do fabricante reproduzido no varejo). https://www.kabum.com.br/produto/698269/fechadura-800-tetra-rolete-para-porta-pivotante-roseta-quadrada1-preto-fosco-black-40mm-stam",
+    "transponder": "Chiptronic e Vrum — chave codificada, transponder e imobilizador. https://chiptronic.com.br/blog/transponder-automotivo-como-funciona",
+    "antipanico": "Barra antipânico em portas corta-fogo e de saída de emergência (descrição técnica do insumo). https://orcamentor.com/insumo/39615/",
+    "pratica": "Prática profissional de chaveiro (sem norma específica); revisar com um chaveiro."
+  },
+  "questions": [
+    {
+      "id": "cha-01",
+      "topic": "conduta",
+      "question": "Uma pessoa chama para abrir a porta de uma casa porque perdeu a chave. O que fazer antes de abrir?",
+      "options": [
+        "Confirmar que ela mora ali ou tem direito de entrar",
+        "Abrir logo, porque ela está com pressa e pode ser emergência",
+        "Abrir primeiro e pedir o documento quando ela entrar",
+        "Abrir se ela descrever bem como é a sala por dentro"
+      ],
+      "why": "Abrir para quem não tem direito pode tornar o chaveiro parte de um furto ou de uma invasão de domicílio.",
+      "source": "cp"
+    },
+    {
+      "id": "cha-02",
+      "topic": "conduta",
+      "question": "A pessoa não consegue provar que mora no imóvel, insiste e oferece pagar o dobro. O que você faz?",
+      "options": [
+        "Não abro e indico síndico, dono ou polícia",
+        "Abro, porque quem paga o dobro está falando a verdade",
+        "Abro só a fechadura de cima",
+        "Abro e tiro uma foto dela para me proteger"
+      ],
+      "why": "Pagar a mais não prova o direito de entrar. A responsabilidade de abrir para a pessoa errada é de quem abre.",
+      "source": "cp"
+    },
+    {
+      "id": "cha-03",
+      "topic": "conduta",
+      "question": "Chamado para abrir um carro trancado. O que conferir?",
+      "options": [
+        "Documento do carro e identidade",
+        "Se a pessoa tem a chave reserva em casa",
+        "Nada, carro não precisa de documento",
+        "Se o carro é novo ou usado"
+      ],
+      "why": "Abrir carro de outra pessoa sem confirmar o dono pode ajudar num furto.",
+      "source": "cp"
+    },
+    {
+      "id": "cha-04",
+      "topic": "conduta",
+      "question": "Um vizinho pede para você abrir a porta porque a idosa da casa não responde. O que fazer?",
+      "options": [
+        "Chamar bombeiros (193) ou polícia (190)",
+        "Abrir na hora",
+        "Esperar até o dia seguinte para ver se ela responde",
+        "Abrir, entrar com o vizinho e depois avisar a família"
+      ],
+      "why": "É uma emergência, e o vizinho não tem direito de entrar. Bombeiros e polícia podem agir e entrar legalmente.",
+      "source": "cp"
+    },
+    {
+      "id": "cha-05",
+      "topic": "conduta",
+      "question": "Um cliente pede cópia de uma chave que não é dele, \"de um amigo\", a partir de uma foto. O que você faz?",
+      "options": [
+        "Recuso: só para o dono ou com autorização",
+        "Copio, porque a foto mostra bem o segredo",
+        "Copio, mas cobro mais pelo risco",
+        "Copio e guardo uma cópia comigo, por garantia"
+      ],
+      "why": "Fazer chave para quem não tem direito pode servir a um furto qualificado pelo uso de chave falsa.",
+      "source": "cp"
+    },
+    {
+      "id": "cha-06",
+      "topic": "conduta",
+      "question": "A chave tem gravado \"não copiar\" e é do sistema do condomínio. O morador quer uma cópia. O que fazer?",
+      "options": [
+        "Pedir autorização do responsável",
+        "Copiar, porque a gravação não tem valor legal",
+        "Copiar e lixar a gravação para não chamar atenção",
+        "Copiar duas"
+      ],
+      "why": "Chaves controladas existem para o responsável saber quantas cópias há. Copiar sem autorização quebra esse controle.",
+      "source": "pratica"
+    },
+    {
+      "id": "cha-07",
+      "topic": "conduta",
+      "question": "Depois de uma abertura de porta, o que é boa prática registrar?",
+      "options": [
+        "Nome, documento, endereço, data e serviço",
+        "Nada, para não gerar prova contra o chaveiro",
+        "Só o valor cobrado e a forma de pagamento",
+        "A senha do alarme"
+      ],
+      "why": "O registro protege o chaveiro se houver problema depois. No DF, por exemplo, há cadastro e fiscalização dos prestadores.",
+      "source": "df"
+    },
+    {
+      "id": "cha-08",
+      "topic": "conduta",
+      "question": "Durante a abertura da porta, quem deve estar no local?",
+      "options": [
+        "Um adulto responsável",
+        "Ninguém, o chaveiro trabalha melhor sozinho",
+        "Uma criança da casa",
+        "Qualquer vizinho que esteja por perto"
+      ],
+      "why": "Serviços de chaveiro de seguradoras exigem um responsável maior de 18 anos presente. Isso protege o cliente e o profissional.",
+      "source": "porto"
+    },
+    {
+      "id": "cha-09",
+      "topic": "conduta",
+      "question": "Antes de começar uma abertura que pode estragar a fechadura, o que o cliente precisa saber?",
+      "options": [
+        "O preço e o risco de danificar",
+        "Nada, ele vê o valor na hora de pagar",
+        "Só o tempo que o serviço vai levar",
+        "Que o preço é combinado depois de abrir"
+      ],
+      "why": "O CDC obriga o orçamento prévio. Método destrutivo exige explicar e ter o ok do cliente.",
+      "source": "cdc"
+    },
+    {
+      "id": "cha-10",
+      "topic": "conduta",
+      "question": "Depois do serviço, o que fazer com o código ou o molde da chave do cliente?",
+      "options": [
+        "Não guardar sem motivo nem expor o endereço",
+        "Guardar para oferecer cópias depois, sem ele pedir",
+        "Postar nas redes como exemplo de serviço bem feito",
+        "Anotar no caderno junto com o endereço"
+      ],
+      "why": "O código da chave junto com o endereço dá acesso à casa do cliente.",
+      "source": "pratica"
+    },
+    {
+      "id": "cha-11",
+      "topic": "tecnica",
+      "question": "O cliente se mudou para uma casa e não sabe quem tem cópias. O que orientar?",
+      "options": [
+        "Trocar o segredo das portas",
+        "Fazer mais cópias das chaves que vieram com a casa",
+        "Lubrificar as fechaduras para durarem mais",
+        "Nada, as chaves antigas se perdem com o tempo"
+      ],
+      "why": "Quem tinha a chave antiga continua abrindo. Trocar o cilindro muda o segredo.",
+      "source": "pratica"
+    },
+    {
+      "id": "cha-12",
+      "topic": "tecnica",
+      "question": "Para trocar o segredo, é sempre preciso trocar a fechadura inteira?",
+      "options": [
+        "Não, basta trocar o cilindro",
+        "Sim, sempre, porque o segredo fica na caixa",
+        "Sim, e também a contratesta do batente",
+        "Não, basta trocar a maçaneta"
+      ],
+      "why": "O segredo fica no cilindro. Trocar só ele sai mais barato e mantém a fechadura.",
+      "source": "pratica"
+    },
+    {
+      "id": "cha-13",
+      "topic": "tecnica",
+      "question": "Uma fechadura tetra é instalada numa porta fina com batente frouxo. A porta fica segura?",
+      "options": [
+        "Não muito: porta e batente também contam",
+        "Sim, a fechadura tetra resolve sozinha",
+        "Sim, se a chave for nova e original",
+        "Sim, desde que a porta tenha olho mágico"
+      ],
+      "why": "Fechadura boa em porta fraca ou batente mal fixado perde boa parte da vantagem.",
+      "source": "porta"
+    },
+    {
+      "id": "cha-14",
+      "topic": "tecnica",
+      "question": "Qual norma trata dos requisitos e ensaios de fechaduras de embutir?",
+      "options": [
+        "ABNT NBR 14913",
+        "NR-10, que trata de segurança das instalações",
+        "NBR 5410",
+        "NBR 8160, de sistemas prediais"
+      ],
+      "why": "A NBR 14913 fixa requisitos de segurança e ensaios, inclusive de tentativa de arrombamento. A NBR 16833 trata de seleção, instalação e manutenção.",
+      "source": "nbr14913"
+    },
+    {
+      "id": "cha-15",
+      "topic": "tecnica",
+      "question": "Fechadura nova instalada, mas a lingueta não entra direito na contratesta. O que fazer?",
+      "options": [
+        "Ajustar a contratesta até a lingueta entrar",
+        "Lixar a lingueta até ela caber no furo",
+        "Deixar assim, a porta fica encostada",
+        "Tirar a contratesta e trancar direto no batente"
+      ],
+      "why": "Lingueta que não entra toda deixa a porta sem trancar de verdade e força o mecanismo.",
+      "source": "nbr14913"
+    },
+    {
+      "id": "cha-16",
+      "topic": "tecnica",
+      "question": "A chave começou a girar com dificuldade. O que verificar antes de trocar a fechadura?",
+      "options": [
+        "Se a porta caiu e força a lingueta",
+        "Se a chave é de outra cor ou de outro fabricante",
+        "Se o cliente está girando para o lado certo",
+        "Nada, fechadura dura tem que ser trocada"
+      ],
+      "why": "Muitas vezes o problema é a porta arriada forçando o trinco, não a fechadura.",
+      "source": "pratica"
+    },
+    {
+      "id": "cha-17",
+      "topic": "tecnica",
+      "question": "O fabricante Stam orienta como lubrificar suas fechaduras?",
+      "options": [
+        "Uma gota de óleo mineral a cada 6 meses",
+        "Grafite em pó toda semana dentro do cilindro",
+        "Desengripante em spray dentro do cilindro",
+        "Graxa grossa no miolo e na lingueta"
+      ],
+      "why": "O manual diz que o grafite forma pasta com o óleo do mecanismo e desaconselha desengripante. Siga sempre o fabricante da fechadura.",
+      "source": "stam"
+    },
+    {
+      "id": "cha-18",
+      "topic": "tecnica",
+      "question": "Como limpar a fechadura sem estragar o acabamento?",
+      "options": [
+        "Pano com sabão neutro ou álcool 70%",
+        "Água sanitária diluída",
+        "Palha de aço fina, que não risca o metal",
+        "Thinner, que tira mancha de tinta e gordura"
+      ],
+      "why": "Produtos com cloro e abrasivos atacam o acabamento.",
+      "source": "stam"
+    },
+    {
+      "id": "cha-19",
+      "topic": "tecnica",
+      "question": "A chave quebrou dentro do cilindro. Como tirar?",
+      "options": [
+        "Com extrator de chave",
+        "Colocando cola na ponta e puxando quando secar",
+        "Empurrando com outra chave até sair do outro lado",
+        "Batendo na fechadura até o pedaço soltar"
+      ],
+      "why": "Forçar empurra o pedaço para dentro e trava os pinos. Cola pode estragar o cilindro de vez.",
+      "source": "pratica"
+    },
+    {
+      "id": "cha-20",
+      "topic": "automotivo",
+      "question": "Você copiou a parte de metal de uma chave codificada. A cópia abre a porta, mas o carro não liga. Por quê?",
+      "options": [
+        "Falta programar o transponder",
+        "A bateria do carro está fraca para dar partida",
+        "O corte ficou justo demais e não gira a ignição",
+        "Precisa lubrificar a ignição para a chave nova"
+      ],
+      "why": "O imobilizador só libera o motor quando reconhece o código do transponder. A cópia mecânica não leva o código.",
+      "source": "transponder"
+    },
+    {
+      "id": "cha-21",
+      "topic": "automotivo",
+      "question": "O que é o transponder da chave do carro?",
+      "options": [
+        "Um chip com código que libera a partida",
+        "A pilha que faz o controle da chave funcionar",
+        "O botão que abre o porta-malas a distância",
+        "A capa de borracha que protege a chave"
+      ],
+      "why": "Junto com a central, forma o sistema imobilizador: sem o código certo, o carro não liga.",
+      "source": "transponder"
+    },
+    {
+      "id": "cha-22",
+      "topic": "automotivo",
+      "question": "Um cliente com carro de marca premium quer cópia codificada. O que avisar?",
+      "options": [
+        "Que em algumas só a concessionária codifica",
+        "Que todo chaveiro codifica qualquer carro",
+        "Que carro premium não precisa codificar",
+        "Que basta copiar o metal da chave"
+      ],
+      "why": "Algumas montadoras fazem a chave só na matriz e codificam só na rede oficial.",
+      "source": "transponder"
+    },
+    {
+      "id": "cha-23",
+      "topic": "automotivo",
+      "question": "A chave codificada parou de funcionar depois de cair no chão. Qual é a causa provável?",
+      "options": [
+        "O transponder foi danificado",
+        "A chave ficou suja de poeira por dentro",
+        "O carro esqueceu a chave por causa do tombo",
+        "Falta óleo na ignição depois da queda"
+      ],
+      "why": "Pancada forte pode quebrar o chip. Também pode haver falha no receptor da ignição.",
+      "source": "transponder"
+    },
+    {
+      "id": "cha-24",
+      "topic": "automotivo",
+      "question": "Para abrir um carro sem a chave, qual é o cuidado?",
+      "options": [
+        "Ferramentas que não riscam nem rasgam",
+        "Arame forçando a janela pela borracha",
+        "Quebrar o vidro menor",
+        "Chave de fenda forçando a porta"
+      ],
+      "why": "O objetivo é abrir sem dano. Arame e alavanca improvisada estragam borracha, pintura e peças internas.",
+      "source": "pratica"
+    },
+    {
+      "id": "cha-25",
+      "topic": "tecnica",
+      "question": "Abrir uma porta: por onde começar?",
+      "options": [
+        "Métodos sem dano; destrutivo só com ok",
+        "Furando o cilindro, que é mais rápido e certo",
+        "Forçando o batente, que depois é só pintar",
+        "Tirando a porta das dobradiças sem avisar"
+      ],
+      "why": "Método destrutivo gera custo para o cliente e precisa ser combinado antes.",
+      "source": "cdc"
+    },
+    {
+      "id": "cha-26",
+      "topic": "tecnica",
+      "question": "O que é um sistema de chave mestra?",
+      "options": [
+        "Uma chave que abre várias fechaduras",
+        "Uma chave que abre qualquer porta da cidade",
+        "A chave do carro que liga também o alarme",
+        "A chave reserva que fica com o síndico"
+      ],
+      "why": "É comum em prédios e empresas. Como a mestra abre tudo, as cópias precisam ser controladas.",
+      "source": "pratica"
+    },
+    {
+      "id": "cha-27",
+      "topic": "digital",
+      "question": "A fechadura digital avisa pilha fraca. O que orientar?",
+      "options": [
+        "Trocar as pilhas e saber a entrada de emergência",
+        "Esperar as pilhas acabarem de vez para trocar",
+        "Tirar as pilhas à noite para economizar",
+        "Desligar o aviso nas configurações"
+      ],
+      "why": "Sem pilha, só se entra pela chave mecânica ou pela alimentação de emergência. O cliente precisa saber disso antes.",
+      "source": "pratica"
+    },
+    {
+      "id": "cha-28",
+      "topic": "digital",
+      "question": "Antes de instalar uma fechadura digital, o que conferir na porta?",
+      "options": [
+        "Espessura, sentido de abertura e furação",
+        "Só a cor da porta e do acabamento",
+        "Se a porta tem olho mágico e trinco",
+        "Se a casa tem Wi-Fi rápido e estável"
+      ],
+      "why": "Cada modelo aceita uma faixa de espessura e um sentido de abertura. Errar obriga a refazer a furação.",
+      "source": "pratica"
+    },
+    {
+      "id": "cha-29",
+      "topic": "conduta",
+      "question": "O síndico pede um cadeado na porta da escada de emergência. O que você diz?",
+      "options": [
+        "Que a saída precisa abrir por dentro sem chave",
+        "Que pode, desde que seja um cadeado de qualidade",
+        "Que pode, desde que só tranque à noite",
+        "Que pode, se deixar a chave com o porteiro"
+      ],
+      "why": "Porta de rota de fuga deve destravar na hora, por dentro. Trancada, vira armadilha num incêndio.",
+      "source": "antipanico"
+    },
+    {
+      "id": "cha-30",
+      "topic": "conduta",
+      "question": "O cliente quer cópia de uma chave de cofre de empresa e diz ser funcionário. O que fazer?",
+      "options": [
+        "Pedir autorização da empresa",
+        "Copiar, porque ele tem a chave na mão",
+        "Copiar, mas cobrar mais por ser de cofre",
+        "Copiar e anotar o nome dele"
+      ],
+      "why": "Ter a chave na mão não significa ter direito de copiar. Num cofre, a autorização tem que vir do dono.",
+      "source": "cp"
+    }
+  ]
+}

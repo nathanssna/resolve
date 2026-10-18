@@ -1,0 +1,276 @@
+{
+  "service": "limpeza",
+  "title": "Limpeza",
+  "draw": 10,
+  "pass": 7,
+  "minutes": 10,
+  "sources": {
+    "anvisa": "Anvisa — orientações sobre saneantes: não misturar produtos, seguir o rótulo, embalagens e produtos clandestinos (cartilha de orientação ao consumidor e alertas citados na imprensa). https://www.riodasostras.rj.gov.br/wp-content/uploads/2023/07/cartilha_de_orientacao_para_os_consumidores.pdf",
+    "anvisa-mistura": "Alerta da Anvisa sobre misturas de produtos de limpeza (via Midiamax, 2026). https://midiamax.com.br/cotidiano/2026/voce-faz-misturinha-produtos-limpeza-pode-causar-intoxicacao-alerta-anvisa/",
+    "marmore": "Instituto do Mármore e guias de limpeza de pedras naturais (via eCycle): evitar ácidos, água sanitária e abrasivos. https://www.ecycle.com.br/nove-maneiras-de-nao-se-usar-o-vinagre-na-limpeza/",
+    "tramontina": "Tramontina — manuais de limpeza e conservação do aço inox (peças e cubas). https://assets.tramontina.com.br/upload/tramon/imagens/TEC/94518000INM001.pdf",
+    "pratica": "Prática de limpeza profissional consolidada (sem norma específica); revisar com um profissional."
+  },
+  "questions": [
+    {
+      "id": "lim-01",
+      "topic": "produtos",
+      "question": "Para \"limpar melhor\", pode misturar água sanitária com outro produto de limpeza?",
+      "options": [
+        "Não, só se o rótulo autorizar",
+        "Sim, misturar sempre limpa mais e mais rápido",
+        "Sim, com qualquer desinfetante de cheiro",
+        "Sim, desde que seja num balde aberto e ventilado"
+      ],
+      "why": "A Anvisa orienta não misturar produtos de limpeza, salvo se o rótulo autorizar. Muitas misturas soltam gases tóxicos.",
+      "source": "anvisa-mistura"
+    },
+    {
+      "id": "lim-02",
+      "topic": "produtos",
+      "question": "O que acontece ao misturar água sanitária com vinagre ou produto ácido (como limpa-pedra)?",
+      "options": [
+        "Libera gás cloro, tóxico e irritante",
+        "Vira um desinfetante mais forte e seguro",
+        "Nada, um anula o outro",
+        "Fica com cheiro melhor"
+      ],
+      "why": "Em contato com ácidos, o hipoclorito da água sanitária libera gás cloro.",
+      "source": "anvisa-mistura"
+    },
+    {
+      "id": "lim-03",
+      "topic": "produtos",
+      "question": "O cliente sugere água sanitária com álcool para desinfetar mais. O que você diz?",
+      "options": [
+        "Que não se mistura: solta gás tóxico",
+        "Que é uma boa ideia para desinfetar mais",
+        "Que só pode em dia quente",
+        "Que só pode no banheiro"
+      ],
+      "why": "Água sanitária com álcool produz clorofórmio em gás. Com amônia, solta outros gases irritantes.",
+      "source": "anvisa-mistura"
+    },
+    {
+      "id": "lim-04",
+      "topic": "produtos",
+      "question": "Depois de usar dois produtos juntos, você sente ardência nos olhos, tosse e falta de ar. O que fazer?",
+      "options": [
+        "Sair, ventilar e procurar atendimento",
+        "Continuar limpando",
+        "Jogar mais água sanitária para neutralizar a mistura",
+        "Beber leite e continuar o serviço"
+      ],
+      "why": "São os sintomas de intoxicação por gás de mistura. É preciso ar fresco e atendimento.",
+      "source": "anvisa-mistura"
+    },
+    {
+      "id": "lim-05",
+      "topic": "produtos",
+      "question": "Usar mais produto do que o rótulo manda limpa melhor?",
+      "options": [
+        "Não, siga a diluição do rótulo",
+        "Sim, quanto mais concentrado melhor",
+        "Sim, se o chão estiver muito sujo",
+        "Sim, puro é sempre melhor"
+      ],
+      "why": "A Anvisa alerta que concentração maior não torna a limpeza mais eficiente e aumenta o risco.",
+      "source": "anvisa-mistura"
+    },
+    {
+      "id": "lim-06",
+      "topic": "produtos",
+      "question": "Um vendedor de porta em porta oferece água sanitária barata, sem rótulo. Pode usar no serviço?",
+      "options": [
+        "Não, é clandestino",
+        "Pode, porque água sanitária é tudo igual",
+        "Pode, se o cheiro for forte, que mostra que é boa",
+        "Pode, se diluir mais do que o normal"
+      ],
+      "why": "Produto sem registro não passa por avaliação de segurança. A água sanitária clandestina é a que mais faz vítimas, por excesso de soda cáustica.",
+      "source": "anvisa"
+    },
+    {
+      "id": "lim-07",
+      "topic": "produtos",
+      "question": "Pode passar produto de limpeza para uma garrafa de refrigerante, para facilitar?",
+      "options": [
+        "Não, fica na embalagem original",
+        "Pode, se escrever o nome do produto na garrafa",
+        "Pode, se for garrafa transparente e sem rótulo",
+        "Pode, se for só durante o dia de limpeza"
+      ],
+      "why": "Em garrafa de bebida, alguém pode tomar por engano, principalmente criança. A embalagem original tem rótulo e instruções.",
+      "source": "anvisa"
+    },
+    {
+      "id": "lim-08",
+      "topic": "produtos",
+      "question": "O que fazer com a embalagem vazia de um produto de limpeza?",
+      "options": [
+        "Inutilizar e descartar, sem reaproveitar",
+        "Lavar bem e usar para guardar água de beber",
+        "Dar para as crianças brincarem depois de lavar",
+        "Guardar para encher com outro produto"
+      ],
+      "why": "A embalagem sempre fica com resíduo. A Anvisa pede inutilizar e descartar, de preferência na reciclagem.",
+      "source": "anvisa"
+    },
+    {
+      "id": "lim-09",
+      "topic": "superficies",
+      "question": "Como limpar uma bancada de mármore?",
+      "options": [
+        "Detergente neutro",
+        "Vinagre com limão, que tira mancha e brilha",
+        "Água sanitária pura, que desinfeta a pedra",
+        "Sapólio e palha de aço nas manchas"
+      ],
+      "why": "O mármore é poroso e sensível a ácido. Vinagre, limão e água sanitária mancham e corroem.",
+      "source": "marmore"
+    },
+    {
+      "id": "lim-10",
+      "topic": "superficies",
+      "question": "Caiu limão ou vinho na bancada de mármore. O que fazer?",
+      "options": [
+        "Secar logo",
+        "Deixar secar sozinho",
+        "Esfregar com palha de aço",
+        "Jogar água sanitária por cima"
+      ],
+      "why": "O ácido mancha a pedra rápido. Quanto antes secar, menor a mancha.",
+      "source": "marmore"
+    },
+    {
+      "id": "lim-11",
+      "topic": "superficies",
+      "question": "Como limpar geladeira, fogão ou cuba de aço inox?",
+      "options": [
+        "Detergente neutro, sem cloro",
+        "Palha de aço",
+        "Água sanitária",
+        "Sapólio em pó com esponja dupla face"
+      ],
+      "why": "O fabricante pede detergente neutro e proíbe palha de aço e abrasivos, que riscam. O cloro mancha o inox.",
+      "source": "tramontina"
+    },
+    {
+      "id": "lim-12",
+      "topic": "superficies",
+      "question": "A cuba de inox está com pontos marrons, parecendo ferrugem. O que é mais provável?",
+      "options": [
+        "Cloro; limpar e secar após o uso",
+        "Defeito de fábrica da cuba",
+        "Falta de água sanitária na limpeza diária",
+        "Sujeira de café e chá grudada no metal"
+      ],
+      "why": "O manual da cuba associa as manchas marrons ao cloro e pede secar a peça depois de cada uso.",
+      "source": "tramontina"
+    },
+    {
+      "id": "lim-13",
+      "topic": "seguranca",
+      "question": "Ao usar água sanitária ou desengordurante, o que proteger?",
+      "options": [
+        "As mãos, com luvas",
+        "Só o cabelo, com touca",
+        "Nada, é produto de uso doméstico",
+        "Os pés, com chinelo de borracha"
+      ],
+      "why": "Esses produtos irritam e ressecam a pele. Luva é o mínimo.",
+      "source": "anvisa"
+    },
+    {
+      "id": "lim-14",
+      "topic": "seguranca",
+      "question": "Vai lavar o banheiro com produto forte. Como deixar o ambiente?",
+      "options": [
+        "Ventilado",
+        "Fechado, para o cheiro do produto agir",
+        "Com o chuveiro quente ligado para o vapor ajudar",
+        "Com a porta trancada para ninguém entrar"
+      ],
+      "why": "Ventilar tira os vapores do produto. Banheiro fechado concentra os vapores e causa mal-estar.",
+      "source": "anvisa"
+    },
+    {
+      "id": "lim-15",
+      "topic": "tecnica",
+      "question": "Qual é a ordem certa para limpar um cômodo?",
+      "options": [
+        "De cima para baixo, do limpo para o sujo",
+        "Começar pelo chão",
+        "Começar pelo vaso e depois passar para a pia",
+        "Tanto faz"
+      ],
+      "why": "Limpando de cima para baixo, a sujeira que cai vai para o que ainda vai ser limpo. Do limpo para o sujo, não se espalha sujeira.",
+      "source": "pratica"
+    },
+    {
+      "id": "lim-16",
+      "topic": "tecnica",
+      "question": "Pode usar o mesmo pano no banheiro e na cozinha?",
+      "options": [
+        "Não, panos separados",
+        "Pode, se lavar com água entre um e outro",
+        "Pode, se for um pano novo de microfibra",
+        "Pode, se limpar a cozinha primeiro"
+      ],
+      "why": "O pano do banheiro leva germes para onde se prepara comida.",
+      "source": "pratica"
+    },
+    {
+      "id": "lim-17",
+      "topic": "seguranca",
+      "question": "Antes de limpar o micro-ondas ou a geladeira por dentro, o que fazer?",
+      "options": [
+        "Tirar da tomada",
+        "Deixar ligado para ver a luz",
+        "Jogar água direto na tomada para limpar",
+        "Nada, é só passar pano"
+      ],
+      "why": "Água e eletricidade juntas dão choque. Tire o aparelho da tomada antes.",
+      "source": "pratica"
+    },
+    {
+      "id": "lim-18",
+      "topic": "conduta",
+      "question": "Limpando um quarto, você acha joias e dinheiro fora do lugar. O que fazer?",
+      "options": [
+        "Não mexer e avisar o cliente",
+        "Guardar numa gaveta",
+        "Levar para casa e devolver no outro dia",
+        "Juntar tudo numa sacola e entregar no fim do mês"
+      ],
+      "why": "Avisar protege você e o cliente. Mexer sem avisar gera desconfiança.",
+      "source": "pratica"
+    },
+    {
+      "id": "lim-19",
+      "topic": "seguranca",
+      "question": "Casa com criança pequena e cachorro. Onde deixar os produtos e o balde durante a limpeza?",
+      "options": [
+        "Fora do alcance deles",
+        "No chão, perto da porta, para pegar fácil",
+        "Em cima do sofá",
+        "No banheiro"
+      ],
+      "why": "Intoxicação de criança com produto de limpeza é comum. Produto e balde ficam sempre fora do alcance.",
+      "source": "anvisa"
+    },
+    {
+      "id": "lim-20",
+      "topic": "seguranca",
+      "question": "O piso ficou molhado e escorregadio. O que fazer?",
+      "options": [
+        "Avisar e secar ou sinalizar",
+        "Nada, o piso seca sozinho em poucos minutos",
+        "Passar cera para o piso secar mais rápido",
+        "Apagar a luz para ninguém entrar"
+      ],
+      "why": "Piso molhado causa queda, principalmente de idosos e crianças.",
+      "source": "pratica"
+    }
+  ]
+}

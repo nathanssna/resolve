@@ -5,22 +5,13 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Icon, type IconName } from '@/components';
 import { useApp } from '@/state/app';
 import { useSupport } from '@/state/support';
-import { colors, fonts, radius } from '@/theme/tokens';
+import { colors, fonts } from '@/theme/tokens';
 
-/** Ícone da aba: a ativa ganha uma pílula amarela atrás. */
+/** Ícone da aba: a ativa fica preta e um pouco mais grossa, sem fundo. */
 function TabIcon({ name, focused }: { name: IconName; focused: boolean }) {
   return (
-    <View
-      style={{
-        width: 60,
-        height: 32,
-        borderRadius: radius.pill,
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: focused ? colors.brand : 'transparent',
-      }}
-    >
-      <Icon name={name} size={22} strokeWidth={focused ? 2.25 : 2} color={focused ? colors.ink : colors.inkMuted} />
+    <View style={{ height: 32, alignItems: 'center', justifyContent: 'center' }}>
+      <Icon name={name} size={24} strokeWidth={focused ? 2.25 : 2} color={focused ? colors.ink : colors.inkMuted} />
     </View>
   );
 }

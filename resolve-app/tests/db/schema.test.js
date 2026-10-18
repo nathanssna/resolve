@@ -71,7 +71,7 @@ async function main() {
   ok((await as(otp2, "update public.profiles set full_name = 'Bruno Lima' where id = $1", [otp2])).rowCount === 1, 'depois disso o nome continua editável por update');
 
   console.log('\nCatálogo e leitura pública');
-  ok((await as(null, 'select * from public.services')).rows.length === 8, 'anon lê os 8 serviços');
+  ok((await as(null, 'select * from public.services')).rows.length === 10, 'anon lê os 10 serviços');
   ok((await as(null, 'select id from public.services where is_popular order by sort_order')).rows.map((r) => r.id).join() === 'encanador,informatica,montagem-moveis,limpeza', 'populares do seed');
   ok((await as(null, 'select id, role_title, rating from public.professionals')).rows.length === 2, 'anon lê profissionais (sem as coordenadas)');
   ok((await as(null, 'select full_name from public.profiles')).rows.length === 2, 'anon só vê profiles de profissionais');

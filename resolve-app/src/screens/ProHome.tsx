@@ -1,10 +1,14 @@
-import { router } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { router, useFocusEffect } from 'expo-router';
+import { useCallback, useEffect, useState } from 'react';
 import { Pressable, RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Avatar, Badge, Button, CatalogFallback, Icon, ProgressBar, SuspendedNotice, Text } from '@/components';
+import { LESSONS } from '@/content/lessons';
+import { lessonProgress } from '@/lib/lessons';
+import { quizStatus, type QuizStatus } from '@/lib/quiz';
 import { supabase } from '@/lib/supabase';
+import { latestVerification, type Verification } from '@/lib/verification';
 import { soonestFirst, useApp, type Conversation, type Job, type Order } from '@/state/app';
 import { useAuth } from '@/state/auth';
 import { useCatalog, type Professional } from '@/state/catalog';
@@ -223,16 +227,175 @@ function WaitingRow({ conv, job }: { conv: Conversation; job: Job }) {
   );
 }
 
+/** `at`: quando foi carregado (para saber se a espera do teste já passou). */
+type Entry = { tests: QuizStatus[]; verification: Verification | null; lessons: string[]; at: number };
+
+/** Testes da ficha e a verificação de identidade; recarrega ao voltar para o painel. */
+function useEntry(uid: string | undefined) {
+  const [entry, setEntry] = useState<Entry | null>(null);
+  useFocusEffect(
+    useCallback(() => {
+      if (!uid) return;
+      let alive = true;
+      Promise.all([quizStatus(), latestVerification(), lessonProgress()]).then(
+        ([tests, verification, lessons]) => alive && setEntry({ tests, verification, lessons, at: Date.now() }),
+        () => {},
+      );
+      return () => {
+        alive = false;
+      };
+    }, [uid]),
+  );
+  return entry;
+}
+
+const dayMonth = (iso: string) => {
+  const d = new Date(iso);
+  return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}`;
+};
+
+/** No topo amarelo, enquanto não está liberado: o que falta. */
+function EntryStatus({ entry, me }: { entry: Entry | null; me: Professional }) {
+  const tested = me.approvedIds.length > 0;
+  const reviewing = entry?.verification?.status === 'pending';
+  const missing = Number(!tested) + Number(!me.verified) + Number(!me.lessonsDone);
+  return (
+    <View style={styles.accepting}>
+      {reviewing && tested ? <Icon name="clock" size={20} /> : <View style={[styles.dot, { backgroundColor: colors.inkMuted }]} />}
+      <View style={{ flex: 1, gap: 1 }}>
+        <Text variant="label">{reviewing && tested ? 'Conferindo sua identidade' : 'Você ainda não aparece para clientes'}</Text>
+        <Text variant="caption" color={colors.inkBody}>
+          {reviewing && tested
+            ? 'Resposta em até 24 h. Você recebe um aviso.'
+            : missing === 1
+              ? 'Falta 1 passo para receber pedidos'
+              : `Faltam ${missing} passos para receber pedidos`}
+        </Text>
+      </View>
+    </View>
+  );
+}
+
+type EntryRow = { key: string; n: number; title: string; detail: string; done?: boolean; wait?: boolean; onPress?: () => void };
+
+/** Para começar: ficha → teste da área → identidade → aulas. O próximo passo fica em destaque. */
+function EntrySteps({ me, entry }: { me: Professional; entry: Entry | null }) {
+  if (!entry) return null;
+  const v = entry.verification;
+  const rows: EntryRow[] = [
+    { key: 'ficha', n: 1, title: 'Ficha profissional', detail: 'Feita', done: true },
+    ...entry.tests.map((t): EntryRow => {
+      const open = () => router.push({ pathname: '/profissional/teste/[servico]', params: { servico: t.service_id } });
+      const waitUntil = t.retry_at && Date.parse(t.retry_at) > entry.at ? t.retry_at : null;
+      return {
+        key: t.service_id,
+        n: 2,
+        title: `Teste de ${t.label}`,
+        detail: t.approved_at
+          ? 'Aprovado'
+          : !t.available
+            ? 'Em breve'
+            : t.open_attempt
+              ? 'Em andamento: continue de onde parou'
+              : waitUntil
+                ? `Tente de novo a partir de ${dayMonth(waitUntil)}`
+                : `${t.draw} questões · até ${t.minutes} min`,
+        done: !!t.approved_at,
+        wait: !t.available || !!waitUntil,
+        onPress: t.available ? open : undefined,
+      };
+    }),
+    {
+      key: 'identidade',
+      n: 3,
+      title: 'Confirmar identidade',
+      detail: me.verified
+        ? 'Confirmada'
+        : v?.status === 'pending'
+          ? 'Em análise · resposta em até 24 h'
+          : v?.status === 'rejected'
+            ? 'Não deu para confirmar: envie de novo'
+            : 'Documento e selfie · 2 min',
+      done: me.verified,
+      wait: v?.status === 'pending',
+      onPress: () => router.push('/verificacao'),
+    },
+    {
+      key: 'aulas',
+      n: 4,
+      title: 'Aulas da Rezolveaê',
+      detail: me.lessonsDone
+        ? 'Concluídas'
+        : `${entry.lessons.length} de ${LESSONS.length} · cerca de ${LESSONS.reduce((m, l) => m + l.minutes, 0)} min`,
+      done: me.lessonsDone,
+      onPress: () => router.push('/aulas'),
+    },
+  ];
+  // A identidade em análise não trava: as aulas podem ser feitas enquanto isso.
+  const next = rows.find((r) => !r.done && !r.wait);
+  const done = 1 + Number(me.approvedIds.length > 0) + Number(me.verified) + Number(me.lessonsDone);
+
+  return (
+    <View style={styles.section}>
+      <View style={styles.sectionTitle}>
+        <Text variant="titleSm" accessibilityRole="header">
+          Para começar
+        </Text>
+        <Text variant="label" color={colors.inkMuted}>{`${done} de 4`}</Text>
+      </View>
+      <View style={[styles.box, styles.steps]}>
+        <ProgressBar value={done / 4} tone="brand" />
+        {rows.map((r) => {
+          const current = r === next;
+          return (
+            <Pressable
+              key={r.key}
+              accessibilityRole={r.onPress ? 'button' : undefined}
+              disabled={!r.onPress}
+              onPress={r.onPress}
+              style={({ pressed }) => [styles.entryRow, current && styles.nextStep, pressed && styles.pressed]}
+            >
+              <View style={[styles.entryNum, r.done ? styles.entryDone : current ? styles.entryCurrent : null]}>
+                {r.done ? (
+                  <Icon name="check" size={14} color={colors.success} />
+                ) : r.wait ? (
+                  <Icon name="clock" size={14} color={colors.inkMuted} />
+                ) : (
+                  <Text variant="caption" color={current ? colors.onInk : colors.inkMuted} style={styles.bold}>
+                    {String(r.n)}
+                  </Text>
+                )}
+              </View>
+              <View style={{ flex: 1, gap: 1 }}>
+                <Text variant="label" color={r.done ? colors.inkMuted : colors.ink}>
+                  {r.title}
+                </Text>
+                <Text variant="caption" color={r.done ? colors.success : r.key === 'identidade' && entry.verification?.status === 'rejected' ? colors.danger : colors.inkMuted}>
+                  {r.detail}
+                </Text>
+              </View>
+              {current ? <Icon name="chevron-right" size={16} color={colors.inkMuted} /> : null}
+            </Pressable>
+          );
+        })}
+      </View>
+    </View>
+  );
+}
+
 /** Seu perfil: só enquanto falta algo. Mostra o próximo passo e o que vem depois. */
-function ProfileSteps({ me }: { me: Professional }) {
+function ProfileSteps({ me, tests }: { me: Professional; tests: QuizStatus[] }) {
   const { profile } = useAuth();
-  const steps = [
+  const steps: { done: boolean; next: string; hint?: string; short: string; onPress: () => void }[] = [
     { done: me.serviceIds.length > 0 && !!me.role, next: 'Escolha seus serviços e profissão', short: 'serviços', onPress: () => router.push('/profissional/ficha') },
+    // Outras áreas da ficha: só aparecem para os clientes depois do teste.
+    ...tests
+      .filter((t) => t.available && !t.approved_at)
+      .map((t) => ({ done: false, next: `Faça o teste de ${t.label}`, hint: 'para aparecer nessa área', short: `teste de ${t.label}`, onPress: () => router.push({ pathname: '/profissional/teste/[servico]', params: { servico: t.service_id } }) })),
     { done: !!me.area, next: 'Diga onde você atende', short: 'área de atendimento', onPress: () => router.push('/profissional/ficha') },
     { done: !!profile?.avatar_url, next: 'Adicione uma foto', hint: 'mais confiança', short: 'foto', onPress: () => router.push('/perfil') },
     { done: !!me.bio, next: 'Escreva sua apresentação', hint: 'sua experiência', short: 'apresentação', onPress: () => router.push('/profissional/ficha') },
     { done: !!profile?.phone, next: 'Adicione seu telefone', hint: 'para o cliente ligar', short: 'telefone', onPress: () => router.push('/telefone') },
-    { done: me.verified, next: 'Peça o selo Verificado', hint: 'documento e selfie', short: 'selo Verificado', onPress: () => router.push('/profissional/verificacao') },
   ];
   const todo = steps.filter((s) => !s.done);
   if (!todo.length) return null;
@@ -302,7 +465,7 @@ function Accepting({ me }: { me: Professional }) {
   };
 
   // "Encanador e Eletricista · até 10 km de Pituba".
-  const names = me.serviceIds.map((id) => getService(id)?.short).filter((n): n is string => !!n);
+  const names = me.approvedIds.map((id) => getService(id)?.short).filter((n): n is string => !!n);
   const services = names.length > 3 ? `${names.slice(0, 2).join(', ')} e mais ${names.length - 2}` : names.join(', ').replace(/, ([^,]*)$/, ' e $1');
   const where = me.area ? `até ${me.radiusKm} km de ${me.area.split(',')[0]}` : 'área de atendimento não informada';
   const detail = until
@@ -354,6 +517,9 @@ export function ProHome() {
   const { getProfessional, refreshing, refresh: refreshCatalog } = useCatalog();
   // Só aparece no catálogo quem tem nome e pelo menos um serviço.
   const me = getProfessional(session?.user.id);
+  const entry = useEntry(session?.user.id);
+  // Liberado: identidade confirmada, pelo menos um teste aprovado e as aulas. Antes disso, o painel mostra os passos.
+  const released = !!me && me.verified && me.approvedIds.length > 0 && me.lessonsDone;
 
   const jobs = conversations.flatMap((conv) => conv.jobs.map((job) => ({ conv, job })));
   // Urgentes primeiro; depois, quem espera há mais tempo.
@@ -406,13 +572,17 @@ export function ProHome() {
             <Avatar size={48} uri={profile?.avatar_url ?? undefined} />
           </Pressable>
         </View>
-        {me ? <Accepting me={me} /> : null}
+        {me && released ? <Accepting me={me} /> : me ? <EntryStatus entry={entry} me={me} /> : null}
       </View>
 
       <View style={styles.body}>
         {suspendedUntil ? <SuspendedNotice until={suspendedUntil} /> : null}
         {me ? (
-          <ProfileSteps me={me} />
+          released ? (
+            <ProfileSteps me={me} tests={entry?.tests ?? []} />
+          ) : (
+            <EntrySteps me={me} entry={entry} />
+          )
         ) : (
           <View style={styles.setup}>
             <Badge tone="ink" icon="briefcase">
@@ -455,7 +625,9 @@ export function ProHome() {
                   <Text variant="bodySm" color={colors.inkMuted} style={{ textAlign: 'center' }}>
                     {me?.paused
                       ? 'Seus pedidos estão pausados. Ligue “Recebendo pedidos” para voltar a aparecer nas buscas.'
-                      : 'Quando um cliente da sua região pedir orçamento, você recebe uma notificação e ele aparece aqui.'}
+                      : !released
+                        ? 'Quando você for liberado, os pedidos da sua região aparecem aqui.'
+                        : 'Quando um cliente da sua região pedir orçamento, você recebe uma notificação e ele aparece aqui.'}
                   </Text>
                 </View>
               )}
@@ -556,6 +728,10 @@ const styles = StyleSheet.create({
   empty: { alignItems: 'center', gap: spacing[2], paddingVertical: spacing[5], paddingHorizontal: spacing[5] },
   emptyIcon: { width: 48, height: 48, borderRadius: radius.md, backgroundColor: colors.surface, alignItems: 'center', justifyContent: 'center', marginBottom: spacing[1] },
   steps: { padding: spacing[4], gap: spacing[3] },
+  entryRow: { flexDirection: 'row', alignItems: 'center', gap: spacing[3], paddingVertical: spacing[1], paddingHorizontal: spacing[1] },
+  entryNum: { width: 28, height: 28, borderRadius: 14, backgroundColor: colors.surfaceStrong, alignItems: 'center', justifyContent: 'center' },
+  entryCurrent: { backgroundColor: colors.ink },
+  entryDone: { backgroundColor: colors.successTint },
   nextStep: { flexDirection: 'row', alignItems: 'center', gap: spacing[2], paddingVertical: spacing[3], paddingHorizontal: spacing[3], borderRadius: radius.md, backgroundColor: colors.surface },
   seeAll: { flexDirection: 'row', alignItems: 'center', gap: 4, alignSelf: 'center', paddingVertical: spacing[1] },
   setup: { padding: spacing[4], borderRadius: radius.xl, backgroundColor: colors.brandTint, gap: spacing[2], alignItems: 'flex-start' },

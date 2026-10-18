@@ -1,0 +1,536 @@
+{
+  "service": "encanador",
+  "title": "Hidráulica",
+  "draw": 20,
+  "pass": 14,
+  "minutes": 20,
+  "sources": {
+    "tigre": "Tigre — Manual Técnico (orientações técnicas sobre instalações hidráulicas prediais), 5ª ed. Cita as normas ABNT NBR 5626 (água fria e quente), NBR 8160 (esgoto) e NBR 10844 (águas pluviais). https://api.aecweb.com.br/cls/catalogos/merc/tigre_manual_tecnico.pdf",
+    "lorenzetti": "Lorenzetti — Manual de Instruções de Instalação e Garantia, Duchas Advanced (abr/2024). https://www.lorenzetti.com.br/manuais/advanced/manual.pdf",
+    "sabesp": "Prefeitura de São Paulo, especificação técnica citando a cartilha da Sabesp sobre limpeza de caixa d’água. https://www.prefeitura.sp.gov.br/cidade/secretarias/upload/Anexo%20I%20-%20Especifica%C3%A7%C3%B5es%20t%C3%A9cnicas.pdf",
+    "saude": "Secretaria da Saúde de Goiás — procedimento para desinfecção da caixa d’água. https://goias.gov.br/saude/wp-content/uploads/sites/34/2012/02/5-procedimento-para-desinfeccao-da-caixa-dagua-8ea.pdf",
+    "saae": "SAAE Sorocaba — teste de vazamento pelo hidrômetro. https://www.saaesorocaba.com.br/arquivos/panfletos/consumo-alto-teste-de-vazamento.pdf"
+  },
+  "questions": [
+    {
+      "id": "enc-01",
+      "topic": "preparo",
+      "question": "Antes de trocar a torneira da pia, o que você faz primeiro?",
+      "options": [
+        "Fecho o registro da pia e abro a torneira",
+        "Desrosqueio devagar para a água sair aos poucos no balde",
+        "Fecho só a própria torneira, que já segura a água",
+        "Desligo o disjuntor geral e fecho a torneira da pia"
+      ],
+      "why": "Fechar a torneira não corta a água da rede. O registro de gaveta existe para bloquear o fluxo durante a manutenção, e abrir a torneira depois tira a pressão que ficou no cano.",
+      "source": "tigre"
+    },
+    {
+      "id": "enc-02",
+      "topic": "agua-fria",
+      "question": "Qual é a sequência certa para soldar tubo e conexão de PVC de água fria?",
+      "options": [
+        "Lixar, limpar, passar adesivo nas duas partes e encaixar",
+        "Passar adesivo só na ponta do tubo",
+        "Enrolar fita veda rosca na ponta e depois passar o adesivo",
+        "Aquecer a ponta do tubo para amolecer e encaixar sem adesivo"
+      ],
+      "why": "O fabricante pede lixar para tirar o brilho, limpar com solução preparadora para remover gordura e passar adesivo na bolsa e na ponta.",
+      "source": "tigre"
+    },
+    {
+      "id": "enc-03",
+      "topic": "agua-fria",
+      "question": "Na hora de encaixar o tubo soldável na conexão, como se faz?",
+      "options": [
+        "De uma vez, com ¼ de volta, e tiro o excesso",
+        "Aos poucos",
+        "Girando várias voltas para espalhar bem o adesivo por dentro",
+        "Batendo com martelo de borracha até a ponta chegar ao fundo"
+      ],
+      "why": "O manual da Tigre pede encaixe de uma vez, com ¼ de volta, até a posição final, e remover o excesso.",
+      "source": "tigre"
+    },
+    {
+      "id": "enc-04",
+      "topic": "agua-fria",
+      "question": "Depois de soldar a tubulação de água fria, quanto esperar para fazer o teste de pressão?",
+      "options": [
+        "12 horas",
+        "5 minutos, porque o adesivo seca rápido",
+        "Não precisa esperar se a solda ficou bem feita",
+        "1 hora, o mesmo tempo para encher de água"
+      ],
+      "why": "O fabricante pede 1 hora para encher a tubulação e 12 horas para o teste de pressão.",
+      "source": "tigre"
+    },
+    {
+      "id": "enc-05",
+      "topic": "agua-fria",
+      "question": "Como aplicar a fita veda rosca?",
+      "options": [
+        "No sentido da rosca, 3 a 4 voltas sobrepostas",
+        "No sentido contrário da rosca, para travar melhor no aperto",
+        "Umas 20 voltas, porque quanto mais fita, menos vaza",
+        "Uma volta só, para não engrossar a rosca"
+      ],
+      "why": "Contra a rosca, a fita desenrola ao apertar. Fita demais pode rachar a conexão. O fabricante indica 3 a 4 voltas em favor da rosca.",
+      "source": "tigre"
+    },
+    {
+      "id": "enc-06",
+      "topic": "agua-fria",
+      "question": "Posso usar adesivo de PVC numa conexão roscável?",
+      "options": [
+        "Não, rosca leva fita veda rosca",
+        "Sim, o adesivo veda melhor que a fita em rosca",
+        "Sim, passando a fita primeiro e o adesivo por cima",
+        "Só em rosca de água quente"
+      ],
+      "why": "O manual é direto: não usar adesivo de PVC nas roscas, porque para elas existe a fita veda rosca.",
+      "source": "tigre"
+    },
+    {
+      "id": "enc-07",
+      "topic": "agua-quente",
+      "question": "O cliente quer levar água quente do aquecedor até a pia. Pode usar o tubo soldável marrom de água fria?",
+      "options": [
+        "Não, uso tubo de água quente, como CPVC",
+        "Sim, se for o tubo de parede mais grossa da linha",
+        "Sim, se o trecho até a pia for curto e embutido",
+        "Sim, desde que envolva o tubo com isolante térmico"
+      ],
+      "why": "O PVC de água fria trabalha a até 20 °C e deforma com calor. O CPVC de água quente trabalha a 80 °C.",
+      "source": "tigre"
+    },
+    {
+      "id": "enc-08",
+      "topic": "agua-quente",
+      "question": "Onde pode ficar um aquecedor de água a gás?",
+      "options": [
+        "Em local com ventilação permanente",
+        "Dentro do box do banheiro",
+        "Em qualquer cômodo fechado",
+        "Dentro de um armário fechado"
+      ],
+      "why": "Aquecedor a gás em ambiente fechado acumula gases de queima. O manual pede ventilação permanente, com uma abertura acima de 1,5 m e outra abaixo de 0,80 m.",
+      "source": "tigre"
+    },
+    {
+      "id": "enc-09",
+      "topic": "agua-quente",
+      "question": "A chama do aquecedor a gás está amarelada. O que isso indica?",
+      "options": [
+        "Queimadores desregulados ou sujos",
+        "Está tudo normal, chama amarela esquenta mais",
+        "Falta água na caixa",
+        "O gás é de melhor qualidade"
+      ],
+      "why": "A chama certa é azulada. A amarela indica queima ruim, mais consumo e mais gás de combustão.",
+      "source": "tigre"
+    },
+    {
+      "id": "enc-10",
+      "topic": "testes",
+      "question": "Quando testar se a tubulação nova tem vazamento?",
+      "options": [
+        "Antes de fechar a parede, com a tubulação cheia",
+        "Depois do revestimento pronto",
+        "Não precisa testar se todas as soldas foram bem feitas",
+        "Só depois que o cliente reclamar de alguma mancha"
+      ],
+      "why": "O manual pede o teste antes de revestir, para achar falhas nas juntas sem quebrar nada depois.",
+      "source": "tigre"
+    },
+    {
+      "id": "enc-11",
+      "topic": "testes",
+      "question": "No teste de estanqueidade da água fria, qual pressão usar?",
+      "options": [
+        "1,5 vez a pressão estática, mínimo de 10 m.c.a.",
+        "A mesma pressão da rede, sem bomba, por alguns minutos",
+        "O dobro da pressão máxima que o tubo aguenta",
+        "Qualquer uma, o que importa é ver se pinga"
+      ],
+      "why": "A NBR 5626, citada no manual, pede 1,5 vez a pressão estática, nunca menos de 10 m.c.a., por 1 hora sem queda.",
+      "source": "tigre"
+    },
+    {
+      "id": "enc-12",
+      "topic": "esgoto",
+      "question": "Qual é o caimento mínimo de um tubo de esgoto de 100 mm?",
+      "options": [
+        "1%, ou seja, 1 cm para cada metro",
+        "Pode ser reto",
+        "10%, quanto mais melhor",
+        "0,1%, quase reto"
+      ],
+      "why": "A recomendação é 2% para diâmetros até 75 mm e 1% para 100 mm ou mais, com declividade constante.",
+      "source": "tigre"
+    },
+    {
+      "id": "enc-13",
+      "topic": "esgoto",
+      "question": "Um ramal de esgoto de 40 mm vai ter 3 metros. Qual desnível mínimo entre o começo e o fim?",
+      "options": [
+        "6 cm",
+        "3 cm, porque o caimento mínimo é de 1%",
+        "Nenhum, se o tubo estiver bem colado",
+        "30 cm, porque esgoto precisa de muita queda"
+      ],
+      "why": "Até 75 mm, o mínimo é 2%: 2 cm por metro. Em 3 metros, 6 cm.",
+      "source": "tigre"
+    },
+    {
+      "id": "enc-14",
+      "topic": "esgoto",
+      "question": "Para que serve o sifão (ou a caixa sifonada)?",
+      "options": [
+        "Manter água que barra o cheiro do esgoto",
+        "Aumentar a pressão da água que desce para o esgoto",
+        "Filtrar a água antes de ela ir para o esgoto",
+        "Segurar objetos que caem no ralo"
+      ],
+      "why": "A camada de água, chamada fecho hídrico, bloqueia os gases. A NBR 8160 pede no mínimo 5 cm de altura.",
+      "source": "tigre"
+    },
+    {
+      "id": "enc-15",
+      "topic": "diagnostico",
+      "question": "Um banheiro que ficou meses sem uso está com cheiro de esgoto. O que é mais provável?",
+      "options": [
+        "A água do sifão e do ralo secou",
+        "O cano de água fria está furado dentro da parede",
+        "A caixa d’água está suja e o cheiro vem pela torneira",
+        "O registro está meio fechado e a água ficou parada"
+      ],
+      "why": "Sem uso, o fecho hídrico evapora. Jogar água no ralo e no vaso refaz a barreira.",
+      "source": "tigre"
+    },
+    {
+      "id": "enc-16",
+      "topic": "esgoto",
+      "question": "Para que serve a ventilação do esgoto (o tubo que sobe até o telhado)?",
+      "options": [
+        "Proteger a água dos sifões e soltar os gases",
+        "Deixar o esgoto descer mais devagar nos trechos retos",
+        "Receber a água da chuva do telhado",
+        "Nada, ela só é exigida em prédio grande"
+      ],
+      "why": "Sem ventilação, a descarga puxa a água dos sifões e o cheiro entra. O tubo também leva os gases para a atmosfera.",
+      "source": "tigre"
+    },
+    {
+      "id": "enc-17",
+      "topic": "diagnostico",
+      "question": "Toda vez que dão descarga, o ralo do banheiro borbulha e depois fica com cheiro. O que verificar?",
+      "options": [
+        "Falta ou entupimento da ventilação",
+        "Pressão alta da rua entrando pelo esgoto",
+        "Registro do chuveiro com defeito, deixando água passar",
+        "Fita veda rosca mal passada no sifão da pia"
+      ],
+      "why": "A ventilação impede que a descarga quebre o fecho hídrico dos outros sifões. Borbulhar é sinal de que ela não está funcionando.",
+      "source": "tigre"
+    },
+    {
+      "id": "enc-18",
+      "topic": "esgoto",
+      "question": "O cliente quer ligar a calha do telhado na rede de esgoto. O que você diz?",
+      "options": [
+        "Não pode: chuva e esgoto são separados",
+        "Pode, a água da chuva ajuda a lavar o esgoto",
+        "Pode, desde que use tubo de 100 mm na ligação",
+        "Pode, desde que passe antes por uma caixa de gordura"
+      ],
+      "why": "A NBR 10844 proíbe ligar as águas pluviais no esgoto sanitário. Em chuva forte, o esgoto volta e traz mau cheiro.",
+      "source": "tigre"
+    },
+    {
+      "id": "enc-19",
+      "topic": "esgoto",
+      "question": "No tubo de esgoto com anel de borracha, o que usar para encaixar?",
+      "options": [
+        "Pasta lubrificante própria",
+        "Óleo de cozinha",
+        "Graxa ou vaselina, que duram mais",
+        "Adesivo de PVC"
+      ],
+      "why": "Óleo, vaselina e graxa atacam a borracha. O fabricante pede pasta lubrificante própria.",
+      "source": "tigre"
+    },
+    {
+      "id": "enc-20",
+      "topic": "esgoto",
+      "question": "O que ajuda o tubo a entrar na bolsa com anel de borracha sem estragar o anel?",
+      "options": [
+        "Chanfrar a ponta do tubo",
+        "Esquentar a bolsa com maçarico para alargar",
+        "Cortar um pedaço do anel para ficar mais fino",
+        "Passar adesivo de PVC no anel para deslizar"
+      ],
+      "why": "O chanfro na ponta deixa o tubo deslizar sem dobrar ou cortar o anel.",
+      "source": "tigre"
+    },
+    {
+      "id": "enc-21",
+      "topic": "esgoto",
+      "question": "Para que serve a caixa de gordura?",
+      "options": [
+        "Segurar a gordura da cozinha",
+        "Receber o esgoto do vaso sanitário antes da rua",
+        "Guardar a água da chuva para reaproveitar",
+        "Aumentar a pressão da água da pia da cozinha"
+      ],
+      "why": "Ela recebe o esgoto da cozinha e retém a gordura, por isso precisa de limpeza periódica.",
+      "source": "tigre"
+    },
+    {
+      "id": "enc-22",
+      "topic": "diagnostico",
+      "question": "A pia da cozinha entope de novo poucas semanas depois de cada desentupimento. O que verificar?",
+      "options": [
+        "Se a caixa de gordura está cheia",
+        "Se a torneira da pia está pingando o dia todo",
+        "Se a caixa d’água está tampada e sem ventilação",
+        "Se o registro geral está totalmente aberto"
+      ],
+      "why": "Com a caixa de gordura cheia, a gordura passa e endurece no cano. Desentupir só a pia não resolve.",
+      "source": "tigre"
+    },
+    {
+      "id": "enc-23",
+      "topic": "diagnostico",
+      "question": "Como ver se a válvula ou a caixa de descarga está vazando para dentro do vaso?",
+      "options": [
+        "Jogo pó de café no vaso e vejo se fica parado",
+        "Dou várias descargas seguidas e escuto o barulho",
+        "Olho se o chão em volta do vaso está molhado",
+        "Fecho o registro e vejo se o vaso esvazia sozinho"
+      ],
+      "why": "Se a água está entrando aos poucos, o pó se mexe ou some. Se fica parado no fundo, não há vazamento.",
+      "source": "tigre"
+    },
+    {
+      "id": "enc-24",
+      "topic": "diagnostico",
+      "question": "A conta de água subiu e ninguém vê vazamento. Qual é o primeiro teste?",
+      "options": [
+        "Fechar tudo e ver se o hidrômetro gira",
+        "Quebrar a parede do banheiro",
+        "Trocar todos os registros e torneiras da casa",
+        "Esperar a próxima conta para comparar o consumo"
+      ],
+      "why": "Se o hidrômetro gira sem ninguém usar água, há vazamento depois dele. O teste não mostra onde, mas confirma antes de quebrar.",
+      "source": "saae"
+    },
+    {
+      "id": "enc-25",
+      "topic": "diagnostico",
+      "question": "Casa abastecida por caixa d’água. Como descobrir se há vazamento na tubulação da casa?",
+      "options": [
+        "Amarro a boia, marco o nível e confiro em 1 hora",
+        "Esvazio a caixa toda e vejo se ela enche de novo",
+        "Abro todas as torneiras ao mesmo tempo e olho a pressão",
+        "Olho se a boia está boa e se o ladrão está pingando"
+      ],
+      "why": "Com a boia vedada e ninguém usando água, o nível não pode baixar. Se baixar, há vazamento nos canos, nos sanitários ou na caixa.",
+      "source": "tigre"
+    },
+    {
+      "id": "enc-26",
+      "topic": "agua-fria",
+      "question": "Qual é a diferença entre registro de gaveta e registro de pressão?",
+      "options": [
+        "Gaveta bloqueia o trecho; pressão regula a vazão",
+        "São iguais, só muda o acabamento e o preço",
+        "O de gaveta aumenta a pressão, e o de pressão diminui",
+        "O de pressão só serve para água quente"
+      ],
+      "why": "O de gaveta é o registro geral do ambiente, para bloquear o fluxo em manutenções. O de pressão fica no ponto de uso, como chuveiro e bebedouro.",
+      "source": "tigre"
+    },
+    {
+      "id": "enc-27",
+      "topic": "agua-fria",
+      "question": "Numa casa abastecida por caixa d’água, o que dá pressão à água no chuveiro?",
+      "options": [
+        "A altura da caixa até o chuveiro",
+        "O diâmetro do registro do chuveiro",
+        "A potência do chuveiro instalado",
+        "A quantidade de água que chega da rua"
+      ],
+      "why": "Por gravidade, cada metro de altura dá cerca de 1 m.c.a. (10 kPa). Caixa logo acima do chuveiro dá pouca pressão.",
+      "source": "tigre"
+    },
+    {
+      "id": "enc-28",
+      "topic": "diagnostico",
+      "question": "Depois de um conserto, a água sai aos trancos e com ar pela torneira. O que fazer?",
+      "options": [
+        "Abrir as torneiras do ramal até sair o ar",
+        "Trocar o registro, que ficou com defeito",
+        "Fechar a caixa d’água por um dia inteiro",
+        "Apertar mais a fita veda rosca das conexões"
+      ],
+      "why": "Ar preso na tubulação sai abrindo os pontos de uso daquele circuito. É a solução indicada pelo fabricante.",
+      "source": "lorenzetti"
+    },
+    {
+      "id": "enc-29",
+      "topic": "agua-fria",
+      "question": "O que causa o golpe de aríete, aquela pancada forte no cano?",
+      "options": [
+        "Fechamento rápido da água",
+        "Água quente demais passando pelo cano",
+        "Excesso de fita veda rosca nas conexões",
+        "Caixa d’água cheia demais, com a boia alta"
+      ],
+      "why": "A água em velocidade parando de repente gera picos de pressão. A solução é fechamento lento, válvula antigolpe ou caixa de descarga.",
+      "source": "tigre"
+    },
+    {
+      "id": "enc-30",
+      "topic": "agua-fria",
+      "question": "A tubulação embutida pode ficar presa dentro de viga ou pilar de concreto?",
+      "options": [
+        "Não, ela fica livre da estrutura e acessível",
+        "Sim, fica mais protegida dentro do concreto",
+        "Sim, desde que o tubo seja de parede grossa",
+        "Só a tubulação de esgoto pode ficar presa"
+      ],
+      "why": "O manual pede tubulação livre da estrutura, para não sofrer com a movimentação dela e permitir reparo.",
+      "source": "tigre"
+    },
+    {
+      "id": "enc-31",
+      "topic": "agua-fria",
+      "question": "Tubo de PVC que vai ficar exposto ao sol no telhado. O que fazer?",
+      "options": [
+        "Proteger do sol",
+        "Nada, o PVC não sofre com o sol",
+        "Usar tubo mais fino, que esquenta menos",
+        "Pintar com tinta preta, que protege do calor"
+      ],
+      "why": "A radiação do sol ataca o plástico de fora para dentro. A recomendação é proteger o tubo desde o transporte.",
+      "source": "tigre"
+    },
+    {
+      "id": "enc-32",
+      "topic": "agua-fria",
+      "question": "Para que serve a válvula de retenção na saída da bomba?",
+      "options": [
+        "Impedir o retorno da água",
+        "Aumentar a pressão de saída da bomba",
+        "Filtrar a água antes de chegar à caixa",
+        "Regular a temperatura da água bombeada"
+      ],
+      "why": "Ela só deixa a água passar num sentido e evita o retorno.",
+      "source": "tigre"
+    },
+    {
+      "id": "enc-33",
+      "topic": "agua-fria",
+      "question": "Como ligar a bomba à tubulação para a vibração não rachar os canos?",
+      "options": [
+        "Com um mangote de borracha",
+        "Com cano rígido bem preso na parede",
+        "Com cano de ferro, que é mais resistente",
+        "Com mais adesivo nas conexões perto da bomba"
+      ],
+      "why": "O mangote absorve a vibração da bomba.",
+      "source": "tigre"
+    },
+    {
+      "id": "enc-34",
+      "topic": "caixa",
+      "question": "De quanto em quanto tempo a caixa d’água deve ser limpa?",
+      "options": [
+        "No mínimo a cada 6 meses",
+        "A cada 5 anos",
+        "Só quando a água ficar com cor",
+        "Nunca, se estiver tampada"
+      ],
+      "why": "A orientação da Sabesp é limpeza e desinfecção no mínimo semestral.",
+      "source": "sabesp"
+    },
+    {
+      "id": "enc-35",
+      "topic": "caixa",
+      "question": "Antes de começar a limpar a caixa d’água, o que fazer?",
+      "options": [
+        "Fechar a entrada de água da caixa",
+        "Jogar água sanitária com a caixa ainda cheia",
+        "Esvaziar a caixa abrindo só o ladrão",
+        "Desligar o disjuntor do chuveiro elétrico"
+      ],
+      "why": "Sem fechar a entrada, a caixa continua enchendo durante a limpeza.",
+      "source": "tigre"
+    },
+    {
+      "id": "enc-36",
+      "topic": "caixa",
+      "question": "Para esfregar a caixa d’água, o que pode usar?",
+      "options": [
+        "Escova de fibra ou pano, sem sabão",
+        "Escova de aço com um pouco de sabão em pó",
+        "Detergente e desinfetante perfumado",
+        "Vassoura de piso e removedor de manchas"
+      ],
+      "why": "Sabão, detergente e outros produtos deixam resíduo na água de beber. Escova de aço danifica a caixa. A desinfecção é feita com água sanitária.",
+      "source": "saude"
+    },
+    {
+      "id": "enc-37",
+      "topic": "caixa",
+      "question": "Depois de colocar a água sanitária para desinfetar a caixa, o que fazer com essa água?",
+      "options": [
+        "Esperar 2 horas e esvaziar pelas torneiras",
+        "Liberar para beber logo depois de misturar",
+        "Deixar uma semana na caixa para fazer efeito",
+        "Misturar com mais água e usar para cozinhar"
+      ],
+      "why": "Depois das 2 horas, a água sai abrindo torneiras e descargas. Assim a solução também desinfeta os canos da casa.",
+      "source": "tigre"
+    },
+    {
+      "id": "enc-38",
+      "topic": "agua-fria",
+      "question": "Como ligar uma torneira de metal num tubo de PVC soldável?",
+      "options": [
+        "Com conexão de transição com bucha de latão",
+        "Colando a rosca da torneira direto no tubo com adesivo",
+        "Esquentando o tubo para abrir a rosca nele",
+        "Com fita isolante bem apertada na emenda"
+      ],
+      "why": "A bucha de latão protege a rosca de PVC do desgaste do metal. Adesivo não vai em rosca.",
+      "source": "tigre"
+    },
+    {
+      "id": "enc-39",
+      "topic": "esgoto",
+      "question": "Instalando um ralo linear no box, o que não pode faltar?",
+      "options": [
+        "Ligar a uma caixa sifonada",
+        "Ligar direto no tubo de esgoto do banheiro",
+        "Deixar sem caimento",
+        "Ligar na tubulação da água da chuva"
+      ],
+      "why": "O ralo linear não tem sifão próprio. O fabricante exige caixa sifonada para impedir o retorno do mau cheiro.",
+      "source": "tigre"
+    },
+    {
+      "id": "enc-40",
+      "topic": "testes",
+      "question": "No teste de pressão, a tubulação pode ser considerada sem vazamento quando:",
+      "options": [
+        "Pressão estável por 1 hora",
+        "Não pinga nos primeiros 5 minutos de teste",
+        "O manômetro sobe quando a bomba é ligada",
+        "O cliente olha as conexões e aprova"
+      ],
+      "why": "O manual, seguindo a NBR 5626, pede 1 hora na pressão de ensaio sem queda. Se cair, conserta e repete.",
+      "source": "tigre"
+    }
+  ]
+}

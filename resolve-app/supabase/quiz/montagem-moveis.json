@@ -1,0 +1,409 @@
+{
+  "service": "montagem-moveis",
+  "title": "Montagem de móveis",
+  "draw": 15,
+  "pass": 11,
+  "minutes": 15,
+  "sources": {
+    "tramontina": "Tramontina — Instruções de montagem de móveis (ex.: ref. 13784). https://assets.tramontina.com.br/upload/tramon/imagens/BEL/13784076MNM001.pdf",
+    "manual": "Manual de montagem de móvel vendido no Brasil (BL9220, MadeiraMadeira): recomendações, advertências e cola nas cavilhas. https://product-hub-prd.madeiramadeira.com.br/880082/documents/dd33a279-fe18-4a39-8e89-c76d10af393bManualFinal880082.pdf",
+    "fischer": "Fischer — fichas das buchas universais UX/FU (tipo de base, diâmetro da broca, profundidade mínima do furo). https://www.lojadomecanico.com.br/produto/615168/37/466/bucha-universal-fu8-sc300-8-x-50-mm-com-300-unidades-fischer-600180",
+    "knauf": "Knauf (fixação de cargas em drywall) e Placo do Brasil (via Olhar Digital): buchas próprias, montantes e reforço. https://knauf.com/pt-BR/performance/fixacao-de-cargas",
+    "tombamento": "Comissão de Segurança de Produtos de Consumo dos EUA (CPSC), via reportagem, sobre tombamento de móveis e fixação na parede. https://tribunadejundiai.com.br/noticias/o-detalhe-de-seguranca-que-deve-vir-antes-da-decoracao-ao-instalar-estante-rack-ou-comoda/",
+    "lorenzetti": "Lorenzetti — manual de instalação: localizar canos embutidos antes de furar. https://www.lorenzetti.com.br/manuais/advanced/manual.pdf",
+    "mdf": "UAI (Estado de Minas) — parafuso espanado em MDF/MDP e correção com cavilha colada. https://www.uai.com.br/?p=171681",
+    "pratica": "Prática de montagem consolidada (sem norma específica); revisar com um montador."
+  },
+  "questions": [
+    {
+      "id": "mon-01",
+      "topic": "preparo",
+      "question": "Chegou no cliente com o móvel embalado. O que fazer antes de montar?",
+      "options": [
+        "Conferir as peças com a lista do manual",
+        "Começar pela porta, que é a parte mais difícil de alinhar",
+        "Abrir todas as caixas e jogar fora a embalagem para ganhar espaço",
+        "Separar só os parafusos por tamanho e começar pela base"
+      ],
+      "why": "O manual pede examinar todas as peças antes. Faltando peça, é melhor saber antes de começar do que no meio da montagem.",
+      "source": "manual"
+    },
+    {
+      "id": "mon-02",
+      "topic": "preparo",
+      "question": "Onde montar o móvel?",
+      "options": [
+        "No chão plano, forrado com o papelão",
+        "Em cima da cama, que é macia e não risca as peças",
+        "Em qualquer canto livre",
+        "Direto no piso, que é mais firme para parafusar"
+      ],
+      "why": "O fabricante pede superfície plana e sugere forrar com a embalagem para não riscar o móvel nem o piso.",
+      "source": "tramontina"
+    },
+    {
+      "id": "mon-03",
+      "topic": "montagem",
+      "question": "Como apertar os parafusos durante a montagem?",
+      "options": [
+        "Sem aperto total; aperto final no fim, no plano",
+        "Apertando bem cada parafuso assim que ele é colocado",
+        "Apertando só os parafusos de baixo",
+        "Deixando todos frouxos para o móvel se acomodar sozinho"
+      ],
+      "why": "Apertar tudo no começo deixa o móvel torto. O manual pede montar solto e fazer o aperto final com o móvel em superfície plana.",
+      "source": "tramontina"
+    },
+    {
+      "id": "mon-04",
+      "topic": "montagem",
+      "question": "Usando parafusadeira em MDF ou MDP, como regular?",
+      "options": [
+        "Torque baixo na embreagem",
+        "Torque máximo",
+        "Velocidade máxima e sem embreagem, para entrar de uma vez",
+        "Tanto faz"
+      ],
+      "why": "Torque demais esmaga as fibras da chapa e a rosca vira pó. Depois disso o parafuso não segura mais.",
+      "source": "mdf"
+    },
+    {
+      "id": "mon-05",
+      "topic": "reparo",
+      "question": "O furo do parafuso espanou no MDP. O que fazer?",
+      "options": [
+        "Cavilha colada no furo e furar de novo",
+        "Colocar um parafuso bem mais grosso no mesmo furo",
+        "Encher o furo com papel ou palito e parafusar",
+        "Deixar sem esse parafuso, os outros seguram"
+      ],
+      "why": "Parafuso mais grosso abre ainda mais a chapa. A cavilha colada recompõe o material para a rosca.",
+      "source": "mdf"
+    },
+    {
+      "id": "mon-06",
+      "topic": "montagem",
+      "question": "O manual pede cola nas cavilhas. Pode pular essa parte?",
+      "options": [
+        "Não, a cola faz parte da estrutura",
+        "Pode, a cavilha só serve para alinhar as peças",
+        "Pode, desde que os parafusos fiquem bem apertados",
+        "Só vale usar se sobrar cola no fim da montagem"
+      ],
+      "why": "Seguir o manual é responsabilidade do montador e garante a estrutura. Sem cola, as juntas ficam frouxas com o uso.",
+      "source": "manual"
+    },
+    {
+      "id": "mon-07",
+      "topic": "parede",
+      "question": "Antes de furar a parede para fixar um armário, o que verificar?",
+      "options": [
+        "Onde passam canos e fios embutidos",
+        "Só se a parede é de tijolo ou de concreto, pela cor do pó",
+        "Nada, é só furar onde o cliente marcou com lápis",
+        "Se a parede foi pintada recentemente e a tinta já secou"
+      ],
+      "why": "Os fabricantes pedem localizar os canos embutidos para não furá-los. Os fios costumam subir e descer alinhados com tomadas e interruptores.",
+      "source": "lorenzetti"
+    },
+    {
+      "id": "mon-08",
+      "topic": "seguranca",
+      "question": "Casa com criança pequena, cômoda alta com gavetas. O que fazer?",
+      "options": [
+        "Fixar na parede com o kit antitombamento",
+        "Nada, desde que a cômoda seja pesada e larga",
+        "Só avisar os pais para não deixar as gavetas abertas",
+        "Colocar a cômoda sobre um tapete grosso que segure"
+      ],
+      "why": "Criança subindo nas gavetas desloca o peso para a frente e o móvel tomba. A recomendação é fixar móveis altos na parede.",
+      "source": "tombamento"
+    },
+    {
+      "id": "mon-09",
+      "topic": "seguranca",
+      "question": "Por que uma cômoda tomba quando várias gavetas ficam abertas?",
+      "options": [
+        "O peso vai para a frente da base",
+        "As corrediças ficam mais leves e soltam do trilho",
+        "O fundo do móvel se solta com o peso das gavetas",
+        "A umidade do quarto deixa as laterais moles"
+      ],
+      "why": "Com as gavetas abertas, o centro de gravidade avança. Com uma criança pendurada, ele sai da base e o móvel cai.",
+      "source": "tombamento"
+    },
+    {
+      "id": "mon-10",
+      "topic": "seguranca",
+      "question": "Onde orientar o cliente a guardar os itens mais pesados?",
+      "options": [
+        "Embaixo",
+        "Nas prateleiras de cima, para sobrar espaço",
+        "Distribuídos no topo, para o peso firmar o móvel",
+        "Na porta, que tem dobradiças reforçadas"
+      ],
+      "why": "Peso embaixo deixa o móvel mais estável e reduz o risco de tombar.",
+      "source": "tombamento"
+    },
+    {
+      "id": "mon-11",
+      "topic": "seguranca",
+      "question": "O manual diz que o móvel suporta no máximo 30 kg. O cliente quer pôr 50 kg de livros. O que você diz?",
+      "options": [
+        "Que passa do limite e pode quebrar",
+        "Que pode, se reforçar com mais parafusos",
+        "Que pode",
+        "Que pode, desde que os livros fiquem em cima"
+      ],
+      "why": "O peso máximo vem no manual e garante a estrutura. Acima dele o móvel pode ceder.",
+      "source": "manual"
+    },
+    {
+      "id": "mon-12",
+      "topic": "parede",
+      "question": "Qual broca usar para uma bucha de 8 mm?",
+      "options": [
+        "Broca de 8 mm, no diâmetro da bucha",
+        "Broca de 10 mm",
+        "Broca de 4 mm, para ficar justo",
+        "Qualquer uma"
+      ],
+      "why": "As fichas da Fischer pedem broca do mesmo diâmetro da bucha. Furo maior deixa a bucha rodando em falso.",
+      "source": "fischer"
+    },
+    {
+      "id": "mon-13",
+      "topic": "parede",
+      "question": "A bucha não firma no tijolo furado. O que é mais provável?",
+      "options": [
+        "Furo largo ou raso, ou bucha errada",
+        "A parede é forte demais para a bucha abrir",
+        "O parafuso é novo e ainda não amaciou a bucha",
+        "A bucha precisa ser molhada antes de entrar"
+      ],
+      "why": "No oco, a bucha universal se entrelaça em vez de só expandir. Precisa do diâmetro certo e da profundidade mínima, e a percussão costuma quebrar as paredes internas do tijolo.",
+      "source": "fischer"
+    },
+    {
+      "id": "mon-14",
+      "topic": "parede",
+      "question": "Para furar parede de concreto, o que usar?",
+      "options": [
+        "Broca de vídea, com impacto",
+        "Broca de madeira, sem impacto, para não rachar",
+        "Broca de metal comum, com bastante pressão",
+        "Broca de vídea, sem impacto"
+      ],
+      "why": "Concreto exige broca de vídea e impacto. Broca de madeira ou metal não fura e se perde.",
+      "source": "fischer"
+    },
+    {
+      "id": "mon-15",
+      "topic": "parede",
+      "question": "Vai fixar uma prateleira em parede de drywall (gesso acartonado). Qual bucha usar?",
+      "options": [
+        "Bucha própria para drywall ou o montante",
+        "Bucha comum de nylon",
+        "Só o parafuso direto no gesso",
+        "Prego com cola de contato no lugar da bucha"
+      ],
+      "why": "Bucha comum não segura no gesso. Para chapa oca, existem buchas próprias, e o mais firme é fixar no montante.",
+      "source": "knauf"
+    },
+    {
+      "id": "mon-16",
+      "topic": "parede",
+      "question": "O cliente quer um armário aéreo pesado numa parede de drywall. O que fazer?",
+      "options": [
+        "Nos montantes ou num reforço de madeira",
+        "Com mais buchas comuns espalhadas pela chapa",
+        "Colando o armário na parede com silicone",
+        "Só no gesso, com parafusos bem longos"
+      ],
+      "why": "A chapa sozinha aguenta pouco por ponto. Carga pesada vai na estrutura ou em reforço previsto.",
+      "source": "knauf"
+    },
+    {
+      "id": "mon-17",
+      "topic": "parede",
+      "question": "O kit de fixação do móvel na parede veio sem bucha. Por quê?",
+      "options": [
+        "A bucha depende do tipo de parede",
+        "Porque esse tipo de móvel não precisa de bucha",
+        "Porque o fabricante esqueceu de colocar na caixa",
+        "Porque a fixação é feita com prego, não com bucha"
+      ],
+      "why": "Os fabricantes deixam a bucha de fora porque ela muda para tijolo, concreto ou drywall. O montador escolhe a certa.",
+      "source": "tombamento"
+    },
+    {
+      "id": "mon-18",
+      "topic": "montagem",
+      "question": "Para que serve o fundo (as costas) do guarda-roupa?",
+      "options": [
+        "Ele trava o móvel no esquadro",
+        "Só para não aparecer a parede atrás das roupas",
+        "Nada, o móvel fica firme sem ele",
+        "Só para pendurar cabides na parte de trás"
+      ],
+      "why": "O fundo pregado ou encaixado impede o móvel de entortar de lado. Sem ele, o móvel fica bambo.",
+      "source": "pratica"
+    },
+    {
+      "id": "mon-19",
+      "topic": "montagem",
+      "question": "Como conferir se o móvel está no esquadro antes de pregar o fundo?",
+      "options": [
+        "Medindo as duas diagonais",
+        "Olhando de longe se as laterais estão retas",
+        "Medindo só a altura das duas laterais",
+        "Apertando todos os parafusos e vendo se trava"
+      ],
+      "why": "Diagonais iguais indicam ângulos retos. Se o fundo for pregado torto, as portas nunca alinham.",
+      "source": "pratica"
+    },
+    {
+      "id": "mon-20",
+      "topic": "ajuste",
+      "question": "Depois de pronto, o móvel ficou com uma porta abrindo sozinha. O que verificar primeiro?",
+      "options": [
+        "O nivelamento do móvel",
+        "A marca da dobradiça",
+        "A espessura da porta",
+        "O peso das roupas penduradas no cabideiro"
+      ],
+      "why": "Móvel desnivelado faz porta abrir sozinha e desalinhar. Nivelar resolve antes de mexer na regulagem.",
+      "source": "pratica"
+    },
+    {
+      "id": "mon-21",
+      "topic": "ajuste",
+      "question": "As portas do armário ficaram desalinhadas. Como ajustar?",
+      "options": [
+        "Pela regulagem da dobradiça",
+        "Desmontando o móvel inteiro e montando de novo",
+        "Lixando a borda da porta até alinhar",
+        "Trocando por dobradiças maiores e mais fortes"
+      ],
+      "why": "A dobradiça com regulagem tem três ajustes. Primeiro observe as frestas de frente, depois gire o parafuso certo.",
+      "source": "pratica"
+    },
+    {
+      "id": "mon-22",
+      "topic": "montagem",
+      "question": "Ao instalar as corrediças de uma gaveta, qual é o cuidado?",
+      "options": [
+        "Na mesma altura e paralelas",
+        "Uma um pouco mais alta",
+        "Tanto faz a altura, a gaveta se ajeita com o uso",
+        "Só uma corrediça já basta numa gaveta pequena"
+      ],
+      "why": "Corrediças desalinhadas travam a gaveta e forçam os parafusos até soltar.",
+      "source": "pratica"
+    },
+    {
+      "id": "mon-23",
+      "topic": "parede",
+      "question": "Precisa furar o azulejo da cozinha para fixar um armário. Como fazer?",
+      "options": [
+        "Fita crepe e furar o azulejo sem impacto",
+        "Furar direto no impacto",
+        "Bater um prego antes para marcar o ponto",
+        "Furar no meio da junta"
+      ],
+      "why": "O impacto racha o azulejo. A fita evita que a broca escorregue e lascar o esmalte.",
+      "source": "pratica"
+    },
+    {
+      "id": "mon-24",
+      "topic": "seguranca",
+      "question": "Uma peça veio quebrada. O que fazer?",
+      "options": [
+        "Não usar e pedir peça original",
+        "Colar a parte quebrada e montar assim mesmo",
+        "Usar uma peça parecida de outro móvel",
+        "Montar sem ela"
+      ],
+      "why": "O manual diz para não usar o produto com peça quebrada e usar só reposição aprovada pelo fabricante.",
+      "source": "manual"
+    },
+    {
+      "id": "mon-25",
+      "topic": "montagem",
+      "question": "Sobre o manual de montagem, qual frase está certa?",
+      "options": [
+        "Seguir o manual é responsabilidade de quem monta",
+        "Montador experiente não precisa olhar o manual",
+        "O manual é feito só para o cliente que monta sozinho",
+        "Pode trocar a ordem dos passos se ficar mais rápido"
+      ],
+      "why": "O próprio manual diz isso: seguir as instruções é responsabilidade do montador e é o que garante a estrutura.",
+      "source": "manual"
+    },
+    {
+      "id": "mon-26",
+      "topic": "entrega",
+      "question": "Como orientar o cliente a limpar o móvel novo?",
+      "options": [
+        "Pano úmido e depois seco",
+        "Álcool e palha de aço nas manchas mais difíceis",
+        "Água sanitária diluída para desinfetar as gavetas",
+        "Lustra-móveis com solvente toda semana"
+      ],
+      "why": "É a orientação de limpeza do fabricante. Produtos químicos e abrasivos estragam o acabamento.",
+      "source": "manual"
+    },
+    {
+      "id": "mon-27",
+      "topic": "seguranca",
+      "question": "O cliente quer o móvel colado no fogão ou no aquecedor. O que avisar?",
+      "options": [
+        "Que calor e chama perto são um risco",
+        "Que não tem problema",
+        "Que só precisa passar verniz para proteger",
+        "Que é até melhor"
+      ],
+      "why": "As advertências do fabricante citam o risco de chama aberta e outras fontes de calor perto do produto.",
+      "source": "manual"
+    },
+    {
+      "id": "mon-28",
+      "topic": "seguranca",
+      "question": "Ao terminar, o que conferir nas ferragens (parafusos, porcas, ponteiras)?",
+      "options": [
+        "Se estão firmes e bem rosqueadas",
+        "Só se estão brilhando e sem marca de ferramenta",
+        "Nada, quem confere as ferragens é o cliente",
+        "Se sobrou alguma ferragem para guardar"
+      ],
+      "why": "O manual pede todas as ferragens bem fixadas e atarraxadas para não causar ferimentos.",
+      "source": "manual"
+    },
+    {
+      "id": "mon-29",
+      "topic": "montagem",
+      "question": "Guarda-roupa alto montado deitado no chão. Qual é o cuidado ao levantar?",
+      "options": [
+        "Ver se a diagonal passa sob o teto e ter ajuda",
+        "Levantar sozinho, puxando pelo topo devagar",
+        "Levantar segurando pela porta, que é a parte mais firme",
+        "Nenhum cuidado, é só levantar com firmeza"
+      ],
+      "why": "A diagonal do móvel é maior que a altura. Se o teto for baixo, o móvel bate antes de ficar em pé e força as juntas.",
+      "source": "pratica"
+    },
+    {
+      "id": "mon-30",
+      "topic": "seguranca",
+      "question": "O que usar para proteger os olhos ao furar parede?",
+      "options": [
+        "Óculos de proteção",
+        "Nada, é só fechar os olhos na hora",
+        "Óculos de sol",
+        "Boné"
+      ],
+      "why": "Furar parede solta pó e lascas. Óculos de proteção é o mínimo.",
+      "source": "pratica"
+    }
+  ]
+}

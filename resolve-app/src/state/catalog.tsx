@@ -27,11 +27,15 @@ export type Service = {
   examples: string[];
   badge?: string;
   popular: boolean;
+  /** Nome da área no teste e no selo ("Aprovado em Elétrica"). */
+  testLabel: string;
 };
 
 export type Professional = {
   id: string;
   serviceIds: string[];
+  /** Serviços em que passou no teste. Para o cliente, são os mesmos de serviceIds (os outros nem chegam). */
+  approvedIds: string[];
   name: string;
   avatarUrl?: string;
   role: string;
@@ -50,6 +54,8 @@ export type Professional = {
   radiusKm: number;
   /** Pausou o recebimento de pedidos: fora das listas, sem pedido novo. */
   paused: boolean;
+  /** Concluiu as aulas da Rezolveaê (4º passo da entrada). */
+  lessonsDone: boolean;
 };
 
 type Data = { services: Service[]; professionals: Professional[] };
@@ -69,29 +75,31 @@ type CatalogValue = Data & {
   getProfessionals: (serviceId: string | undefined) => Professional[];
 };
 
-// v2: profissionais com área de atendimento.
-const CACHE_KEY = 'resolve:catalog:v2';
+// v3: serviços com o nome do teste; profissionais com os serviços aprovados.
+const CACHE_KEY = 'resolve:catalog:v3';
 const Ctx = createContext<CatalogValue | null>(null);
 
 const isIcon = (name: string): name is IconName => name in iconPaths;
 
 async function fetchCatalog(): Promise<Data> {
-  const [svc, pros] = await Promise.all([
+  const [svc, tests, pros] = await Promise.all([
     supabase
       .from('services')
       .select('id, icon, title, short_title, subtitle, area, description, includes, examples, badge, is_popular')
       .order('sort_order'),
+    supabase.from('quiz_tests').select('service_id, label'),
     fetchAllPages((from, to) =>
       supabase
         .from('professionals')
         .select(
-          'id, role_title, bio, years_experience, reply_minutes, jobs_count, tags, verified, rating, review_count, base_area, service_radius_km, paused, profile:profiles!inner(full_name, avatar_url), professional_services(service_id)',
+          'id, role_title, bio, years_experience, reply_minutes, jobs_count, tags, verified, rating, review_count, base_area, service_radius_km, paused, lessons_done_at, profile:profiles!inner(full_name, avatar_url), professional_services(service_id, approved_at)',
         )
         .order('id')
         .range(from, to),
     ),
   ]);
   if (svc.error) throw svc.error;
+  const labels = new Map((tests.data ?? []).map((t) => [t.service_id, t.label]));
 
   const services: Service[] = svc.data.map((s) => ({
     id: s.id,
@@ -105,12 +113,18 @@ async function fetchCatalog(): Promise<Data> {
     examples: s.examples,
     badge: s.badge ?? undefined,
     popular: s.is_popular,
+    testLabel: labels.get(s.id) || s.title,
   }));
+
+  // Serviços do profissional na ordem do catálogo (a API não garante ordem nas listas aninhadas).
+  const order = new Map(services.map((s, i) => [s.id, i]));
+  const byCatalog = (a: string, b: string) => (order.get(a) ?? 99) - (order.get(b) ?? 99);
 
   const professionals: Professional[] = pros
     .map((p) => ({
       id: p.id,
-      serviceIds: p.professional_services.map((ps) => ps.service_id),
+      serviceIds: p.professional_services.map((ps) => ps.service_id).sort(byCatalog),
+      approvedIds: p.professional_services.filter((ps) => ps.approved_at).map((ps) => ps.service_id).sort(byCatalog),
       name: p.profile.full_name.trim(),
       avatarUrl: p.profile.avatar_url ?? undefined,
       role: p.role_title,
@@ -125,6 +139,7 @@ async function fetchCatalog(): Promise<Data> {
       area: p.base_area,
       radiusKm: p.service_radius_km,
       paused: p.paused,
+      lessonsDone: !!p.lessons_done_at,
     }))
     // Ficha incompleta (sem nome ou sem serviço) não aparece para o cliente.
     .filter((p) => p.name !== '' && p.serviceIds.length > 0);
@@ -186,7 +201,7 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
       getService: (id) => (id ? serviceById.get(id) : undefined),
       getProfessional: (id) => (id ? proById.get(id) : undefined),
       // Listas do cliente: quem pausou os pedidos não aparece (o perfil e o chat continuam).
-      getProfessionals: (serviceId) => (serviceId ? professionals.filter((p) => p.serviceIds.includes(serviceId) && !p.paused) : []),
+      getProfessionals: (serviceId) => (serviceId ? professionals.filter((p) => p.approvedIds.includes(serviceId) && !p.paused) : []),
     };
   }, [data, failed, refreshing, refresh]);
 

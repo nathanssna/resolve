@@ -1,0 +1,543 @@
+{
+  "service": "informatica",
+  "title": "Informática",
+  "draw": 15,
+  "pass": 11,
+  "minutes": 15,
+  "sources": {
+    "certbr": "CERT.br / NIC.br — Cartilha de Segurança para Internet, fascículos Backup e Redes. https://cartilha.cert.br/guardiao/fasciculo-backup-egc.pdf e https://cartilha.cert.br/guardiao/fasciculo-redes-egc.pdf",
+    "dell": "Dell — manuais de serviço (instruções de segurança antes de trabalhar dentro do computador). https://dl.dell.com/manuals/all-products/esuprt_laptop/esuprt_studio_laptop/studio-1457_service%20manual_pt-br.pdf",
+    "lgpd": "Lei Geral de Proteção de Dados (Lei nº 13.709/2018): tratamento limitado à finalidade e eliminação ao fim do tratamento.",
+    "software": "Lei do Software (Lei nº 9.609/1998), via ABES e Conjur: uso de programa sem licença. https://www.conjur.com.br/?p=546185",
+    "recuperacao": "Dropbox e Tecnoblog — recuperação de arquivos apagados: parar de usar o disco e salvar em outra unidade. https://www.dropbox.com/pt_BR/resources/recover-lost-offline-files",
+    "windows11": "Microsoft — requisitos mínimos do Windows 11 (via OnMSFT). https://onmsft.com/?p=245020",
+    "pratica": "Prática de suporte técnico consolidada (sem norma específica); revisar com um técnico.",
+    "impressora": "HP — configuração sem fio pelo app HP Smart e IP da impressora (orientações citadas por guias de suporte). https://www.buscape.com.br/impressora-e-multifuncional/conteudo/como-configurar-impressora-hp",
+    "reserva": "Reserva de IP no DHCP do roteador, na faixa da rede (guia de suporte de impressoras). https://ferax.com.br/?p=41893",
+    "samsung": "Samsung — como atualizar o software da Smart TV (menu ou USB). https://www.samsung.com/br/support/tv-audio-video/atualizar-software-smart-tv-samsung",
+    "tv": "Wi-Fi 2,4/5 GHz e velocidade para streaming em Smart TV (recomendação da Netflix citada pela Super Rádio Tupi). https://www.tupi.fm/?p=2384519",
+    "cabo": "Cabo de par trançado (Cat5e/Cat6): limite de 100 m por enlace e padrões T568A/T568B (material do IFSC e datasheet Intelbras). https://wiki.sj.ifsc.edu.br/images/7/77/Lista_de_exerc%c3%adcios_4_-_respostas.pdf"
+  },
+  "questions": [
+    {
+      "id": "inf-01",
+      "topic": "dados",
+      "question": "O cliente pede para formatar o notebook. O que fazer antes?",
+      "options": [
+        "Combinar o que salvar e fazer backup",
+        "Formatar direto, porque ele já sabe que perde tudo",
+        "Copiar só a área de trabalho, que é onde ficam os arquivos",
+        "Formatar e tentar recuperar os arquivos depois, se ele pedir"
+      ],
+      "why": "Manutenção e reinstalação são situações de risco: o CERT.br recomenda backup antes delas. E é o cliente quem diz o que é importante.",
+      "source": "certbr"
+    },
+    {
+      "id": "inf-02",
+      "topic": "dados",
+      "question": "Qual é a orientação certa sobre cópias de segurança?",
+      "options": [
+        "Pelo menos 2 cópias, em lugares diferentes",
+        "Uma cópia numa pasta separada do mesmo HD basta",
+        "Uma cópia só",
+        "Backup só é necessário em computador de empresa"
+      ],
+      "why": "\"Quem tem 1 não tem nenhum\": se uma cópia falhar, existe a outra. O CERT.br pede ao menos 2, em locais diferentes.",
+      "source": "certbr"
+    },
+    {
+      "id": "inf-03",
+      "topic": "dados",
+      "question": "Por que configurar backup automático para o cliente?",
+      "options": [
+        "Esquece menos e mantém as cópias em dia",
+        "Porque deixa o computador mais rápido no dia a dia",
+        "Porque com ele o antivírus deixa de ser necessário",
+        "Porque apaga os arquivos antigos do PC para liberar espaço"
+      ],
+      "why": "Backup automático é menos propenso a esquecimento. Se for em disco externo, ele precisa estar conectado para rodar.",
+      "source": "certbr"
+    },
+    {
+      "id": "inf-04",
+      "topic": "seguranca",
+      "question": "Configurando backup em nuvem para o cliente, o que mais ativar?",
+      "options": [
+        "Verificação em duas etapas",
+        "Uma senha curta",
+        "Compartilhamento público da pasta, para facilitar",
+        "Nada, porque a nuvem já é segura por padrão"
+      ],
+      "why": "Contas de nuvem são visadas por atacantes. O CERT.br diz que só a senha não basta.",
+      "source": "certbr"
+    },
+    {
+      "id": "inf-05",
+      "topic": "dados",
+      "question": "Durante o conserto, você tem acesso às fotos e documentos do cliente. Como agir?",
+      "options": [
+        "Mexer só no necessário para o serviço",
+        "Abrir as fotos para conferir se não se corromperam",
+        "Copiar tudo para o seu computador, por garantia",
+        "Mostrar ao colega algum arquivo que chamou atenção"
+      ],
+      "why": "Pela LGPD, o uso dos dados fica limitado à finalidade, que aqui é o conserto. Abrir ou copiar além disso é uso indevido.",
+      "source": "lgpd"
+    },
+    {
+      "id": "inf-06",
+      "topic": "dados",
+      "question": "Você fez uma cópia temporária dos arquivos do cliente para formatar. Depois de devolver tudo:",
+      "options": [
+        "Apago a cópia que ficou comigo",
+        "Guardo para sempre, caso ele precise",
+        "Uso como exemplo para outros clientes",
+        "Vendo o HD com os arquivos"
+      ],
+      "why": "Terminado o serviço, os dados devem ser eliminados. Guardar arquivos do cliente sem motivo é risco para ele e para você.",
+      "source": "lgpd"
+    },
+    {
+      "id": "inf-07",
+      "topic": "hardware",
+      "question": "Antes de abrir um notebook para trocar a memória, o que fazer?",
+      "options": [
+        "Desligar, tirar o carregador e a bateria se o manual pedir",
+        "Só fechar a tampa, que o notebook entra em repouso",
+        "Deixar ligado para ver se a memória nova é reconhecida",
+        "Colocar em modo de suspensão e tirar o carregador"
+      ],
+      "why": "Os manuais de serviço pedem tirar a energia, e em vários modelos remover a bateria, para não danificar a placa-mãe.",
+      "source": "dell"
+    },
+    {
+      "id": "inf-08",
+      "topic": "hardware",
+      "question": "Como evitar estragar componentes com eletricidade estática ao mexer dentro do computador?",
+      "options": [
+        "Pulseira antiestática ou tocar em metal sem pintura",
+        "Trabalhar sobre um tapete de lã, que isola a mesa",
+        "Usar luvas de lã",
+        "Esfregar as mãos antes para descarregar a eletricidade"
+      ],
+      "why": "A descarga eletrostática queima componentes sem você perceber. Os manuais pedem pulseira ou contato com metal sem pintura.",
+      "source": "dell"
+    },
+    {
+      "id": "inf-09",
+      "topic": "hardware",
+      "question": "Como segurar um pente de memória ou uma placa?",
+      "options": [
+        "Pelas bordas, sem tocar nos contatos",
+        "Pelos contatos dourados, que são a parte mais firme",
+        "Pelos chips do meio, que não quebram",
+        "Tanto faz, desde que o PC esteja desligado"
+      ],
+      "why": "Gordura e estática nos contatos causam mau contato e danos. O manual pede segurar pelas bordas.",
+      "source": "dell"
+    },
+    {
+      "id": "inf-10",
+      "topic": "hardware",
+      "question": "O computador do cliente ainda está na garantia do fabricante. O que avisar antes de abrir?",
+      "options": [
+        "Que pode perder a garantia",
+        "Nada, a garantia continua valendo de qualquer jeito",
+        "Que a garantia fica maior depois da manutenção",
+        "Que a garantia só cobre o teclado e a tela"
+      ],
+      "why": "Os fabricantes avisam que danos de serviço não autorizado não são cobertos. O cliente precisa decidir sabendo disso.",
+      "source": "dell"
+    },
+    {
+      "id": "inf-11",
+      "topic": "dados",
+      "question": "O cliente apagou fotos sem querer. Qual é a primeira orientação?",
+      "options": [
+        "Parar de usar e não instalar nada nesse disco",
+        "Instalar logo um programa de recuperação no mesmo disco",
+        "Desfragmentar o disco para juntar os pedaços dos arquivos",
+        "Reiniciar o computador para a lixeira voltar"
+      ],
+      "why": "O espaço apagado continua com os dados até ser sobrescrito. Instalar ou salvar arquivos ali reduz a chance de recuperar.",
+      "source": "recuperacao"
+    },
+    {
+      "id": "inf-12",
+      "topic": "dados",
+      "question": "Onde salvar os arquivos que você conseguiu recuperar?",
+      "options": [
+        "Em outro disco ou pen drive",
+        "No mesmo disco de onde foram apagados",
+        "Na lixeira",
+        "Na área de trabalho do mesmo disco"
+      ],
+      "why": "Salvar na mesma unidade pode sobrescrever o que ainda não foi recuperado.",
+      "source": "recuperacao"
+    },
+    {
+      "id": "inf-13",
+      "topic": "legal",
+      "question": "O cliente pede para instalar um programa pago \"crackeado\". O que você faz?",
+      "options": [
+        "Recuso e ofereço uma opção legal",
+        "Instalo, porque todo mundo faz e ninguém fiscaliza",
+        "Instalo, mas sem contar para ele de onde veio",
+        "Instalo se ele assinar que a responsabilidade é dele"
+      ],
+      "why": "Usar programa sem licença viola a Lei do Software, e a Justiça já condenou usuários. Programa crackeado também costuma vir com vírus.",
+      "source": "software"
+    },
+    {
+      "id": "inf-14",
+      "topic": "sistema",
+      "question": "O computador não aceita atualizar para o Windows 11. Qual exigência costuma faltar?",
+      "options": [
+        "TPM 2.0 e UEFI com Inicialização Segura",
+        "Placa de som dedicada e drivers de áudio novos",
+        "Monitor de 4K e placa de vídeo dedicada",
+        "Teclado e mouse sem fio compatíveis"
+      ],
+      "why": "Os requisitos incluem TPM 2.0 e UEFI com Inicialização Segura, além de 4 GB de RAM e 64 GB de armazenamento.",
+      "source": "windows11"
+    },
+    {
+      "id": "inf-15",
+      "topic": "rede",
+      "question": "Instalando um roteador novo, qual é a primeira configuração de segurança?",
+      "options": [
+        "Trocar a senha de administração padrão do roteador",
+        "Deixar a senha que veio de fábrica, para o cliente lembrar",
+        "Desligar a senha do Wi-Fi",
+        "Colocar o nome do cliente na rede"
+      ],
+      "why": "Senha padrão de fábrica pode ser descoberta por atacantes. Trocá-la dificulta invasão e alteração das configurações.",
+      "source": "certbr"
+    },
+    {
+      "id": "inf-16",
+      "topic": "rede",
+      "question": "Qual segurança escolher para o Wi-Fi?",
+      "options": [
+        "WPA3 ou WPA2/WPA3",
+        "WEP, que é mais compatível",
+        "WPA",
+        "Rede aberta com senha só no roteador"
+      ],
+      "why": "O CERT.br pede a versão mais atual (WPA3 ou WPA2/WPA3) e diz para não usar WEP nem WPA.",
+      "source": "certbr"
+    },
+    {
+      "id": "inf-17",
+      "topic": "rede",
+      "question": "Que nome dar à rede Wi-Fi do cliente?",
+      "options": [
+        "Um nome único, sem dados pessoais",
+        "O nome dele e o número do apartamento, para achar fácil",
+        "O nome que veio de fábrica, impresso no roteador",
+        "O nome do provedor junto com o modelo do aparelho"
+      ],
+      "why": "Nome com apartamento ajuda criminosos, e nome de fábrica revela o modelo e as falhas conhecidas dele.",
+      "source": "certbr"
+    },
+    {
+      "id": "inf-18",
+      "topic": "rede",
+      "question": "O que fazer quanto às atualizações do roteador?",
+      "options": [
+        "Ativar a atualização automática",
+        "Desativar",
+        "Atualizar só quando o roteador parar de funcionar",
+        "Nada, roteador não recebe atualização"
+      ],
+      "why": "Roteadores também têm falhas de segurança corrigidas por atualização.",
+      "source": "certbr"
+    },
+    {
+      "id": "inf-19",
+      "topic": "seguranca",
+      "question": "Ajudando o cliente a criar uma senha, o que evitar?",
+      "options": [
+        "Datas, nomes e sequências como 123456",
+        "Senha longa, com mais de 12 caracteres",
+        "Juntar várias palavras numa frase",
+        "Usar um gerenciador de senhas"
+      ],
+      "why": "Informações pessoais e sequências de teclado são as primeiras que os atacantes tentam.",
+      "source": "certbr"
+    },
+    {
+      "id": "inf-20",
+      "topic": "rede",
+      "question": "O celular de alguém da casa foi furtado. O que fazer com o Wi-Fi?",
+      "options": [
+        "Trocar a senha do Wi-Fi",
+        "Nada",
+        "Desligar o roteador por um dia",
+        "Mudar só o nome da rede"
+      ],
+      "why": "O aparelho furtado já sabe a senha. O CERT.br manda trocar nesse caso.",
+      "source": "certbr"
+    },
+    {
+      "id": "inf-21",
+      "topic": "seguranca",
+      "question": "O cliente recebeu um e-mail do \"banco\" pedindo para clicar e atualizar os dados. O que orientar?",
+      "options": [
+        "Não clicar e entrar pelo app ou site oficial",
+        "Clicar, se o logotipo e as cores forem iguais aos do banco",
+        "Responder o e-mail pedindo para confirmarem a origem",
+        "Encaminhar para os amigos conferirem se receberam também"
+      ],
+      "why": "É o golpe mais comum (phishing). O acesso deve ser sempre pelo canal oficial, nunca pelo link recebido.",
+      "source": "certbr"
+    },
+    {
+      "id": "inf-22",
+      "topic": "diagnostico",
+      "question": "Notebook muito lento. Antes de formatar, o que verificar?",
+      "options": [
+        "Disco cheio, programas na inicialização e o HD",
+        "Só a resolução da tela e o papel de parede",
+        "Nada, formatar resolve qualquer lentidão",
+        "O tamanho da tela e o brilho"
+      ],
+      "why": "Disco cheio, excesso de programas na inicialização e HD falhando deixam o computador lento, e formatar não resolve HD com defeito.",
+      "source": "pratica"
+    },
+    {
+      "id": "inf-23",
+      "topic": "hardware",
+      "question": "Notebook antigo com HD, bem lento. Qual troca costuma dar o maior ganho de velocidade?",
+      "options": [
+        "Trocar o HD por SSD",
+        "Trocar o teclado por um mecânico",
+        "Trocar a bateria por uma nova",
+        "Trocar a tela por uma de alta resolução"
+      ],
+      "why": "O SSD é muitas vezes mais rápido que o HD na leitura. Em máquina antiga é o upgrade que mais se sente.",
+      "source": "pratica"
+    },
+    {
+      "id": "inf-24",
+      "topic": "diagnostico",
+      "question": "O computador desliga sozinho quando esquenta. O que verificar?",
+      "options": [
+        "Poeira, cooler e pasta térmica",
+        "O antivírus",
+        "O monitor",
+        "A versão do navegador e as extensões instaladas"
+      ],
+      "why": "Superaquecimento faz o sistema desligar para se proteger. Limpeza e pasta térmica nova costumam resolver.",
+      "source": "pratica"
+    },
+    {
+      "id": "inf-25",
+      "topic": "dados",
+      "question": "Você precisa da senha do computador do cliente para o serviço. Como fazer?",
+      "options": [
+        "Ele digita ou troca depois; não anoto",
+        "Anotar num papel colado no notebook até terminar",
+        "Pedir também a senha do banco, para testar o acesso",
+        "Guardar no meu celular para a próxima manutenção"
+      ],
+      "why": "A senha é do cliente. O correto é usar só durante o serviço e orientá-lo a trocar depois.",
+      "source": "pratica"
+    },
+    {
+      "id": "inf-26",
+      "topic": "seguranca",
+      "question": "O cliente quer dois antivírus ao mesmo tempo, \"para proteger mais\". O que dizer?",
+      "options": [
+        "Um ativo basta; dois conflitam",
+        "Que é ótimo, quanto mais antivírus melhor",
+        "Que precisa de três",
+        "Que antivírus não serve para nada hoje em dia"
+      ],
+      "why": "Dois antivírus em tempo real disputam os mesmos arquivos e podem travar o sistema.",
+      "source": "pratica"
+    },
+    {
+      "id": "inf-27",
+      "topic": "sistema",
+      "question": "De onde baixar o driver da placa de vídeo ou da impressora?",
+      "options": [
+        "Do site do fabricante",
+        "Do primeiro site que aparecer na busca",
+        "De um pen drive de outro cliente",
+        "De um anúncio de \"driver grátis\""
+      ],
+      "why": "Sites de terceiros costumam trazer versões erradas ou com vírus.",
+      "source": "pratica"
+    },
+    {
+      "id": "inf-28",
+      "topic": "hardware",
+      "question": "O carregador do notebook quebrou. O que usar no lugar?",
+      "options": [
+        "Original ou com mesma tensão, potência e conector",
+        "Qualquer um que encaixe no conector do notebook",
+        "Um de potência bem menor, que esquenta menos",
+        "Um carregador de celular com adaptador de ponta"
+      ],
+      "why": "Tensão errada queima a placa, e potência baixa faz o carregador esquentar e não carregar.",
+      "source": "pratica"
+    },
+    {
+      "id": "inf-29",
+      "topic": "dados",
+      "question": "Você vai fazer suporte remoto no computador do cliente. Como agir?",
+      "options": [
+        "Com autorização, ele vendo, e encerrar no fim",
+        "Deixar o acesso remoto sempre ligado, para facilitar o suporte",
+        "Entrar quando for preciso, sem avisar, para não incomodar",
+        "Pedir para ele sair de perto durante o atendimento"
+      ],
+      "why": "Acesso remoto dá controle total do computador. Deve ser autorizado, acompanhado e encerrado ao final.",
+      "source": "lgpd"
+    },
+    {
+      "id": "inf-30",
+      "topic": "dados",
+      "question": "Para se proteger de vírus que sequestram arquivos (ransomware), como manter o backup?",
+      "options": [
+        "Uma cópia desconectada do computador",
+        "Com o disco externo sempre ligado no PC, para copiar sempre",
+        "Só numa pasta oculta do mesmo HD",
+        "Não precisa de backup se tiver um bom antivírus"
+      ],
+      "why": "O ransomware criptografa tudo que estiver acessível, inclusive disco ligado. Uma cópia desligada ou em outro local escapa.",
+      "source": "certbr"
+    },
+    {
+      "id": "inf-31",
+      "topic": "impressora",
+      "question": "O cliente trocou a senha do Wi-Fi e a impressora parou de imprimir pela rede. O que fazer?",
+      "options": [
+        "Reconfigurar o Wi-Fi da impressora",
+        "Reinstalar o Windows do computador do cliente",
+        "Trocar o cartucho",
+        "Desligar e ligar o roteador"
+      ],
+      "why": "A impressora guardou a senha antiga. É preciso colocá-la de novo no modo de configuração Wi-Fi e conectar à rede com a senha nova.",
+      "source": "impressora"
+    },
+    {
+      "id": "inf-32",
+      "topic": "impressora",
+      "question": "A impressora some da rede de vez em quando e volta com outro endereço. Qual solução evita isso?",
+      "options": [
+        "Reservar um IP para ela no roteador",
+        "Trocar a impressora por um modelo com cabo USB",
+        "Reinstalar o driver toda semana",
+        "Desligar o DHCP do roteador para a casa toda"
+      ],
+      "why": "Sem reserva, o roteador pode dar outro endereço à impressora, e o computador procura no endereço velho. A reserva no DHCP fixa o endereço.",
+      "source": "reserva"
+    },
+    {
+      "id": "inf-33",
+      "topic": "impressora",
+      "question": "O roteador usa endereços 192.168.15.x. Que IP reservar para a impressora?",
+      "options": [
+        "Um 192.168.15.x livre",
+        "192.168.0.50, que é o mais comum",
+        "Qualquer número, o roteador ajusta",
+        "O mesmo IP do roteador, para ficar fácil"
+      ],
+      "why": "Fora da faixa do roteador, a impressora fica invisível para os computadores. E o IP não pode repetir o de outro aparelho.",
+      "source": "reserva"
+    },
+    {
+      "id": "inf-34",
+      "topic": "impressora",
+      "question": "Durante a configuração sem fio da impressora, onde deixá-la?",
+      "options": [
+        "Perto do roteador",
+        "No cômodo mais longe, onde ela vai ficar",
+        "Dentro de um armário, para testar o alcance",
+        "Tanto faz"
+      ],
+      "why": "O fabricante recomenda impressora e celular ou computador perto do roteador durante a instalação. Depois de configurada, ela vai para o lugar definitivo.",
+      "source": "impressora"
+    },
+    {
+      "id": "inf-35",
+      "topic": "tv",
+      "question": "Como atualizar o software de uma smart TV Samsung?",
+      "options": [
+        "Pelo menu, ou por pen drive sem desligar",
+        "Desligando da tomada até ela atualizar sozinha",
+        "Instalando um aplicativo de atualização de outra loja",
+        "Não se atualiza o sistema da TV"
+      ],
+      "why": "A Samsung indica atualizar pelo menu de configurações ou por USB quando a conexão é ruim. Desligar a TV ou tirar o pen drive no meio pode estragar o sistema.",
+      "source": "samsung"
+    },
+    {
+      "id": "inf-36",
+      "topic": "tv",
+      "question": "A smart TV trava ao passar filmes em 4K. O que verificar primeiro?",
+      "options": [
+        "A internet no local da TV",
+        "A marca e as pilhas do controle remoto",
+        "O brilho e o modo de imagem da tela",
+        "Se a TV está ligada em 110 V ou 220 V"
+      ],
+      "why": "4K pede conexão estável de uns 15 Mbps ou mais. Sinal fraco no cômodo da TV é a causa mais comum.",
+      "source": "tv"
+    },
+    {
+      "id": "inf-37",
+      "topic": "rede",
+      "question": "Qual é a diferença prática entre as redes de 2,4 GHz e 5 GHz?",
+      "options": [
+        "5 GHz rende mais perto; 2,4 GHz vai mais longe",
+        "2,4 GHz é sempre mais rápida em qualquer lugar da casa",
+        "5 GHz alcança mais longe e atravessa melhor as paredes",
+        "Não há diferença, só muda o nome que aparece na lista"
+      ],
+      "why": "Perto do roteador, 5 GHz rende mais. Longe ou atrás de paredes, 2,4 GHz costuma ficar mais estável.",
+      "source": "tv"
+    },
+    {
+      "id": "inf-38",
+      "topic": "rede",
+      "question": "Qual é o comprimento máximo de um trecho de cabo de rede (Cat5e ou Cat6) entre dois equipamentos?",
+      "options": [
+        "100 metros",
+        "30 metros",
+        "500 metros, se o cabo for Cat6",
+        "Não tem limite, se o cabo for blindado"
+      ],
+      "why": "O limite do enlace de par trançado é de 100 m. Para ir mais longe, coloca-se um switch ou outro equipamento ativo no caminho.",
+      "source": "cabo"
+    },
+    {
+      "id": "inf-39",
+      "topic": "rede",
+      "question": "Montando um cabo de rede comum, como crimpar as pontas?",
+      "options": [
+        "As duas no mesmo padrão (T568A ou T568B)",
+        "Cada ponta num padrão, sempre",
+        "Qualquer ordem de cores",
+        "Só os fios laranja e verde, o resto sobra"
+      ],
+      "why": "O mesmo padrão nas duas pontas faz o cabo direto, que é o usado em casa. Um padrão em cada ponta faz o cabo cruzado.",
+      "source": "cabo"
+    },
+    {
+      "id": "inf-40",
+      "topic": "rede",
+      "question": "O Wi-Fi não chega ao quarto dos fundos. Onde colocar o repetidor?",
+      "options": [
+        "Onde ainda recebe bom sinal",
+        "Dentro do quarto que está sem sinal",
+        "Colado no roteador",
+        "No quintal"
+      ],
+      "why": "O repetidor só repete o sinal que recebe. Num lugar sem sinal, ele não tem o que repetir. Com cabo até um ponto de acesso, ou com Wi-Fi mesh, o resultado costuma ser melhor.",
+      "source": "pratica"
+    }
+  ]
+}

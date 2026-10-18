@@ -149,6 +149,7 @@ export default function Perfil() {
               />
               <ListRow icon="briefcase" label="Serviços, área e apresentação" value={serviceText} onPress={() => router.push('/profissional/ficha')} />
               <ListRow icon="badge-check" label="Selo Verificado" value={seal} onPress={() => router.push('/verificacao')} />
+              <ListRow icon="book-open" label="Aulas da Rezolveaê" value={me?.lessonsDone ? 'Concluídas · reler' : 'Fazer as aulas'} onPress={() => router.push('/aulas')} />
             </View>
             <Text variant="overline" color={colors.inkMuted} style={styles.groupLabel}>
               CONTA

@@ -46,6 +46,9 @@ npm run db:stop
 | `rateclient` | profissional avalia o cliente: só depois de concluído, uma vez; o cliente não lê as notas; média só com 3 avaliações (cliente e profissionais) |
 | `confirm` | confirmar o serviço no dia: cliente e profissional, aviso no chat, só no dia, zera ao remarcar |
 | `unread` | não lidas antes de um ponto (`unread_before`): só de outra pessoa, avisos contam, zera ao ler, só participante |
+| `quiz` | teste de conhecimento e liberação: questões e gabarito nunca vazam, sorteio espalhado e sem repetição, retomar a mesma tentativa, correção, espera de 3 dias, tempo esgotado, aprovação por serviço + identidade = liberado (um aviso), cliente só vê e só pede no serviço aprovado |
+
+As outras suítes rodam com `rezolveae.skip_qualification = 'on'` (em `db/bootstrap.sql`), para o profissional de teste aparecer sem fazer o teste; só vale em conexão direta como `postgres`. A suíte `quiz` desliga isso.
 
 ## Ponta a ponta
 
@@ -80,6 +83,7 @@ npm run e2e:cleanup            # apaga as contas (sempre, no fim)
 | `telas` | não confere nada: fotografa todas as telas (visitante, cliente, profissional) em `shots/telas/` para a revisão visual |
 | `busca` | busca por frase na tela Buscar, como visitante (não precisa das contas); sem internet, cai na busca local |
 | `pause` | pausar no painel do profissional; lista, perfil e pedido do lado do cliente |
+| `entrada` | caminho do profissional novo: "Para começar", teste aprovado (com a fonte em cada questão) e reprovado (espera de 3 dias), identidade em análise e aprovada, aulas (a 1ª pelo app, lida tópico por tópico, com erro e "Reler a aula"; as outras pela API), liberado, selo "Aprovado em" no perfil; fotografa as telas em `shots/entrada-*.png`. As contas de teste nascem liberadas (`users.sh`); esta suíte refaz o caminho e devolve o estado |
 | `cancela` | cancelar no prazo e em cima da hora (motivo), histórico do cliente, pausa automática e taxa no perfil |
 | `limites` | e-mail descartável no login, folha de proposta (teto e períodos passados), proposta vencida |
 | `verifica` | profissional envia documento e selfie, aprovação no banco, selo no perfil e fotos apagadas |

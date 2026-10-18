@@ -1,0 +1,408 @@
+{
+  "service": "casa-inteligente",
+  "title": "Casa inteligente",
+  "draw": 15,
+  "pass": 11,
+  "minutes": 15,
+  "sources": {
+    "interruptor": "Intelbras — manuais dos interruptores inteligentes EIW 1001 e MIS 1002 (cuidados, ligação, especificações). https://backend.intelbras.com/sites/default/files/2026-01/Manual_EIW_1001_01-25_site_0.pdf",
+    "tomada": "Intelbras — manuais das tomadas e filtros inteligentes (ex.: EWS 305, ETW 1002): corrente máxima total e desligamento por sobrecarga. https://backend.intelbras.com/sites/default/files/2026-01/Manual_EWS_305_01-26_site.pdf",
+    "alexa": "Amazon Echo — luz vermelha e botão de desligar o microfone (Tecnoblog). https://tecnoblog.net/321554/o-que-significa-cada-cor-no-circulo-de-led-do-amazon-echo-alexa/",
+    "certbr": "CERT.br — Cartilha de Segurança para Internet, fascículos Redes e Backup (senhas, verificação em duas etapas, atualizações). https://cartilha.cert.br/guardiao/fasciculo-redes-egc.pdf",
+    "lorenzetti": "Lorenzetti — manual de instalação: chuveiro não usa plugue nem tomada. https://www.lorenzetti.com.br/manuais/advanced/manual.pdf",
+    "nr10": "NR-10 — desligar e confirmar a ausência de tensão antes de mexer em circuito elétrico.",
+    "pratica": "Prática de instalação consolidada (sem norma específica); revisar com um instalador."
+  },
+  "questions": [
+    {
+      "id": "cas-01",
+      "topic": "eletrica",
+      "question": "Vai trocar o interruptor comum por um interruptor inteligente. O que fazer antes de tirar o espelho?",
+      "options": [
+        "Desligar o disjuntor do circuito",
+        "Só apagar a luz no interruptor antigo",
+        "Usar luva de borracha e fazer ligado",
+        "Desligar o Wi-Fi da casa"
+      ],
+      "why": "O fabricante pede desligar os disjuntores do local antes de começar e fazer todas as ligações com a energia desligada.",
+      "source": "interruptor"
+    },
+    {
+      "id": "cas-02",
+      "topic": "eletrica",
+      "question": "O interruptor inteligente pede fio neutro. Qual neutro ligar nele?",
+      "options": [
+        "O neutro das lâmpadas desse circuito",
+        "Qualquer neutro da casa",
+        "O fio terra, quando a caixa não tiver neutro",
+        "Nenhum, porque basta ligar a fase e o retorno"
+      ],
+      "why": "O manual diz que o neutro ligado ao produto deve ser o mesmo conectado às lâmpadas. Neutro de outro circuito causa falha e desarme.",
+      "source": "interruptor"
+    },
+    {
+      "id": "cas-03",
+      "topic": "eletrica",
+      "question": "Em que caixa o fabricante recomenda instalar o interruptor inteligente?",
+      "options": [
+        "Uma caixa 4×2 só para ele",
+        "Na caixa cheia de emendas de outros circuitos, para aproveitar",
+        "Dentro do quadro de disjuntores, junto com os outros",
+        "Solto fora da caixa"
+      ],
+      "why": "O manual recomenda a caixa 4×2 sem outros fios. O módulo é grande e esquenta, e emendas apertadas dão mau contato.",
+      "source": "interruptor"
+    },
+    {
+      "id": "cas-04",
+      "topic": "eletrica",
+      "question": "Antes de religar a energia, o que conferir?",
+      "options": [
+        "Ligações certas e nada vivo exposto",
+        "Só se o Wi-Fi da casa está ligado e com internet",
+        "Se o aplicativo já está instalado no celular do cliente",
+        "Nada, porque se ligar errado ele desliga sozinho"
+      ],
+      "why": "O fabricante pede verificar as conexões e isolar todas as partes vivas para evitar curto-circuito.",
+      "source": "interruptor"
+    },
+    {
+      "id": "cas-05",
+      "topic": "eletrica",
+      "question": "O interruptor inteligente aguenta 10 A (1.270 W em 127 V). O cliente quer ligar nele um lustre de 1.800 W em 127 V. E agora?",
+      "options": [
+        "Não pode: passa do limite",
+        "Pode, porque o limite do manual é só de referência",
+        "Pode, desde que troque por lâmpadas de LED depois",
+        "Pode, desde que o disjuntor do circuito seja maior"
+      ],
+      "why": "A carga controlada precisa respeitar a potência máxima do produto: 1.270 W em 127 V ou 2.200 W em 220 V.",
+      "source": "interruptor"
+    },
+    {
+      "id": "cas-06",
+      "topic": "eletrica",
+      "question": "As lâmpadas de LED do circuito ficam piscando com o interruptor inteligente. O que o fabricante orienta?",
+      "options": [
+        "Lâmpadas com fator de potência ≥ 0,7",
+        "Trocar por lâmpadas mais baratas e de menor potência",
+        "Ligar o neutro no fio terra para estabilizar",
+        "Diminuir a potência do disjuntor do circuito"
+      ],
+      "why": "O manual recomenda lâmpadas com fator de potência igual ou superior a 0,7. Lâmpadas fora disso dão problema no circuito.",
+      "source": "interruptor"
+    },
+    {
+      "id": "cas-07",
+      "topic": "eletrica",
+      "question": "Onde não instalar o interruptor ou a tomada inteligente?",
+      "options": [
+        "Em local úmido ou com vento do ar",
+        "Na sala, porque tem muita gente passando",
+        "No quarto",
+        "Numa parede interna e seca"
+      ],
+      "why": "O manual pede ambiente interno, seco, sem vibração e longe de calor ou vento.",
+      "source": "interruptor"
+    },
+    {
+      "id": "cas-08",
+      "topic": "eletrica",
+      "question": "Não se sente seguro para fazer a ligação elétrica de um módulo inteligente. O que fazer?",
+      "options": [
+        "Chamar um eletricista",
+        "Fazer assim mesmo",
+        "Ligar só a fase primeiro e ver o que acontece",
+        "Pedir para o próprio cliente fazer a ligação"
+      ],
+      "why": "O próprio manual orienta procurar um eletricista qualificado quando a pessoa não se sente confiante.",
+      "source": "interruptor"
+    },
+    {
+      "id": "cas-09",
+      "topic": "rede",
+      "question": "Em qual rede Wi-Fi a maioria dos dispositivos inteligentes funciona?",
+      "options": [
+        "2,4 GHz",
+        "Só 5 GHz",
+        "Qualquer uma, eles escolhem sozinhos",
+        "Só na rede de convidados de 5 GHz"
+      ],
+      "why": "Os manuais dizem que os dispositivos funcionam só na frequência de 2,4 GHz.",
+      "source": "interruptor"
+    },
+    {
+      "id": "cas-10",
+      "topic": "rede",
+      "question": "O roteador do cliente é dual band com o mesmo nome nas duas redes. O que o fabricante recomenda?",
+      "options": [
+        "Nomes diferentes para cada rede",
+        "Desligar a rede de 2,4 GHz para forçar a de 5 GHz",
+        "Trocar o roteador por um que só tenha 5 GHz",
+        "Deixar assim e tentar o pareamento várias vezes"
+      ],
+      "why": "Com nome unificado, o celular pode ficar na faixa de 5 GHz e o pareamento falha. Nomes separados facilitam a configuração.",
+      "source": "interruptor"
+    },
+    {
+      "id": "cas-11",
+      "topic": "rede",
+      "question": "O interruptor vai ficar a 30 metros do roteador, com várias paredes. O que fazer?",
+      "options": [
+        "Repetidor ou mesh perto do local",
+        "Instalar assim",
+        "Aumentar a potência no app do roteador ao máximo",
+        "Ligar um cabo de rede direto no interruptor"
+      ],
+      "why": "O manual indica distância de 15 a 20 m sem obstáculos. Longe disso, o dispositivo perde a conexão.",
+      "source": "interruptor"
+    },
+    {
+      "id": "cas-12",
+      "topic": "rede",
+      "question": "Com 30 dispositivos instalados, as automações começam a falhar. O que verificar?",
+      "options": [
+        "A capacidade e a estabilidade da rede",
+        "Se as lâmpadas da casa são todas da mesma cor",
+        "Se o aplicativo está no modo escuro ou claro",
+        "Se o disjuntor do circuito é de 20 A"
+      ],
+      "why": "Os manuais avisam que instabilidade da rede causa falha nas automações e pedem rede que suporte a quantidade de dispositivos.",
+      "source": "interruptor"
+    },
+    {
+      "id": "cas-13",
+      "topic": "rede",
+      "question": "Para parear um interruptor inteligente pelo app, como deve estar o celular?",
+      "options": [
+        "Bluetooth ligado e Wi-Fi 2,4 GHz",
+        "No modo avião, para não ter interferência",
+        "Só nos dados móveis, sem Wi-Fi ligado",
+        "Na rede de 5 GHz, com o Bluetooth desligado"
+      ],
+      "why": "O manual pede Bluetooth ativo e o celular conectado à rede de 2,4 GHz com acesso à internet.",
+      "source": "interruptor"
+    },
+    {
+      "id": "cas-14",
+      "topic": "tomada",
+      "question": "Uma tomada inteligente de 10 A em 127 V aguenta quanto?",
+      "options": [
+        "Até uns 1.270 W no total",
+        "Até 5.000 W",
+        "Qualquer aparelho que caiba no plugue",
+        "Só celular"
+      ],
+      "why": "Corrente vezes tensão: 10 A × 127 V = 1.270 W. Em 220 V, são 2.200 W.",
+      "source": "tomada"
+    },
+    {
+      "id": "cas-15",
+      "topic": "tomada",
+      "question": "O cliente quer ligar um aquecedor de 2.000 W em 127 V numa tomada inteligente de 10 A. O que você diz?",
+      "options": [
+        "Não dá: puxa uns 16 A",
+        "Que dá, porque é só por algumas horas por dia",
+        "Que dá, desde que use um benjamim de qualidade",
+        "Que dá, porque a tomada é nova e aguenta"
+      ],
+      "why": "2.000 W ÷ 127 V ≈ 16 A, bem acima dos 10 A da tomada.",
+      "source": "tomada"
+    },
+    {
+      "id": "cas-16",
+      "topic": "tomada",
+      "question": "Num filtro de linha inteligente de 10 A com várias tomadas, como calcular a carga?",
+      "options": [
+        "Somar tudo o que liga junto, até 10 A",
+        "Cada tomada do filtro aguenta 10 A sozinha",
+        "Só conta o aparelho mais forte que estiver ligado",
+        "Não precisa calcular"
+      ],
+      "why": "O limite é da corrente total. Acima dele, o produto desliga para se proteger, e é preciso tirar aparelhos antes de religar.",
+      "source": "tomada"
+    },
+    {
+      "id": "cas-17",
+      "topic": "tomada",
+      "question": "O cliente pergunta se dá para ligar o chuveiro elétrico numa tomada inteligente para controlar pelo celular. O que dizer?",
+      "options": [
+        "Não: chuveiro não usa tomada",
+        "Que dá, desde que seja uma tomada inteligente de 20 A",
+        "Que dá, usando uma extensão de fio grosso",
+        "Que dá, se o chuveiro ficar só na posição verão"
+      ],
+      "why": "O fabricante proíbe plugue ou tomada no chuveiro, e um chuveiro puxa mais de 30 A.",
+      "source": "lorenzetti"
+    },
+    {
+      "id": "cas-18",
+      "topic": "contas",
+      "question": "Em nome de quem criar a conta do aplicativo da casa inteligente?",
+      "options": [
+        "Do cliente, com o e-mail dele",
+        "Do técnico",
+        "Da loja que vendeu os produtos",
+        "Uma conta compartilhada entre seus clientes"
+      ],
+      "why": "Quem tem a conta controla a casa: luzes, fechaduras, câmeras. A conta tem que ser do cliente.",
+      "source": "pratica"
+    },
+    {
+      "id": "cas-19",
+      "topic": "contas",
+      "question": "Além da senha, o que ativar na conta Amazon ou Google do cliente?",
+      "options": [
+        "Verificação em duas etapas",
+        "Login automático em todos os aparelhos",
+        "Senha curta para lembrar",
+        "Compartilhamento público da casa"
+      ],
+      "why": "O CERT.br orienta reforçar a senha com outra forma de autenticação, porque só a senha não basta.",
+      "source": "certbr"
+    },
+    {
+      "id": "cas-20",
+      "topic": "contas",
+      "question": "E a senha do roteador e do Wi-Fi da casa automatizada?",
+      "options": [
+        "Trocar as senhas padrão por senhas fortes",
+        "Manter a de fábrica, que vem impressa",
+        "Deixar a rede aberta para os dispositivos conectarem fácil",
+        "Usar o nome do cliente"
+      ],
+      "why": "Senha padrão pode ser descoberta. Quem entra na rede pode chegar aos dispositivos da casa.",
+      "source": "certbr"
+    },
+    {
+      "id": "cas-21",
+      "topic": "contas",
+      "question": "O que fazer com as atualizações dos dispositivos e do roteador?",
+      "options": [
+        "Atualização automática ativada",
+        "Bloquear as atualizações para nada mudar sozinho",
+        "Atualizar só quando algum aparelho parar de funcionar",
+        "Nada, porque dispositivo inteligente não recebe atualização"
+      ],
+      "why": "Atualizações corrigem falhas de segurança. O CERT.br pede ativar a atualização automática sempre que possível.",
+      "source": "certbr"
+    },
+    {
+      "id": "cas-22",
+      "topic": "assistente",
+      "question": "A Alexa está com a luz vermelha acesa direto. O que isso significa na maioria das vezes?",
+      "options": [
+        "Microfone desligado no botão",
+        "A Alexa está com defeito e precisa de assistência",
+        "A Alexa está gravando tudo o que se fala na sala",
+        "A bateria interna acabou e precisa carregar"
+      ],
+      "why": "A luz vermelha fixa indica microfone desligado: ela não está ouvindo. Basta apertar o botão de novo.",
+      "source": "alexa"
+    },
+    {
+      "id": "cas-23",
+      "topic": "assistente",
+      "question": "O cliente tem medo de a Alexa ouvir conversas. O que mostrar a ele?",
+      "options": [
+        "O botão do microfone e a privacidade no app",
+        "Que não tem o que fazer",
+        "Que é só tirar o Wi-Fi da casa toda à noite",
+        "Que basta cobrir o aparelho com um pano grosso"
+      ],
+      "why": "O botão corta o microfone, e a luz vermelha confirma. Pelo app, ele controla as opções de privacidade e o histórico de voz.",
+      "source": "alexa"
+    },
+    {
+      "id": "cas-24",
+      "topic": "instalacao",
+      "question": "Lâmpada inteligente instalada num ponto com interruptor comum. Como orientar o cliente?",
+      "options": [
+        "Deixar o interruptor sempre ligado",
+        "Desligar o interruptor toda noite para economizar energia",
+        "Desligar o interruptor de vez em quando para a lâmpada descansar",
+        "Tanto faz"
+      ],
+      "why": "Com o interruptor desligado, a lâmpada fica sem energia e sai da rede. Por isso as automações param.",
+      "source": "pratica"
+    },
+    {
+      "id": "cas-25",
+      "topic": "instalacao",
+      "question": "Pode colocar lâmpada inteligente num circuito com dimmer comum?",
+      "options": [
+        "Não, o dimmer atrapalha",
+        "Sim, fica ainda melhor para regular a luz",
+        "Sim, desde que o dimmer fique sempre no máximo",
+        "Sim, desde que a lâmpada seja de luz branca"
+      ],
+      "why": "A lâmpada inteligente já controla o próprio brilho. O dimmer comum corta a energia e faz ela piscar ou desconectar.",
+      "source": "pratica"
+    },
+    {
+      "id": "cas-26",
+      "topic": "instalacao",
+      "question": "O que acontece com o interruptor inteligente touch se a internet cair?",
+      "options": [
+        "As teclas continuam funcionando",
+        "A luz fica acesa até a internet voltar",
+        "O interruptor queima com a queda da conexão",
+        "Precisa trocar o interruptor ou configurar tudo de novo"
+      ],
+      "why": "O interruptor permite acionar manualmente pelas teclas. Sem internet, param o app e as automações.",
+      "source": "interruptor"
+    },
+    {
+      "id": "cas-27",
+      "topic": "instalacao",
+      "question": "Depois de configurar as rotinas, o que fazer com o cliente?",
+      "options": [
+        "Testar com ele e ensinar o uso sem internet",
+        "Ir embora",
+        "Desligar as rotinas para não gastar energia à toa",
+        "Deixar o app instalado só no seu celular"
+      ],
+      "why": "O cliente precisa saber usar e saber o que fazer quando a rede falha.",
+      "source": "pratica"
+    },
+    {
+      "id": "cas-28",
+      "topic": "instalacao",
+      "question": "Vai instalar uma fechadura inteligente. O que não pode faltar?",
+      "options": [
+        "Um jeito de entrar sem pilha",
+        "Só o aplicativo no celular do cliente, que já basta",
+        "Uma senha igual à do Wi-Fi",
+        "Tirar o cilindro da chave"
+      ],
+      "why": "Sem pilha ou sem internet, o cliente precisa de outra forma de entrar.",
+      "source": "pratica"
+    },
+    {
+      "id": "cas-29",
+      "topic": "privacidade",
+      "question": "O cliente quer uma câmera inteligente no quarto da babá, sem avisar. O que você diz?",
+      "options": [
+        "Que isso invade a privacidade dela",
+        "Que pode, porque a casa é dele e ele decide",
+        "Que pode, desde que a câmera seja pequena e discreta",
+        "Que pode, desde que a câmera não grave áudio"
+      ],
+      "why": "Imagem de pessoas é dado pessoal. Filmar quarto ou banheiro de outra pessoa sem aviso fere a privacidade e pode dar processo.",
+      "source": "pratica"
+    },
+    {
+      "id": "cas-30",
+      "topic": "eletrica",
+      "question": "Ao instalar um módulo inteligente atrás de um interruptor, o que conferir com o testador antes de encostar nos fios?",
+      "options": [
+        "Que não há tensão nos fios",
+        "Só a cor dos fios",
+        "Se o sinal do Wi-Fi chega até a caixa",
+        "Nada, porque o disjuntor já foi desligado"
+      ],
+      "why": "O quadro pode estar com identificação errada. Desligar não basta: é preciso confirmar a ausência de tensão.",
+      "source": "nr10"
+    }
+  ]
+}

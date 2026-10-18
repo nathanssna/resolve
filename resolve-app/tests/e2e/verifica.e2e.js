@@ -72,6 +72,10 @@ const login = async (email) => (await (await fetch(`${URL_}/auth/v1/token?grant_
   const files = () => sql(`select count(*)::int as n from storage.objects where bucket_id = 'verification' and name like '${proId}/%'`)[0].n;
   const row = () => sql(`select status, files_deleted_at from public.verifications where user_id = '${proId}' order by created_at desc limit 1`)[0];
 
+  // As contas de teste nascem liberadas (users.sh); aqui o profissional começa sem a identidade confirmada.
+  sql(`update public.professionals set verified = false where id = '${proId}'`);
+  sql(`update public.profiles set identity_verified_at = null where id = '${proId}'`);
+
   console.log('Pedir o selo (profissional)');
   const pro = await device(proS, 'profissional');
   await pro.page.goto(`${APP}/perfil`, { waitUntil: 'networkidle0' });
@@ -95,7 +99,7 @@ const login = async (email) => (await (await fetch(`${URL_}/auth/v1/token?grant_
   await pro.press('Autorizo o uso das fotos só para confirmar minha identidade', 'checkbox');
   await pro.page.screenshot({ path: SHOTS + 'verifica-1-fotos.png' });
   await pro.pressText('Enviar para análise');
-  ok(await pro.waitText('Em análise') && await pro.waitText('Você recebe um aviso quando a análise terminar.'), 'mostra "Em análise"');
+  ok(await pro.waitText('Em análise') && await pro.waitText('A resposta sai em até 24 h, e você recebe um aviso.'), 'mostra "Em análise"');
   ok(row()?.status === 'pending' && files() === 2, 'pedido pendente no banco, com as 2 fotos no bucket');
 
   console.log('\nAprovar (painel)');

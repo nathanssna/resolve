@@ -47,6 +47,14 @@ A negociação acontece **no chat, entre o cliente e o profissional**. A platafo
 | Mensagens | `src/app/(tabs)/mensagens.tsx` |
 | Pedidos / detalhe | `src/app/(tabs)/pedidos.tsx` · `src/app/pedido/[id].tsx` |
 | Perfil / Favoritos | `src/app/(tabs)/perfil.tsx` · `src/app/(tabs)/favoritos.tsx` |
+| Teste da área (profissional) | `src/app/profissional/teste/[servico].tsx` |
+
+### Entrada do profissional
+
+O profissional só aparece para os clientes num serviço depois de **passar no teste daquele serviço** e de **ter a identidade confirmada** (documento + selfie, revisados no painel). Até lá, o Início dele mostra "Para começar" com os passos: ficha → teste de cada serviço → identidade. Quando os dois se completam, ele recebe o aviso "Pronto, você foi liberado".
+
+- O banco garante a regra: `professional_services.approved_at` + `professionals.verified` (políticas e triggers em `supabase/migrations/20261018120000_knowledge_tests.sql`).
+- As questões nunca chegam ao app: `start_quiz` sorteia (espalhando pelos assuntos) e embaralha, `submit_quiz` corrige. Reprovou: nova tentativa em 3 dias, com outras questões.
 
 ## Estrutura
 
@@ -60,7 +68,7 @@ src/
   content/      textos: termos, privacidade, Ajuda, dados da empresa
   theme/        tokens.ts — cores, espaçamentos, raios, tipografia
   utils/        datas e períodos, ordem dos profissionais, formatação no padrão brasileiro
-supabase/       migrations (o banco inteiro), seed.sql (catálogo de serviços)
+supabase/       migrations (o banco inteiro), seed.sql (catálogo de serviços), quiz/ (bancos de questões) → quiz.sql
 tests/          testes do banco e de ponta a ponta (veja tests/README.md); os da lógica ficam em src/**/__tests__
 assets/logo/    logo (PNG) e a arte original do R — o app usa src/components/Logo.tsx
 ```
@@ -80,6 +88,19 @@ assets/logo/    logo (PNG) e a arte original do R — o app usa src/components/L
 - **Textos legais:** razão social, CNPJ e contato em `src/content/company.ts`; ainda há `[placeholders]` em `src/content/legal.ts`.
 - **E-mail de login:** configurar SMTP próprio no Supabase (o padrão tem limite de envios por hora).
 - **Lojas:** build com o EAS (`npx eas-cli@latest build`), push real exige development build e credenciais FCM/APNs.
+
+## Bancos de questões dos testes
+
+Cada serviço tem um arquivo em `supabase/quiz/<servico>.json`: quantas questões sortear (`draw`), quantas acertar para passar (`pass`), o tempo (`minutes`), as fontes e as questões. Em cada questão, **a primeira alternativa é a certa** (o servidor embaralha) e `source` aponta para uma fonte do arquivo.
+
+Ao editar, mantenha a alternativa certa com tamanho parecido com o das erradas (nem sempre a mais longa, nem sempre a mais curta), para ninguém acertar pelo tamanho. Depois:
+
+```bash
+npm run quiz:sql                                         # valida os bancos e gera supabase/quiz.sql
+npx supabase db query --linked -f supabase/quiz.sql     # aplica (idempotente; questão removida do arquivo é desativada)
+```
+
+O nome curto da fonte, mostrado no canto da questão, fica em `supabase/quiz/build.mjs`.
 
 ## Painel de moderação (no app)
 

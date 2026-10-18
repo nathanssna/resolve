@@ -115,7 +115,7 @@ export default function Verificacao() {
       ) : (
         <EmptyState icon="badge-check" title="Identidade confirmada" description="Os profissionais veem que sua identidade foi confirmada." />
       );
-    if (latest?.status === 'pending') return <EmptyState icon="clock" title="Em análise" description="Recebemos suas fotos. Você recebe um aviso quando a análise terminar." />;
+    if (latest?.status === 'pending') return <EmptyState icon="clock" title="Em análise" description="Recebemos suas fotos. A resposta sai em até 24 h, e você recebe um aviso." />;
     if (!canSend) return <EmptyState icon="shield-check" title="Nada a fazer por aqui" description="Sua conta não precisa de verificação de identidade agora." />;
     return (
       <>
@@ -126,7 +126,7 @@ export default function Verificacao() {
           <InfoBanner icon="shield-check" title="Precisamos confirmar sua identidade" description="Até a análise terminar, você não consegue fazer pedidos novos. Suas conversas continuam normalmente." />
         ) : null}
         <Text variant="body" color={colors.inkBody}>
-          {isPro ? 'O selo Verificado mostra aos clientes que nossa equipe conferiu quem você é. Envie duas fotos:' : 'Envie duas fotos para nossa equipe conferir quem você é:'}
+          {isPro ? 'Para aparecer aos clientes, nossa equipe confere quem você é, e seu perfil ganha o selo Verificado. Envie duas fotos:' : 'Envie duas fotos para nossa equipe conferir quem você é:'}
         </Text>
         <PhotoSlot title="Documento com foto" hint="RG ou CNH, frente, sem reflexo, com o nome legível" photo={docPhoto} onPick={(s) => pick(setDocPhoto, s)} />
         <PhotoSlot title="Selfie com o documento" hint="Seu rosto e o documento aparecendo juntos" photo={selfie} onPick={(s) => pick(setSelfie, s)} />

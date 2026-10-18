@@ -1,0 +1,535 @@
+{
+  "service": "ar-condicionado",
+  "title": "Ar-condicionado",
+  "draw": 20,
+  "pass": 14,
+  "minutes": 20,
+  "sources": {
+    "midea": "Midea Carrier — Manual de Instalação, Operação e Manutenção, Split Hi Wall Inverter Springer Midea AirVolution (256.09.139 rev. A, set/2021). Segue a NBR 5410 nas ligações elétricas. https://www.midea.com/content/dam/midea-aem/br/climatizacao/hiwall/ar-condicionado-springer-midea-airvolution-inverter/Manual%20de%20Instala%C3%A7%C3%A3o.pdf",
+    "abrava": "ABRAVA — Cartilha de boas práticas em refrigeração e ar-condicionado (2ª edição): recolhimento e armazenamento de fluidos. https://abrava.com.br/wp-content/uploads/2018/12/cartilha_2a_edicao_v5.pdf",
+    "a2l": "LG (guia de segurança R-32) e ABRAVA (RENABRAVA 13, práticas para fluidos A2L). https://www.lg.com/global/business/insights/hvac/blog/how-to-meet-r32-safety-requirements/",
+    "pmoc": "Lei Federal nº 13.589/2018 — Plano de Manutenção, Operação e Controle (PMOC). https://pacq.sbp.org.br/wp-content/uploads/2019/04/Lei-13589.2018-Ar-condicionado.pdf"
+  },
+  "questions": [
+    {
+      "id": "ar-01",
+      "topic": "seguranca",
+      "question": "Antes de abrir a evaporadora para uma manutenção, o que fazer primeiro?",
+      "options": [
+        "Desligar o disjuntor do aparelho",
+        "Desligar pelo controle remoto e esperar a turbina parar",
+        "Colocar no modo ventilar para a placa não esquentar",
+        "Tirar o filtro com o aparelho funcionando para ver o fluxo"
+      ],
+      "why": "O controle remoto só desliga a operação, e a placa continua energizada. O manual pede energia DESLIGADA em qualquer manutenção.",
+      "source": "midea"
+    },
+    {
+      "id": "ar-02",
+      "topic": "seguranca",
+      "question": "Como procurar um vazamento de fluido refrigerante?",
+      "options": [
+        "Com espuma ou detector, nunca com chama",
+        "Com um isqueiro perto das conexões",
+        "Cheirando as conexões, que o fluido tem cheiro forte",
+        "Ligando o aparelho no máximo e ouvindo o chiado"
+      ],
+      "why": "O manual alerta para risco de explosão: jamais usar chama viva para detectar vazamento.",
+      "source": "midea"
+    },
+    {
+      "id": "ar-03",
+      "topic": "instalacao",
+      "question": "Para pressurizar a tubulação e testar vazamento, o que usar?",
+      "options": [
+        "Nitrogênio seco, com regulador",
+        "Oxigênio",
+        "Ar comprimido do compressor de pintura, com filtro",
+        "O próprio compressor do aparelho, puxando ar da linha"
+      ],
+      "why": "Oxigênio com óleo pode explodir, e ar comprimido coloca umidade no sistema. O fabricante pede nitrogênio seco com regulador e proíbe comprimir ar com o compressor da unidade.",
+      "source": "midea"
+    },
+    {
+      "id": "ar-04",
+      "topic": "instalacao",
+      "question": "Na hora de soldar a tubulação de cobre, o que fazer por dentro do tubo?",
+      "options": [
+        "Passar nitrogênio durante a solda",
+        "Nada, só soldar por fora com bastante fluxo",
+        "Passar óleo por dentro para o cobre não queimar",
+        "Deixar o tubo aberto nas pontas para sair a fumaça"
+      ],
+      "why": "Sem nitrogênio, forma óxido de cobre por dentro, e ele depois entope filtro e capilar.",
+      "source": "midea"
+    },
+    {
+      "id": "ar-05",
+      "topic": "instalacao",
+      "question": "Antes de encaixar a porca no tubo, o que não pode esquecer?",
+      "options": [
+        "Pôr a porca antes de flangear",
+        "Fazer o flange e depois passar a porca pela outra ponta",
+        "Passar fita veda rosca na rosca da porca",
+        "Passar cola na ponta do flange para vedar melhor"
+      ],
+      "why": "Depois de flangeado, a porca não passa mais pela ponta, e é preciso cortar e refazer o flange.",
+      "source": "midea"
+    },
+    {
+      "id": "ar-06",
+      "topic": "instalacao",
+      "question": "Como fazer o aperto final da porca flange na válvula da condensadora?",
+      "options": [
+        "Com duas chaves, no torque da tabela",
+        "Com uma chave só",
+        "Na mão, bem firme, para não estragar o flange",
+        "Com chave de cano, que segura melhor sem escapar"
+      ],
+      "why": "Duas chaves evitam torcer a válvula. Aperto demais racha o flange, e de menos vaza.",
+      "source": "midea"
+    },
+    {
+      "id": "ar-07",
+      "topic": "instalacao",
+      "question": "Como isolar as linhas de sucção e de expansão?",
+      "options": [
+        "Cada linha com o seu isolamento, separadas",
+        "As duas juntas num isolamento só",
+        "Só a linha fina",
+        "Não precisa isolar se ficar dentro da parede"
+      ],
+      "why": "O manual pede isolar as linhas separadamente. Juntas, uma troca calor com a outra e o aparelho rende menos.",
+      "source": "midea"
+    },
+    {
+      "id": "ar-08",
+      "topic": "instalacao",
+      "question": "Ao dobrar o tubo de cobre, qual é o cuidado?",
+      "options": [
+        "Com curvador, sem amassar",
+        "Na mão, bem fechado, para ocupar menos espaço na parede",
+        "Esquentando com maçarico e dobrando em ângulo reto",
+        "Pode amassar um pouco na curva, que não muda nada"
+      ],
+      "why": "Dobra amassada estrangula o fluxo. O manual pede raio de dobra não inferior a 100 mm.",
+      "source": "midea"
+    },
+    {
+      "id": "ar-09",
+      "topic": "vacuo",
+      "question": "Como deve ser feito o vácuo da tubulação e da evaporadora?",
+      "options": [
+        "Com bomba de vácuo e vacuômetro",
+        "Usando o próprio compressor do aparelho",
+        "Soltando um pouco do gás da condensadora para empurrar o ar",
+        "Não precisa: a evaporadora vem selada"
+      ],
+      "why": "O manual proíbe usar o compressor para fazer vácuo. O vácuo com bomba tira o ar e a umidade, e o vacuômetro confirma o resultado.",
+      "source": "midea"
+    },
+    {
+      "id": "ar-10",
+      "topic": "vacuo",
+      "question": "Durante o vácuo, como ficam as válvulas de serviço da condensadora?",
+      "options": [
+        "Fechadas",
+        "Abertas, para fazer vácuo no aparelho todo de uma vez",
+        "Só a de sucção aberta, para a bomba puxar o ar",
+        "Tanto faz, desde que o vacuômetro esteja ligado"
+      ],
+      "why": "O fluido vem guardado na condensadora. Abrir as válvulas no vácuo joga essa carga na bomba.",
+      "source": "midea"
+    },
+    {
+      "id": "ar-11",
+      "topic": "vacuo",
+      "question": "Qual é a faixa de vácuo recomendada pelo fabricante?",
+      "options": [
+        "Entre 250 e 500 mícrons (μmHg)",
+        "Até o manômetro marcar zero",
+        "Cerca de 5.000 mícrons",
+        "Basta ligar a bomba por 2 minutos"
+      ],
+      "why": "O manual indica 250 a 500 μmHg, medido com vacuômetro. O manômetro do manifold não tem precisão para isso.",
+      "source": "midea"
+    },
+    {
+      "id": "ar-12",
+      "topic": "vacuo",
+      "question": "Você desliga a bomba e a leitura do vacuômetro continua subindo sem parar. O que isso indica?",
+      "options": [
+        "Vazamento no sistema",
+        "Vácuo perfeito",
+        "Bomba com óleo novo",
+        "Excesso de nitrogênio"
+      ],
+      "why": "Se a pressão não estabiliza e continua subindo, há fuga. É preciso achar e corrigir antes de seguir.",
+      "source": "midea"
+    },
+    {
+      "id": "ar-13",
+      "topic": "vacuo",
+      "question": "A leitura do vácuo sobe um pouco e estabiliza alta. O que fazer?",
+      "options": [
+        "Quebrar o vácuo com nitrogênio e refazer",
+        "Está ótimo, pode abrir as válvulas e liberar o gás",
+        "Trocar a tubulação inteira, que está furada",
+        "Completar com fluido para empurrar a umidade para fora"
+      ],
+      "why": "Estabilizar numa faixa alta indica umidade. O manual manda circular nitrogênio e refazer o vácuo.",
+      "source": "midea"
+    },
+    {
+      "id": "ar-14",
+      "topic": "vacuo",
+      "question": "Depois de atingir o vácuo, quanto tempo esperar observando a leitura?",
+      "options": [
+        "Pelo menos 20 minutos",
+        "Nada, pode abrir as válvulas assim que atingir a faixa",
+        "Uns 10 segundos, só para ver se o ponteiro parou",
+        "Até o dia seguinte"
+      ],
+      "why": "O manual indica tempo mínimo de 20 minutos para estabilização, para confirmar sistema seco e sem fuga.",
+      "source": "midea"
+    },
+    {
+      "id": "ar-15",
+      "topic": "vacuo",
+      "question": "O que fazer de tempos em tempos com a bomba de vácuo?",
+      "options": [
+        "Trocar o óleo",
+        "Nada, bomba de vácuo não tem manutenção",
+        "Lavar por dentro com água e deixar secar",
+        "Encher de fluido refrigerante para não ressecar"
+      ],
+      "why": "Óleo velho e úmido tira a capacidade da bomba de chegar ao vácuo certo.",
+      "source": "midea"
+    },
+    {
+      "id": "ar-16",
+      "topic": "carga",
+      "question": "Split que vem carregado para 7,5 m de tubulação, instalado com 5 m. E a carga de fluido?",
+      "options": [
+        "Não deve ser alterada",
+        "Precisa completar um pouco de gás",
+        "Precisa tirar um pouco de gás",
+        "Tem que recarregar do zero"
+      ],
+      "why": "O manual é claro: até o comprimento da carga de fábrica, a carga NÃO DEVE SER ALTERADA. Completar sem necessidade deixa excesso de fluido.",
+      "source": "midea"
+    },
+    {
+      "id": "ar-17",
+      "topic": "carga",
+      "question": "A tubulação ficou com 10 m, e a carga de fábrica cobre 7,5 m. O que fazer?",
+      "options": [
+        "Adicionar os gramas por metro da tabela",
+        "Nada, a diferença de comprimento é pequena",
+        "Encher até o manômetro marcar a mesma pressão de outro aparelho",
+        "Dobrar a carga para compensar a distância"
+      ],
+      "why": "Para cada metro acima do comprimento da carga de fábrica, o manual indica quantos gramas adicionar, e o valor muda por modelo.",
+      "source": "midea"
+    },
+    {
+      "id": "ar-18",
+      "topic": "carga",
+      "question": "Na carga de R-410A, como o fluido deve sair do cilindro?",
+      "options": [
+        "Líquido, controlado na balança",
+        "Gás, com o cilindro em pé, para não entrar líquido",
+        "Tanto faz",
+        "Aos poucos, até o tubo de sucção começar a suar"
+      ],
+      "why": "O manual pede fluido saindo líquido e carga controlada até a quantidade ideal, com balança. O R-410A é uma mistura, e carregado como gás muda a proporção.",
+      "source": "midea"
+    },
+    {
+      "id": "ar-19",
+      "topic": "carga",
+      "question": "Antes de ligar o aparelho pela primeira vez, depois do vácuo e da carga, o que falta?",
+      "options": [
+        "Abrir as válvulas de serviço",
+        "Nada, pode ligar direto no modo refrigerar",
+        "Tirar o filtro da evaporadora para o ar passar melhor",
+        "Ligar no modo turbo para o gás circular mais rápido"
+      ],
+      "why": "O manual proíbe pôr em funcionamento sem as válvulas abertas, porque o compressor se danifica.",
+      "source": "midea"
+    },
+    {
+      "id": "ar-20",
+      "topic": "carga",
+      "question": "Numa recarga completa, quanto tempo o sistema pode ficar aberto para o ar?",
+      "options": [
+        "No máximo uns 5 minutos",
+        "Pode ficar aberto o dia todo",
+        "Até o fim do serviço",
+        "Uma hora"
+      ],
+      "why": "Aberto, o sistema puxa umidade do ar. O manual limita a exposição a 5 minutos.",
+      "source": "midea"
+    },
+    {
+      "id": "ar-21",
+      "topic": "carga",
+      "question": "Um aparelho de R-410A está com pouco gás e você só tem R-22. O que fazer?",
+      "options": [
+        "Não completar: não se mistura fluido",
+        "Completar com R-22, que funciona igual no compressor",
+        "Misturar meio a meio para equilibrar a pressão",
+        "Completar com R-22 e trocar o óleo do compressor depois"
+      ],
+      "why": "Cada fluido tem pressão e óleo próprios. Misturar estraga o sistema e o fluido não pode mais ser reaproveitado.",
+      "source": "abrava"
+    },
+    {
+      "id": "ar-22",
+      "topic": "carga",
+      "question": "Dá para usar o mesmo manifold de R-22 num aparelho de R-410A?",
+      "options": [
+        "Não: pressão maior e conexão diferente",
+        "Sim, todo manifold serve para todos os fluidos",
+        "Sim, desde que troque só as mangueiras por novas",
+        "Sim, se zerar os manômetros antes de conectar"
+      ],
+      "why": "O R-410A tem pressões mais altas e rosca de serviço própria (1/2 in no manual). Ferramenta errada pode estourar ou contaminar.",
+      "source": "midea"
+    },
+    {
+      "id": "ar-23",
+      "topic": "seguranca",
+      "question": "Para tirar o fluido de um aparelho na manutenção, como fazer?",
+      "options": [
+        "Recolhedora e cilindro próprio",
+        "Abrir a válvula e deixar sair num lugar ventilado",
+        "Recolher usando o compressor da própria unidade",
+        "Furar o tubo em local aberto"
+      ],
+      "why": "O fabricante pede bomba recolhedora e cilindro apropriado. Soltar fluido no ar polui e desperdiça o fluido.",
+      "source": "midea"
+    },
+    {
+      "id": "ar-24",
+      "topic": "seguranca",
+      "question": "O que muda ao instalar um aparelho com fluido R-32?",
+      "options": [
+        "É levemente inflamável: sem chama e com ferramentas próprias",
+        "Nada, ele é igual ao R-22 em tudo",
+        "Ele é tóxico ao toque e exige roupa especial",
+        "Ele dispensa vácuo porque não absorve umidade"
+      ],
+      "why": "O R-32 é classe A2L, levemente inflamável. Pede cuidado com chama e bomba de vácuo compatível.",
+      "source": "a2l"
+    },
+    {
+      "id": "ar-25",
+      "topic": "dreno",
+      "question": "Como deve ficar a mangueira do dreno?",
+      "options": [
+        "Sempre descendo, sem barriga",
+        "Pode subir um pouco e depois descer até a saída",
+        "Reta, sem caimento, para não ficar aparente",
+        "Enrolada atrás da evaporadora para ocupar menos espaço"
+      ],
+      "why": "A drenagem é por gravidade. Qualquer subida ou barriga acumula água e faz voltar para dentro.",
+      "source": "midea"
+    },
+    {
+      "id": "ar-26",
+      "topic": "dreno",
+      "question": "Onde não pode ficar a ponta da mangueira do dreno?",
+      "options": [
+        "Mergulhada em água",
+        "Num ralo do lado de fora da casa",
+        "Numa tubulação de dreno própria do prédio",
+        "Numa área externa com piso e caimento"
+      ],
+      "why": "Com a ponta submersa, a água não escoa e volta pela evaporadora.",
+      "source": "midea"
+    },
+    {
+      "id": "ar-27",
+      "topic": "diagnostico",
+      "question": "A evaporadora está pingando dentro do quarto. O que verificar primeiro?",
+      "options": [
+        "Dreno entupido ou sem caimento, e o nível da unidade",
+        "Se falta gás, porque o gelo derrete e pinga",
+        "Se o controle remoto está com a pilha fraca",
+        "Se a tomada é de 20 A e o disjuntor é próprio"
+      ],
+      "why": "O manual pede conferir a inclinação do dreno e o nível da unidade. É a causa mais comum de água vazando para dentro.",
+      "source": "midea"
+    },
+    {
+      "id": "ar-28",
+      "topic": "eletrica",
+      "question": "Como deve ser a alimentação elétrica do split?",
+      "options": [
+        "Circuito independente com disjuntor",
+        "Na tomada mais próxima",
+        "No mesmo circuito do chuveiro",
+        "Com extensão reforçada"
+      ],
+      "why": "O manual pede circuito independente com disjuntor, conforme a NBR 5410. Circuito sobrecarregado derruba a tensão e o compressor não parte.",
+      "source": "midea"
+    },
+    {
+      "id": "ar-29",
+      "topic": "eletrica",
+      "question": "Aparelho de 220 V. Você mede 185 V na alimentação. O que fazer?",
+      "options": [
+        "Não ligar e avisar: está abaixo de 198 V",
+        "Ligar normal, a diferença de tensão é pequena",
+        "Ligar no modo turbo para compensar a tensão baixa",
+        "Trocar o capacitor, que é o que sofre com tensão baixa"
+      ],
+      "why": "O manual aceita de 90% a 110% da tensão nominal. Abaixo disso, o compressor sofre e pode queimar.",
+      "source": "midea"
+    },
+    {
+      "id": "ar-30",
+      "topic": "eletrica",
+      "question": "O aparelho precisa de aterramento?",
+      "options": [
+        "Sim, sempre",
+        "Não, a carcaça da evaporadora é de plástico",
+        "Só se o aparelho for de 220 V",
+        "Só se o cliente pedir ou se for área úmida"
+      ],
+      "why": "As ligações seguem a NBR 5410, e o manual indica por onde fazer o aterramento. A condensadora é metálica e fica exposta.",
+      "source": "midea"
+    },
+    {
+      "id": "ar-31",
+      "topic": "instalacao",
+      "question": "Ao escolher o lugar da condensadora, o que respeitar?",
+      "options": [
+        "Os espaços mínimos do manual",
+        "Encostar na parede",
+        "Dentro de um nicho fechado",
+        "Com a saída de ar virada para a parede, por causa do barulho"
+      ],
+      "why": "Sem espaço, a condensadora recircula o ar quente e perde rendimento. O espaço também permite o reparo.",
+      "source": "midea"
+    },
+    {
+      "id": "ar-32",
+      "topic": "instalacao",
+      "question": "Como transportar a condensadora até o local?",
+      "options": [
+        "Em pé, pouco inclinada",
+        "Deitada, que é mais seguro no carro",
+        "De lado, com as válvulas para cima",
+        "Tanto faz"
+      ],
+      "why": "O manual pede não inclinar mais de 15° em relação à vertical, para não deslocar o óleo do compressor.",
+      "source": "midea"
+    },
+    {
+      "id": "ar-33",
+      "topic": "instalacao",
+      "question": "Qual limite de tubulação respeitar entre evaporadora e condensadora?",
+      "options": [
+        "O comprimento e o desnível do manual",
+        "Nenhum, se carregar mais gás no fim",
+        "No máximo 1 metro em qualquer aparelho",
+        "Pelo menos 20 metros, para o gás esfriar"
+      ],
+      "why": "Cada modelo tem comprimento equivalente e desnível máximos. Passar disso prejudica o retorno de óleo e o rendimento.",
+      "source": "midea"
+    },
+    {
+      "id": "ar-34",
+      "topic": "instalacao",
+      "question": "Para que limpar as linhas com nitrogênio antes de conectar?",
+      "options": [
+        "Tirar a sujeira da obra",
+        "Resfriar o tubo antes de conectar as porcas",
+        "Testar se o tubo é de cobre de verdade",
+        "Não serve para nada"
+      ],
+      "why": "O manual diz que a limpeza com nitrogênio evita que a sujeira da obra fique na tubulação.",
+      "source": "midea"
+    },
+    {
+      "id": "ar-35",
+      "topic": "instalacao",
+      "question": "A tubulação está vibrando e fazendo barulho. O que o manual sugere?",
+      "options": [
+        "Fazer loops ou usar flexíveis",
+        "Apertar mais as porcas flange das duas pontas",
+        "Colocar mais gás para a pressão segurar o tubo",
+        "Encher a passagem da parede com espuma expansiva"
+      ],
+      "why": "Loops ou flexíveis absorvem a vibração. A tubulação deve ficar presa em suportes.",
+      "source": "midea"
+    },
+    {
+      "id": "ar-36",
+      "topic": "diagnostico",
+      "question": "O aparelho liga, mas o ambiente não gela. O que verificar antes de pensar em gás?",
+      "options": [
+        "Sujeira, tamanho do aparelho e válvulas",
+        "Trocar o compressor",
+        "Completar gás até a tubulação gelar",
+        "Trocar o controle remoto e a placa receptora"
+      ],
+      "why": "O manual lista sujeira nas serpentinas, aparelho pequeno para o ambiente e válvula fechada antes de vazamento.",
+      "source": "midea"
+    },
+    {
+      "id": "ar-37",
+      "topic": "diagnostico",
+      "question": "A evaporadora está fazendo gelo. Quais são as causas indicadas pelo fabricante?",
+      "options": [
+        "Filtro ou capilar obstruído, ou vazamento",
+        "Excesso de óleo na bomba de vácuo usada na instalação",
+        "Tomada de 10 A, que limita a corrente do compressor",
+        "Controle remoto no modo desumidificar"
+      ],
+      "why": "Obstrução no filtro ou capilar e falta de fluido por vazamento são as causas listadas para o evaporador bloqueado com gelo.",
+      "source": "midea"
+    },
+    {
+      "id": "ar-38",
+      "topic": "diagnostico",
+      "question": "O compressor não parte e o cliente usa o aparelho num benjamim com outros aparelhos. O que fazer?",
+      "options": [
+        "Ligar num ponto exclusivo",
+        "Trocar o compressor",
+        "Completar gás para o compressor partir",
+        "Trocar o controle remoto e testar de novo"
+      ],
+      "why": "Circuito sobrecarregado derruba a tensão. O manual pede tomada única e exclusiva.",
+      "source": "midea"
+    },
+    {
+      "id": "ar-39",
+      "topic": "manutencao",
+      "question": "Qual manutenção o próprio usuário deve fazer com frequência?",
+      "options": [
+        "Limpar o filtro de ar",
+        "Completar o gás uma vez por ano",
+        "Abrir a condensadora e lavar a placa eletrônica",
+        "Trocar o capacitor de tempos em tempos"
+      ],
+      "why": "O filtro é a manutenção do dia a dia. Filtro sujo reduz o ar e pode até congelar o evaporador.",
+      "source": "midea"
+    },
+    {
+      "id": "ar-40",
+      "topic": "manutencao",
+      "question": "Em escritórios, academias e lojas abertas ao público, o que a lei exige dos aparelhos?",
+      "options": [
+        "Um PMOC",
+        "Nada, a lei vale só para hospitais",
+        "Trocar os aparelhos a cada 2 anos",
+        "Guardar a nota fiscal da instalação"
+      ],
+      "why": "A Lei 13.589/2018 obriga edifícios de uso público e coletivo climatizados a ter PMOC.",
+      "source": "pmoc"
+    }
+  ]
+}

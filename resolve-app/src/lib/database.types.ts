@@ -258,6 +258,57 @@ export type Database = {
           },
         ]
       }
+      lesson_progress: {
+        Row: {
+          completed_at: string
+          lesson_id: string
+          professional_id: string
+        }
+        Insert: {
+          completed_at?: string
+          lesson_id: string
+          professional_id: string
+        }
+        Update: {
+          completed_at?: string
+          lesson_id?: string
+          professional_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lesson_progress_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "lessons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lesson_progress_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lessons: {
+        Row: {
+          active: boolean
+          id: string
+          sort_order: number
+        }
+        Insert: {
+          active?: boolean
+          id: string
+          sort_order?: number
+        }
+        Update: {
+          active?: boolean
+          id?: string
+          sort_order?: number
+        }
+        Relationships: []
+      }
       messages: {
         Row: {
           body: string | null
@@ -534,16 +585,19 @@ export type Database = {
       }
       professional_services: {
         Row: {
+          approved_at: string | null
           created_at: string
           professional_id: string
           service_id: string
         }
         Insert: {
+          approved_at?: string | null
           created_at?: string
           professional_id: string
           service_id: string
         }
         Update: {
+          approved_at?: string | null
           created_at?: string
           professional_id?: string
           service_id?: string
@@ -573,10 +627,12 @@ export type Database = {
           id: string
           jobs_count: number
           latitude: number | null
+          lessons_done_at: string | null
           longitude: number | null
           paused: boolean
           paused_until: string | null
           rating: number
+          released_at: string | null
           reply_minutes: number
           review_count: number
           role_title: string
@@ -593,10 +649,12 @@ export type Database = {
           id: string
           jobs_count?: number
           latitude?: number | null
+          lessons_done_at?: string | null
           longitude?: number | null
           paused?: boolean
           paused_until?: string | null
           rating?: number
+          released_at?: string | null
           reply_minutes?: number
           review_count?: number
           role_title?: string
@@ -613,10 +671,12 @@ export type Database = {
           id?: string
           jobs_count?: number
           latitude?: number | null
+          lessons_done_at?: string | null
           longitude?: number | null
           paused?: boolean
           paused_until?: string | null
           rating?: number
+          released_at?: string | null
           reply_minutes?: number
           review_count?: number
           role_title?: string
@@ -776,6 +836,41 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      quiz_tests: {
+        Row: {
+          draw: number
+          label: string
+          minutes: number
+          pass: number
+          retry_days: number
+          service_id: string
+        }
+        Insert: {
+          draw: number
+          label?: string
+          minutes: number
+          pass: number
+          retry_days?: number
+          service_id: string
+        }
+        Update: {
+          draw?: number
+          label?: string
+          minutes?: number
+          pass?: number
+          retry_days?: number
+          service_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quiz_tests_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: true
+            referencedRelation: "services"
             referencedColumns: ["id"]
           },
         ]
@@ -1478,6 +1573,7 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      complete_lesson: { Args: { p_lesson_id: string }; Returns: Json }
       complete_onboarding: {
         Args: {
           p_full_name: string
@@ -1889,6 +1985,24 @@ export type Database = {
           orders_90d: number
         }[]
       }
+      quiz_status: {
+        Args: never
+        Returns: {
+          approved_at: string
+          available: boolean
+          deadline_at: string
+          draw: number
+          label: string
+          last_score: number
+          minutes: number
+          open_attempt: string
+          pass: number
+          retry_at: string
+          retry_days: number
+          service_id: string
+          title: string
+        }[]
+      }
       rate_client: {
         Args: { p_order_id: string; p_rating: number }
         Returns: {
@@ -2043,6 +2157,11 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      start_quiz: { Args: { p_service_id: string }; Returns: Json }
+      submit_quiz: {
+        Args: { p_answers: number[]; p_attempt_id: string }
+        Returns: Json
       }
       support_team_avatar: { Args: never; Returns: string }
       unread_before: {

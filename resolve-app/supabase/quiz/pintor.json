@@ -1,0 +1,407 @@
+{
+  "service": "pintor",
+  "title": "Pintura",
+  "draw": 15,
+  "pass": 11,
+  "minutes": 15,
+  "sources": {
+    "coral": "Coral (AkzoNobel) — Boletim técnico Acrílico Premium Exterior: preparo da superfície, condições e dados de aplicação. https://prdakzodecodocumentssa.blob.core.windows.net/public/tds/cr/br/pt/af_boletim_tecnico_acrilico_premium_exterior.pdf",
+    "suvinil": "Suvinil — orientação sobre selador e fundo preparador após a cura do reboco (via Correio Braziliense). https://www.correiobraziliense.com.br/cbradar/pintar-parede-recem-rebocada-tempo-de-cura-cuidados/",
+    "metal": "Suvinil (Zarcão e Fundo Galvanizado) e Coral (Coralit Fundo Galvanizado, Sparlack Fundo Isolante) — indicações de fundo por superfície. https://www.telhanorte.com.br/fundo-galvanizado-900ml-branco-suvinil-1021026/p",
+    "abrafati": "ABRAFATI — Cartilha de logística reversa (RetornaTinta) e orientações de descarte e limpeza de ferramentas (via eCycle). https://abrafati.com.br/wp-content/uploads/2024/11/23-08-Cartilha-Logistica-Reversa-DIGITAL.pdf",
+    "nr35": "NR-35 — Trabalho em altura, item 35.1.2. https://saude.sp.gov.br/resources/crh/qualidade-de-vida/saude-e-seguranca/normas-regulamentadoras/nr35_-_trabalho_em_altura.pdf",
+    "pratica": "Prática de pintura consolidada (sem norma específica); revisar com um pintor."
+  },
+  "questions": [
+    {
+      "id": "pin-01",
+      "topic": "preparo",
+      "question": "A parede foi rebocada semana passada. O cliente quer pintar amanhã. O que você orienta?",
+      "options": [
+        "Esperar uns 30 dias e usar selador",
+        "Pintar amanhã mesmo, porque a tinta ajuda a parede a secar",
+        "Passar massa corrida para fechar os poros e pintar em seguida",
+        "Molhar bem a parede antes, para a tinta pegar no reboco"
+      ],
+      "why": "Reboco novo ainda solta umidade e alcalinidade. O fabricante pede no mínimo 30 dias e selador. Se não puder esperar, fundo preparador.",
+      "source": "coral"
+    },
+    {
+      "id": "pin-02",
+      "topic": "preparo",
+      "question": "Passando a mão, a parede solta pó e grãos. O que aplicar antes da tinta?",
+      "options": [
+        "Fundo preparador de paredes",
+        "Selador acrílico",
+        "Só a tinta, com uma demão a mais para firmar",
+        "Massa corrida direto, para segurar o pó"
+      ],
+      "why": "O selador é para superfície nova e firme. Parede que esfarela tem baixa coesão e pede fundo preparador.",
+      "source": "suvinil"
+    },
+    {
+      "id": "pin-03",
+      "topic": "preparo",
+      "question": "Parede antiga pintada com cal. Como preparar para tinta acrílica?",
+      "options": [
+        "Tirar o solto, lixar e usar fundo preparador",
+        "Pintar por cima direto",
+        "Molhar a parede e pintar enquanto ainda está úmida",
+        "Passar massa acrílica grossa por cima da cal"
+      ],
+      "why": "A cal esfarela e a tinta descasca junto com ela. O boletim pede remover o que estiver solto e usar fundo preparador.",
+      "source": "coral"
+    },
+    {
+      "id": "pin-04",
+      "topic": "preparo",
+      "question": "A parede tem manchas de mofo. O que fazer antes de pintar?",
+      "options": [
+        "Água sanitária 1:1, 6 horas, enxaguar e secar",
+        "Pintar por cima com tinta antimofo",
+        "Passar massa corrida por cima das manchas e pintar",
+        "Lixar a seco as manchas e pintar com duas demãos"
+      ],
+      "why": "Pintar por cima não mata o mofo e ele volta. O boletim pede água sanitária 1:1, 6 horas de espera, enxágue e secagem.",
+      "source": "coral"
+    },
+    {
+      "id": "pin-05",
+      "topic": "preparo",
+      "question": "A parede está úmida por causa de uma infiltração. O cliente quer só pintar. O que você faz?",
+      "options": [
+        "Explico que antes é preciso resolver a umidade",
+        "Pinto com tinta mais grossa, que segura a umidade",
+        "Pinto com esmalte para impermeabilizar a parede",
+        "Passo massa corrida e pinto por cima"
+      ],
+      "why": "A orientação do fabricante é resolver o que causa a umidade antes de pintar. Senão a pintura bolha e descasca.",
+      "source": "coral"
+    },
+    {
+      "id": "pin-06",
+      "topic": "preparo",
+      "question": "Vai pintar sobre uma tinta com brilho (esmalte ou acetinada). O que fazer antes?",
+      "options": [
+        "Lixar até tirar o brilho",
+        "Nada, a tinta nova cobre e se prende sozinha",
+        "Molhar a parede para a tinta escorregar menos",
+        "Passar água sanitária para tirar a gordura do brilho"
+      ],
+      "why": "Sem lixar, a tinta nova não ancora no brilho e descasca.",
+      "source": "coral"
+    },
+    {
+      "id": "pin-07",
+      "topic": "preparo",
+      "question": "Parede de cozinha com gordura. Como limpar antes de pintar?",
+      "options": [
+        "Detergente neutro, enxaguar e secar",
+        "Álcool, e pintar enquanto ainda está molhado",
+        "Thinner direto na parede",
+        "Não precisa limpar"
+      ],
+      "why": "Gordura impede a aderência. O boletim pede lavar com detergente neutro, enxaguar e secar.",
+      "source": "coral"
+    },
+    {
+      "id": "pin-08",
+      "topic": "preparo",
+      "question": "Para corrigir pequenas imperfeições, qual massa usar?",
+      "options": [
+        "Corrida dentro, acrílica fora",
+        "Massa corrida em qualquer lugar, inclusive na fachada",
+        "Massa acrílica só no teto e corrida nas paredes",
+        "Gesso na fachada e massa corrida dentro"
+      ],
+      "why": "A massa corrida não aguenta tempo e umidade. Para área externa, usa-se massa acrílica.",
+      "source": "coral"
+    },
+    {
+      "id": "pin-09",
+      "topic": "preparo",
+      "question": "Depois de lixar a parede, como tirar o pó?",
+      "options": [
+        "Com pano úmido",
+        "Soprando",
+        "Com vassoura seca",
+        "Não precisa, a tinta segura o pó"
+      ],
+      "why": "O boletim sempre manda eliminar o pó com pano úmido antes de pintar. Pó deixa a tinta sem aderência.",
+      "source": "coral"
+    },
+    {
+      "id": "pin-10",
+      "topic": "preparo",
+      "question": "O fabricante pede um fundo específico para gesso corrido. Por quê?",
+      "options": [
+        "Gesso corrido absorve muito e pede fundo próprio",
+        "Porque o gesso não aceita nenhuma tinta comum",
+        "Porque é só propaganda, qualquer fundo serve",
+        "Porque o gesso corrido é próprio para área externa"
+      ],
+      "why": "O boletim indica fundo preparador para gesso em geral, mas para gesso corrido pede produto próprio. Gesso também não deve ficar exposto ao tempo.",
+      "source": "coral"
+    },
+    {
+      "id": "pin-11",
+      "topic": "aplicacao",
+      "question": "Em qual condição o fabricante pede para não pintar?",
+      "options": [
+        "Chuva, menos de 10 °C, mais de 40 °C ou ar muito úmido",
+        "Dia nublado, mesmo sem chuva e com temperatura amena",
+        "Temperatura de 25 °C com sol fraco",
+        "Depois das 14 h, quando o sol muda de lado"
+      ],
+      "why": "Essas condições mudam a secagem e prejudicam o acabamento. O boletim pede evitar.",
+      "source": "coral"
+    },
+    {
+      "id": "pin-12",
+      "topic": "aplicacao",
+      "question": "Quanto esperar entre uma demão e outra?",
+      "options": [
+        "O tempo da lata (aqui, 4 horas)",
+        "Pode passar a segunda demão logo em seguida",
+        "Um dia inteiro",
+        "Só até a primeira demão parar de escorrer"
+      ],
+      "why": "Demão sobre demão ainda molhada enruga e escorre. Cada tinta traz o tempo entre demãos no boletim.",
+      "source": "coral"
+    },
+    {
+      "id": "pin-13",
+      "topic": "aplicacao",
+      "question": "Como diluir a tinta?",
+      "options": [
+        "Com água, no máximo indicado na lata",
+        "Meio a meio com água, para render mais",
+        "Com thinner, mesmo sendo tinta acrílica",
+        "À vontade, até a tinta ficar bem rala"
+      ],
+      "why": "Diluir demais tira a cobertura e a resistência da tinta. A proporção máxima vem no boletim.",
+      "source": "coral"
+    },
+    {
+      "id": "pin-14",
+      "topic": "aplicacao",
+      "question": "O que fazer antes de diluir a tinta da lata?",
+      "options": [
+        "Misturar bem com espátula",
+        "Nada, é só colocar a água e começar",
+        "Deixar a lata aberta uma hora para respirar",
+        "Sacudir a lata fechada por alguns segundos"
+      ],
+      "why": "O boletim pede misturar antes de diluir, porque os pigmentos assentam no fundo.",
+      "source": "coral"
+    },
+    {
+      "id": "pin-15",
+      "topic": "aplicacao",
+      "question": "Cor forte (vermelho, amarelo) sobre parede branca. Quantas demãos esperar?",
+      "options": [
+        "Pode precisar de mais de 2 ou 3 demãos",
+        "Uma demão sempre basta com tinta boa",
+        "Exatamente 2 demãos, nunca mais que isso",
+        "Depende só do rolo, não da cor"
+      ],
+      "why": "O boletim indica 2 a 3 demãos, mas avisa que algumas cores e superfícies pedem mais.",
+      "source": "coral"
+    },
+    {
+      "id": "pin-16",
+      "topic": "seguranca",
+      "question": "Pintando um quarto, como deve ficar o ambiente?",
+      "options": [
+        "Ventilado, com janelas abertas",
+        "Fechado, para secar mais rápido",
+        "Com ventilador soprando direto na parede molhada",
+        "Fechado e com o ar-condicionado no máximo"
+      ],
+      "why": "Ventilação tira o cheiro e os vapores. O fabricante associa o pouco cheiro ao ambiente ventilado.",
+      "source": "coral"
+    },
+    {
+      "id": "pin-17",
+      "topic": "metal",
+      "question": "Vai pintar um portão de ferro com ferrugem. Qual é a ordem certa?",
+      "options": [
+        "Tirar a ferrugem, fundo para ferro e esmalte",
+        "Passar esmalte direto por cima da ferrugem",
+        "Passar massa corrida nos pontos de ferrugem e pintar",
+        "Lavar com água sanitária e pintar com tinta látex"
+      ],
+      "why": "O fundo para ferro protege contra corrosão e dá base ao esmalte. Por cima da ferrugem solta, nada segura.",
+      "source": "metal"
+    },
+    {
+      "id": "pin-18",
+      "topic": "metal",
+      "question": "Calha ou portão galvanizado novo. Qual fundo usar?",
+      "options": [
+        "Fundo próprio para galvanizado",
+        "Zarcão, igual ao do ferro",
+        "Nenhum, o esmalte segura direto",
+        "Selador acrílico de parede"
+      ],
+      "why": "Galvanizado e alumínio pedem fundo específico. Sem ele, a tinta descasca em pouco tempo.",
+      "source": "metal"
+    },
+    {
+      "id": "pin-19",
+      "topic": "metal",
+      "question": "Madeira resinosa, como pinus, vai receber verniz ou esmalte. O que aplicar antes?",
+      "options": [
+        "Fundo isolante para madeira",
+        "Nada, é só lixar bem a madeira",
+        "Água sanitária para tirar a resina",
+        "Massa corrida de parede para fechar os poros"
+      ],
+      "why": "A resina da madeira mancha e atrapalha a secagem. O fabricante pede fundo isolante.",
+      "source": "metal"
+    },
+    {
+      "id": "pin-20",
+      "topic": "seguranca",
+      "question": "Pintar a fachada de cima de um andaime a 3 metros. O que a norma diz?",
+      "options": [
+        "É trabalho em altura, pela NR-35",
+        "Só é trabalho em altura acima de 10 metros",
+        "Não tem regra específica para pintor",
+        "Basta ter cuidado e não olhar para baixo"
+      ],
+      "why": "A NR-35 define trabalho em altura como atividade acima de 2 m do nível inferior com risco de queda.",
+      "source": "nr35"
+    },
+    {
+      "id": "pin-21",
+      "topic": "seguranca",
+      "question": "Antes de usar a escada, o que conferir?",
+      "options": [
+        "Piso firme, escada travada e degraus bons",
+        "Só se a escada é alta o bastante para o teto",
+        "Nada, é só subir rápido e com cuidado",
+        "Se tem lugar para apoiar a lata no último degrau"
+      ],
+      "why": "Queda de escada é um dos acidentes mais comuns na pintura. Mesmo abaixo de 2 m são exigidas medidas preventivas.",
+      "source": "nr35"
+    },
+    {
+      "id": "pin-22",
+      "topic": "limpeza",
+      "question": "Como lavar o rolo e o pincel usados com tinta à base de água?",
+      "options": [
+        "Água e sabão, sem jogar no bueiro",
+        "Com água no bueiro da rua",
+        "Com thinner, que limpa melhor qualquer tinta",
+        "Jogar o rolo fora sempre que terminar"
+      ],
+      "why": "A orientação é lavar com água e sabão e não descartar a água em bueiro, boca de lobo ou solo.",
+      "source": "abrafati"
+    },
+    {
+      "id": "pin-23",
+      "topic": "limpeza",
+      "question": "Como limpar o pincel usado com esmalte à base de solvente?",
+      "options": [
+        "Com o solvente da diluição; resíduo na areia",
+        "Com água e sabão, esfregando bem as cerdas",
+        "No tanque, com bastante água corrente",
+        "Deixando de molho em água até o dia seguinte"
+      ],
+      "why": "Solvente não sai com água. O resíduo vai em areia e, depois que evapora, a areia vai para o lixo.",
+      "source": "abrafati"
+    },
+    {
+      "id": "pin-24",
+      "topic": "limpeza",
+      "question": "Sobrou tinta no fim do serviço. O que fazer?",
+      "options": [
+        "Guardar, doar ou levar a um ponto de coleta",
+        "Jogar na pia com bastante água corrente",
+        "Jogar no terreno baldio, longe das casas",
+        "Misturar com a água de lavar o quintal"
+      ],
+      "why": "A ABRAFATI recomenda reaproveitar ou doar e usar pontos do RetornaTinta. Tinta no ralo contamina a água.",
+      "source": "abrafati"
+    },
+    {
+      "id": "pin-25",
+      "topic": "preparo",
+      "question": "Antes de pintar em volta das tomadas, o que fazer?",
+      "options": [
+        "Desligar o disjuntor e tirar os espelhos",
+        "Pintar por cima dos espelhos com cuidado",
+        "Tirar os espelhos com tudo ligado, sem encostar nos fios",
+        "Cobrir os espelhos com sabão para a tinta não pegar"
+      ],
+      "why": "Tirar o espelho expõe os contatos. Com o disjuntor desligado, não há risco de choque com o pincel ou a espátula.",
+      "source": "pratica"
+    },
+    {
+      "id": "pin-26",
+      "topic": "preparo",
+      "question": "O que proteger antes de começar a pintar o cômodo?",
+      "options": [
+        "Piso, móveis, rodapés e batentes",
+        "Nada, depois se limpa tudo com pano",
+        "Só o teto, que é onde mais respinga",
+        "Só a janela e o vidro"
+      ],
+      "why": "Respingo de tinta seca é difícil de tirar sem estragar o piso ou o móvel.",
+      "source": "pratica"
+    },
+    {
+      "id": "pin-27",
+      "topic": "aplicacao",
+      "question": "Teto e paredes no mesmo cômodo. Por onde começar?",
+      "options": [
+        "Pelo teto",
+        "Pelas paredes, depois o teto",
+        "Pelo rodapé, de baixo para cima",
+        "Tanto faz, se proteger o piso"
+      ],
+      "why": "Pintando o teto primeiro, os respingos caem na parede que ainda vai ser pintada.",
+      "source": "pratica"
+    },
+    {
+      "id": "pin-28",
+      "topic": "diagnostico",
+      "question": "A pintura nova fez bolhas em poucos dias. Qual é a causa mais provável?",
+      "options": [
+        "Umidade na parede",
+        "Rolo novo demais",
+        "Cor clara",
+        "Tinta de marca boa, que é mais grossa"
+      ],
+      "why": "A umidade presa empurra a película de tinta. Por isso os fabricantes pedem superfície seca e resolver a umidade antes.",
+      "source": "coral"
+    },
+    {
+      "id": "pin-29",
+      "topic": "diagnostico",
+      "question": "A pintura descascou em placas um ano depois. O cliente conta que tinham pintado sobre cal. O que explica?",
+      "options": [
+        "Faltou preparar a cal com fundo preparador",
+        "A tinta era branca e não aguentou o sol",
+        "Choveu no dia seguinte à pintura",
+        "Usaram rolo de lã em vez de pincel"
+      ],
+      "why": "A cal não segura a tinta acrílica e solta junto com ela. O preparo certo é remover e usar fundo preparador.",
+      "source": "coral"
+    },
+    {
+      "id": "pin-30",
+      "topic": "preparo",
+      "question": "Parede nova e firme, já curada. Qual é a função do selador?",
+      "options": [
+        "Uniformizar a absorção",
+        "Corrigir buracos fundos e trincas na parede",
+        "Matar o mofo antes de pintar",
+        "Substituir a tinta de acabamento em parede nova"
+      ],
+      "why": "O selador é para superfícies novas e firmes. Ele sela a porosidade para a tinta render e ficar uniforme.",
+      "source": "suvinil"
+    }
+  ]
+}

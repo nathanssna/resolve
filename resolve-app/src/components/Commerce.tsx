@@ -104,7 +104,7 @@ export function ProgressBar({ value, tone = 'ink' }: { value: number; tone?: 'in
       <View
         style={[
           styles.fill,
-          { width: `${Math.max(6, Math.min(100, value * 100))}%`, backgroundColor: tone === 'ink' ? colors.ink : colors.brand },
+          { width: `${value <= 0 ? 0 : Math.max(6, Math.min(100, value * 100))}%`, backgroundColor: tone === 'ink' ? colors.ink : colors.brand },
         ]}
       />
     </View>

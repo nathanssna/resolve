@@ -33,7 +33,9 @@ export const LEGAL: Record<'termos' | 'privacidade', LegalDoc> = {
         title: 'Para profissionais',
         body: [
           'As informações da sua ficha (profissão, experiência, serviços) devem ser verdadeiras. Você é responsável pela qualidade e segurança do serviço, pelas habilitações exigidas por lei e pelos tributos sobre o que recebe.',
+          'Para aparecer aos clientes, você precisa ter a identidade confirmada, passar no teste de conhecimento de cada serviço que oferece e concluir as aulas da Rezolveaê. Quem não passa no teste pode tentar de novo depois do prazo informado no app.',
           'O selo Verificado indica que nossa equipe conferiu um documento com foto e uma selfie sua. Ele confirma a identidade, não a qualidade do serviço.',
+          'O selo "Aprovado em" de uma área indica que você passou no teste de conhecimento da Rezolveaê sobre aquela área. Ele não é um certificado profissional, não substitui cursos ou habilitações exigidas por lei e não garante a qualidade do serviço.',
         ],
       },
       {
@@ -91,7 +93,8 @@ export const LEGAL: Record<'termos' | 'privacidade', LegalDoc> = {
           'Endereços que você salva (rua, número, complemento, bairro, cidade, UF e CEP).',
           'Pedidos e conversas: descrição do serviço, data desejada, fotos que você envia, mensagens, propostas, serviços combinados e avaliações.',
           'Profissionais: profissão, apresentação, tempo de experiência e serviços oferecidos.',
-          'Verificação de identidade (só profissionais que pedem o selo Verificado): foto de um documento com foto e uma selfie segurando o documento.',
+          'Verificação de identidade (profissionais, e clientes quando a equipe pedir): foto de um documento com foto e uma selfie segurando o documento.',
+          'Testes de conhecimento e aulas (profissionais): as questões sorteadas, as respostas, a nota, a data, se você passou e quais aulas concluiu.',
           'Aparelho: o identificador para notificações (se você permitir) e registros técnicos de acesso.',
         ],
       },
@@ -100,6 +103,7 @@ export const LEGAL: Record<'termos' | 'privacidade', LegalDoc> = {
         body: [
           'Para fazer o app funcionar (contrato): entrar na conta, enviar pedidos, conversar, combinar e acompanhar serviços, avisar sobre mensagens.',
           'Para segurança (legítimo interesse): prevenir fraudes e abusos e analisar denúncias.',
+          'Para liberar o perfil do profissional (contrato): o resultado do teste de conhecimento decide em quais áreas ele aparece para os clientes. Os clientes veem só o selo da área aprovada, nunca as respostas ou a nota.',
           'Para o selo Verificado (consentimento): confirmar a identidade do profissional. A selfie é um dado biométrico, sensível pela LGPD: só usamos com a sua autorização, só para isso, e as fotos são apagadas depois da análise.',
           'Para cumprir a lei: guardar registros de acesso pelo prazo do Marco Civil da Internet.',
           'Não vendemos seus dados nem os usamos para publicidade de terceiros.',

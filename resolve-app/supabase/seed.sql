@@ -27,11 +27,11 @@ values
   (
     'informatica', 'laptop', 'Suporte de informática', 'Informática',
     'Formatação, limpeza e manutenção', 'Tecnologia',
-    'Resolvemos problemas no seu computador, notebook ou rede. Instalação de programas, limpeza, formatação e muito mais, com atendimento rápido e seguro.',
-    array['Formatação e reinstalação de sistema', 'Limpeza e otimização do equipamento', 'Instalação de programas', 'Suporte remoto e presencial'],
-    array['Notebook lento', 'Formatar computador', 'Wi‑Fi caindo'],
+    'Resolvemos problemas no computador, notebook, impressora e rede da sua casa. Formatação, limpeza, Wi-Fi, configuração de smart TV e muito mais.',
+    array['Formatação e reinstalação de sistema', 'Limpeza e otimização do equipamento', 'Roteador, Wi-Fi e cabo de rede', 'Impressora e smart TV'],
+    array['Notebook lento', 'Wi‑Fi não chega no quarto', 'Configurar impressora'],
     null, 4.8, 1245, true, 3,
-    array['computador', 'pc', 'notebook', 'lento', 'travando', 'vírus', 'formatar', 'windows', 'programa', 'impressora', 'wifi', 'wi-fi', 'internet', 'roteador', 'rede', 'backup', 'recuperar arquivos', 'tela azul', 'não liga', 'teclado', 'monitor']
+    array['computador', 'pc', 'notebook', 'lento', 'travando', 'vírus', 'formatar', 'windows', 'programa', 'impressora', 'wifi', 'wi-fi', 'internet', 'roteador', 'rede', 'repetidor', 'mesh', 'cabo de rede', 'smart tv', 'tv', 'streaming', 'chromecast', 'backup', 'recuperar arquivos', 'tela azul', 'não liga', 'teclado', 'monitor']
   ),
   (
     'montagem-moveis', 'hammer', 'Montagem de móveis', 'Montagem',
@@ -77,6 +77,24 @@ values
     array['Fiquei trancado para fora', 'Trocar fechadura', 'Instalar fechadura digital'],
     null, 4.6, 298, false, 8,
     array['chave', 'cópia de chave', 'chave quebrada', 'perdi a chave', 'fechadura', 'fechadura digital', 'trancado', 'trancada', 'porta', 'abrir porta', 'emperrada', 'segredo', 'cadeado', 'tetra', 'cofre']
+  ),
+  (
+    'cameras', 'cctv', 'Câmeras de segurança', 'Câmeras',
+    'Instalação e configuração', 'Segurança',
+    'Instalação de câmeras com fio e Wi-Fi, gravador (DVR/NVR) e acesso pelo celular, com cabos, fontes e configuração segura.',
+    array['Câmeras internas e externas', 'Gravador DVR/NVR e HD', 'Acesso pelo celular', 'Manutenção e troca de câmera'],
+    array['Instalar câmera no portão', 'Câmera sem imagem', 'Ver câmeras no celular'],
+    'NOVO', 0, 0, false, 9,
+    array['câmera', 'camera', 'câmeras', 'cftv', 'segurança', 'monitoramento', 'dvr', 'nvr', 'gravador', 'vigilância', 'câmera wi-fi', 'câmera ip', 'intelbras', 'ver no celular', 'filmar', 'gravação']
+  ),
+  (
+    'casa-inteligente', 'lightbulb', 'Casa inteligente', 'Automação',
+    'Automação e assistentes', 'Tecnologia',
+    'Instalação e configuração de assistentes de voz, lâmpadas, tomadas, interruptores, sensores e fechaduras inteligentes.',
+    array['Assistente de voz (Alexa, Google)', 'Lâmpadas e tomadas inteligentes', 'Interruptores e sensores', 'Rotinas e automações'],
+    array['Configurar Alexa', 'Instalar interruptor inteligente', 'Lâmpada pelo celular'],
+    'NOVO', 0, 0, false, 10,
+    array['casa inteligente', 'automação', 'alexa', 'echo', 'google home', 'assistente', 'lâmpada inteligente', 'tomada inteligente', 'interruptor inteligente', 'smart', 'sensor', 'rotina', 'controle remoto universal', 'wi-fi', 'tuya', 'smart life']
   )
 on conflict (id) do update set
   icon = excluded.icon,

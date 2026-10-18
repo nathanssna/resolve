@@ -1,0 +1,538 @@
+{
+  "service": "eletricista",
+  "title": "Elétrica",
+  "draw": 20,
+  "pass": 14,
+  "minutes": 20,
+  "sources": {
+    "nr10": "NR-10 — Segurança em instalações e serviços em eletricidade (texto vigente; e nova redação da Portaria MTE nº 737/2026, que vale a partir de junho/2027). Os dois textos exigem os mesmos princípios usados aqui.",
+    "lorenzetti": "Lorenzetti — Manual de Instruções de Instalação e Garantia, Duchas Advanced (abr/2024, 372800 rev. B). https://www.lorenzetti.com.br/manuais/advanced/manual.pdf",
+    "procobre": "Procobre / Elektro / Pirelli — Instalações Elétricas Residenciais (2003, revisão técnica Prof. Hilton Moreno), baseado na ABNT NBR 5410. https://wiki.sj.ifsc.edu.br/images/a/a4/Inst.Eletr.Res.2003.pdf",
+    "nbr5410": "ABNT NBR 5410:2004 — Instalações elétricas de baixa tensão (edição vigente; revisão em consulta pública).",
+    "nbr14136": "ABNT NBR 14136 — Plugues e tomadas (via IDEC e Labelo/PUCRS). https://portal.pucrs.br/labelo/ensaios/laboratorios/laboratorio-de-plugues-e-tomadas/",
+    "cemig": "Cemig, via Agência Minas — desarme constante de disjuntor como sinal de instalação sobrecarregada. https://www.agenciaminas.mg.gov.br/news/pdf/124833.pdf",
+    "pratica": "Prática de campo consolidada entre eletricistas (sem norma específica); revisar com um profissional."
+  },
+  "questions": [
+    {
+      "id": "ele-01",
+      "topic": "seguranca",
+      "question": "Antes de trocar um chuveiro elétrico, o que você faz primeiro?",
+      "options": [
+        "Desligo o disjuntor do chuveiro no quadro",
+        "Fecho o registro do banheiro para a água não molhar os fios",
+        "Coloco o seletor na posição desligado e espero esfriar",
+        "Uso luva de borracha e trabalho com cuidado, ligado"
+      ],
+      "why": "O seletor e o registro não cortam a energia dos fios. O manual pede desligar o disjuntor do circuito antes de começar a instalação elétrica.",
+      "source": "lorenzetti"
+    },
+    {
+      "id": "ele-02",
+      "topic": "seguranca",
+      "question": "Você desligou o disjuntor que acha ser o do chuveiro. Antes de encostar nos fios, o que falta?",
+      "options": [
+        "Testar com testador ou multímetro se não há tensão",
+        "Nada: com o disjuntor desligado, o circuito está seguro",
+        "Pedir ao cliente para apagar as luzes e tirar os aparelhos da tomada",
+        "Encostar de leve com as costas da mão para conferir"
+      ],
+      "why": "Desligar não é o mesmo que desenergizar: a NR-10 exige constatar a ausência de tensão antes de liberar o trabalho. O quadro pode estar com identificação errada.",
+      "source": "nr10"
+    },
+    {
+      "id": "ele-03",
+      "topic": "seguranca",
+      "question": "Como evitar que alguém religue o disjuntor enquanto você trabalha no circuito?",
+      "options": [
+        "Travar o disjuntor e deixar um aviso no quadro",
+        "Fechar a tampa do quadro e pedir para ninguém mexer nele",
+        "Desligar também o interruptor do cômodo onde está trabalhando",
+        "Deixar o celular por perto para avisar se alguém religar"
+      ],
+      "why": "A NR-10 pede impedimento de reenergização e sinalização no ponto de desligamento.",
+      "source": "nr10"
+    },
+    {
+      "id": "ele-04",
+      "topic": "seguranca",
+      "question": "Antes de mexer em um quadro de energia, o que fazer com anel, relógio e corrente?",
+      "options": [
+        "Tirar todos, porque metal conduz e pode enganchar",
+        "Pode manter",
+        "Tirar só o relógio",
+        "Cobrir anel e corrente com fita isolante antes de começar"
+      ],
+      "why": "A NR-10 proíbe adornos pessoais em serviços com eletricidade.",
+      "source": "nr10"
+    },
+    {
+      "id": "ele-05",
+      "topic": "seguranca",
+      "question": "Qual ferramenta é a certa para trabalhar em fiação elétrica?",
+      "options": [
+        "Alicate e chave isolados para eletricista, em bom estado",
+        "Qualquer alicate, com várias voltas de fita isolante no cabo",
+        "Ferramenta comum, desde que a pessoa esteja de chinelo de borracha",
+        "Ferramenta de metal sem cabo, que dá mais firmeza no aperto"
+      ],
+      "why": "A NR-10 exige ferramentas e equipamentos adequados e isolados. Fita no cabo e chinelo não garantem isolamento.",
+      "source": "nr10"
+    },
+    {
+      "id": "ele-06",
+      "topic": "seguranca",
+      "question": "Para medir a tensão de uma tomada com multímetro, onde a chave deve estar?",
+      "options": [
+        "Em tensão alternada (V~), faixa acima de 220 V",
+        "Em corrente (A)",
+        "Em resistência (Ω), para testar se o fio está inteiro",
+        "Em tensão contínua (V⎓), começando pela menor faixa"
+      ],
+      "why": "Tomada é tensão alternada. Medir em corrente ou resistência com a tomada ligada pode queimar o aparelho e causar curto.",
+      "source": "pratica"
+    },
+    {
+      "id": "ele-07",
+      "topic": "seguranca",
+      "question": "Que escada usar para trabalhar perto de fiação ou quadro energizado?",
+      "options": [
+        "Escada de fibra de vidro ou madeira seca",
+        "Escada de alumínio, por ser mais leve e firme no piso",
+        "Qualquer escada",
+        "Escada de ferro"
+      ],
+      "why": "Escada metálica conduz eletricidade. Perto de partes energizadas, use material isolante.",
+      "source": "nr10"
+    },
+    {
+      "id": "ele-08",
+      "topic": "chuveiro",
+      "question": "Chuveiro novo instalado. Antes de ligar o disjuntor pela primeira vez, o que fazer?",
+      "options": [
+        "Abrir o registro e deixar a água sair",
+        "Ligar o disjuntor e só depois abrir o registro devagar",
+        "Ligar no modo inverno por um minuto para testar a resistência",
+        "Esperar uma hora com o chuveiro seco antes de ligar"
+      ],
+      "why": "O fabricante pede fazer correr água antes de ligar a energia, para encher a câmara de aquecimento e não queimar a resistência.",
+      "source": "lorenzetti"
+    },
+    {
+      "id": "ele-09",
+      "topic": "chuveiro",
+      "question": "O que fazer com o fio verde (ou verde e amarelo) do chuveiro?",
+      "options": [
+        "Ligar ao fio terra da instalação",
+        "Ligar ao neutro, se não houver terra",
+        "Cortar, porque não é necessário",
+        "Enrolar e deixar solto dentro da caixa"
+      ],
+      "why": "O fio verde é o terra e deve ir a um sistema de aterramento. O manual proíbe usar o neutro como aterramento.",
+      "source": "lorenzetti"
+    },
+    {
+      "id": "ele-10",
+      "topic": "chuveiro",
+      "question": "Como ligar os fios do chuveiro aos fios da parede?",
+      "options": [
+        "Com conectores adequados à bitola",
+        "Com plugue e tomada, para facilitar a troca no futuro",
+        "Torcendo os fios bem firmes e cobrindo com fita crepe",
+        "Só torcendo os fios"
+      ],
+      "why": "O manual proíbe plugue ou tomada no chuveiro e pede conectores adequados.",
+      "source": "lorenzetti"
+    },
+    {
+      "id": "ele-11",
+      "topic": "chuveiro",
+      "question": "De onde deve sair a alimentação do chuveiro?",
+      "options": [
+        "De um circuito exclusivo, direto do quadro",
+        "Do mesmo circuito das tomadas do banheiro",
+        "Do circuito da iluminação, que já passa perto",
+        "De qualquer circuito com fio de 2,5 mm²"
+      ],
+      "why": "O manual pede linha direta e exclusiva do quadro. A NBR 5410 pede circuito próprio para aparelho acima de 10 A.",
+      "source": "lorenzetti"
+    },
+    {
+      "id": "ele-12",
+      "topic": "chuveiro",
+      "question": "Chuveiro de 220 V ligado entre duas fases. Que disjuntor usar?",
+      "options": [
+        "Bipolar",
+        "Unipolar em uma das fases, que já corta o circuito",
+        "Unipolar no neutro, junto com o DR do quadro",
+        "Nenhum: o DR já protege o chuveiro sozinho"
+      ],
+      "why": "Com duas fases, um disjuntor unipolar deixaria a outra fase energizada. O manual pede bipolar para 220 V fase-fase.",
+      "source": "lorenzetti"
+    },
+    {
+      "id": "ele-13",
+      "topic": "chuveiro",
+      "question": "O que define a bitola do fio de um chuveiro?",
+      "options": [
+        "Potência, tensão e distância até o quadro",
+        "Sempre 2,5 mm², que é o padrão de qualquer casa",
+        "Sempre 4 mm², que serve para qualquer chuveiro do mercado",
+        "Só a tensão: 127 V usa fio fino, e 220 V, fio grosso"
+      ],
+      "why": "A tabela do fabricante muda a seção do fio conforme o modelo, e para distâncias maiores pede fio mais grosso.",
+      "source": "lorenzetti"
+    },
+    {
+      "id": "ele-14",
+      "topic": "chuveiro",
+      "question": "Um chuveiro de 7.500 W em 220 V puxa mais ou menos quanta corrente?",
+      "options": [
+        "Cerca de 34 A",
+        "Cerca de 15 A",
+        "Cerca de 68 A",
+        "Cerca de 7,5 A"
+      ],
+      "why": "Corrente = potência ÷ tensão: 7.500 ÷ 220 ≈ 34 A. Por isso o fabricante indica disjuntor de 40 A e fio de 6 mm² para esse modelo.",
+      "source": "lorenzetti"
+    },
+    {
+      "id": "ele-15",
+      "topic": "chuveiro",
+      "question": "Dois chuveiros com a mesma potência, um de 127 V e outro de 220 V. Qual precisa de fio mais grosso?",
+      "options": [
+        "O de 127 V",
+        "O de 220 V, porque a tensão é maior",
+        "Os dois usam o mesmo fio, já que a potência é igual",
+        "Depende da marca e do tipo de resistência"
+      ],
+      "why": "Com a mesma potência, tensão menor significa corrente maior. No manual, o modelo 5.500 W/127 V pede 10 mm², e o 7.500 W/220 V pede 6 mm².",
+      "source": "lorenzetti"
+    },
+    {
+      "id": "ele-16",
+      "topic": "diagnostico",
+      "question": "O DR desarma toda vez que o chuveiro liga. O que o fabricante indica verificar?",
+      "options": [
+        "Aterramento ruim ou outro aparelho no circuito",
+        "O DR está sensível demais",
+        "A água está fria demais e a resistência força o circuito",
+        "Tirar o fio terra do chuveiro para o DR parar de cair"
+      ],
+      "why": "O manual aponta aterramento fora da NBR 5410 ou circuito compartilhado. Tirar o DR ou o terra remove a proteção contra choque.",
+      "source": "lorenzetti"
+    },
+    {
+      "id": "ele-17",
+      "topic": "diagnostico",
+      "question": "A resistência de um chuveiro recém-instalado queimou no primeiro uso. Qual é a causa mais comum?",
+      "options": [
+        "Ligaram a energia antes de a água encher o chuveiro",
+        "O registro foi aberto devagar e a pressão ficou baixa demais",
+        "O chuveiro foi ligado no modo verão na primeira vez",
+        "A caixa d’água estava cheia e a pressão ficou alta demais"
+      ],
+      "why": "Ligada sem água, a resistência aquece a seco e queima. O manual manda repetir a passagem de água sempre que o produto for retirado.",
+      "source": "lorenzetti"
+    },
+    {
+      "id": "ele-18",
+      "topic": "protecao",
+      "question": "O disjuntor do chuveiro desarma sempre. O cliente pede para trocar por um maior. O que você faz?",
+      "options": [
+        "Verifico a carga e o fio, pois o disjuntor depende do fio",
+        "Troco por um maior, que para de desarmar e resolve o problema",
+        "Coloco dois disjuntores iguais em paralelo para dividir a carga",
+        "Mantenho o disjuntor e prendo a alavanca para não cair"
+      ],
+      "why": "O disjuntor protege o fio. Um maior que o fio aguenta deixa o cabo esquentar sem desarmar, com risco de incêndio.",
+      "source": "cemig"
+    },
+    {
+      "id": "ele-19",
+      "topic": "protecao",
+      "question": "O disjuntor comum (termomagnético) serve principalmente para quê?",
+      "options": [
+        "Proteger os fios contra sobrecarga e curto",
+        "Proteger as pessoas contra choque por fuga de corrente",
+        "Economizar energia desligando o que fica em stand-by",
+        "Estabilizar a tensão da casa quando a rua oscila"
+      ],
+      "why": "Proteção contra choque por fuga de corrente é função do DR. O disjuntor comum não detecta correntes pequenas que passam pelo corpo.",
+      "source": "procobre"
+    },
+    {
+      "id": "ele-20",
+      "topic": "protecao",
+      "question": "O dispositivo DR serve para quê?",
+      "options": [
+        "Desligar quando há fuga de corrente",
+        "Proteger a casa contra raios e picos de tensão da rua",
+        "Substituir o fio terra em casas que não têm aterramento",
+        "Aumentar a capacidade do circuito sem trocar o fio"
+      ],
+      "why": "O DR desliga correntes pequenas de fuga, que um disjuntor comum não percebe, mas que podem matar. Ele complementa o terra, não o substitui.",
+      "source": "procobre"
+    },
+    {
+      "id": "ele-21",
+      "topic": "protecao",
+      "question": "Em quais circuitos a NBR 5410 exige DR de alta sensibilidade?",
+      "options": [
+        "Banheiro, cozinha, lavanderia e tomadas externas",
+        "Só nos quartos, onde as pessoas dormem e ficam mais tempo",
+        "Só em comércio e indústria, não em casas",
+        "Só no quadro geral, protegendo a casa inteira de uma vez"
+      ],
+      "why": "A norma exige DR nos pontos de locais com chuveiro ou banheira, nas tomadas de áreas molhadas e nas externas.",
+      "source": "procobre"
+    },
+    {
+      "id": "ele-22",
+      "topic": "protecao",
+      "question": "Você aperta o botão de teste (T) do DR e ele não desarma. O que isso indica?",
+      "options": [
+        "O DR está com defeito e precisa ser trocado",
+        "Está normal: o botão só desarma com o circuito em uso",
+        "Falta apertar com mais força por um minuto",
+        "O circuito está sem carga, então é normal"
+      ],
+      "why": "O botão simula uma fuga. Se o DR não desarma no teste, ele não vai proteger num choque de verdade.",
+      "source": "procobre"
+    },
+    {
+      "id": "ele-23",
+      "topic": "protecao",
+      "question": "Instalando um DR, como fica o neutro do circuito protegido?",
+      "options": [
+        "Passa pelo DR e não é aterrado depois dele",
+        "Vai direto ao barramento de neutro",
+        "Passa pelo DR e depois é unido ao terra para garantir",
+        "Não precisa ser ligado"
+      ],
+      "why": "O DR compara a corrente da fase com a do neutro. Se o neutro for aterrado depois dele, o DR desarma ou deixa de proteger.",
+      "source": "procobre"
+    },
+    {
+      "id": "ele-24",
+      "topic": "protecao",
+      "question": "Um interruptor DR (IDR) protege contra sobrecarga sozinho?",
+      "options": [
+        "Não, precisa de disjuntor ou fusível junto",
+        "Sim, ele faz tudo o que o disjuntor faz e ainda protege contra choque",
+        "Sim, desde que seja tetrapolar",
+        "Não precisa: sobrecarga não é perigosa em casa"
+      ],
+      "why": "O interruptor DR só detecta fuga de corrente. Para sobrecarga e curto, é preciso um dispositivo de sobrecorrente antes dele.",
+      "source": "procobre"
+    },
+    {
+      "id": "ele-25",
+      "topic": "fios",
+      "question": "Qual é a cor do fio neutro?",
+      "options": [
+        "Azul-claro",
+        "Verde e amarelo",
+        "Preto",
+        "Vermelho"
+      ],
+      "why": "A NBR 5410 reserva o azul-claro para o neutro.",
+      "source": "procobre"
+    },
+    {
+      "id": "ele-26",
+      "topic": "fios",
+      "question": "Qual é a cor do fio terra (proteção)?",
+      "options": [
+        "Verde, ou verde e amarelo",
+        "Azul-claro",
+        "Branco",
+        "Qualquer cor, desde que marcada com fita"
+      ],
+      "why": "A NBR 5410 reserva o verde ou o verde-amarelo para o condutor de proteção.",
+      "source": "procobre"
+    },
+    {
+      "id": "ele-27",
+      "topic": "fios",
+      "question": "Acabou o fio vermelho e sobrou fio verde e amarelo. Dá para usar como fase?",
+      "options": [
+        "Não, essa cor é exclusiva do terra",
+        "Sim, se marcar a ponta com fita vermelha",
+        "Sim, em circuito de iluminação",
+        "Sim, se for só um trecho curto"
+      ],
+      "why": "A norma não admite exceção: verde-amarelo é só proteção. Quem mexer depois vai achar que é terra e levar choque.",
+      "source": "nbr5410"
+    },
+    {
+      "id": "ele-28",
+      "topic": "fios",
+      "question": "Qual é a seção mínima de fio para tomadas de uso geral numa casa?",
+      "options": [
+        "2,5 mm²",
+        "1,0 mm²",
+        "1,5 mm²",
+        "0,75 mm²"
+      ],
+      "why": "A NBR 5410 pede no mínimo 1,5 mm² para iluminação e 2,5 mm² para circuitos de força (tomadas).",
+      "source": "procobre"
+    },
+    {
+      "id": "ele-29",
+      "topic": "fios",
+      "question": "Qual é a seção mínima de fio para circuitos de iluminação?",
+      "options": [
+        "1,5 mm²",
+        "0,5 mm²",
+        "1,0 mm²",
+        "4 mm²"
+      ],
+      "why": "A NBR 5410 pede no mínimo 1,5 mm² para iluminação.",
+      "source": "procobre"
+    },
+    {
+      "id": "ele-30",
+      "topic": "circuitos",
+      "question": "Um aparelho que puxa mais de 10 A, como uma torneira elétrica, deve ficar em qual circuito?",
+      "options": [
+        "Em um circuito só dele",
+        "No circuito das tomadas da cozinha",
+        "No circuito da iluminação",
+        "Em qualquer um"
+      ],
+      "why": "A NBR 5410 pede circuito independente para cada equipamento com corrente nominal acima de 10 A.",
+      "source": "procobre"
+    },
+    {
+      "id": "ele-31",
+      "topic": "circuitos",
+      "question": "Iluminação e tomadas podem ficar no mesmo circuito numa instalação nova?",
+      "options": [
+        "Não, a norma pede circuitos separados",
+        "Sim, sempre, desde que o disjuntor seja de 20 A",
+        "Sim, se o fio for de 1,5 mm² em todo o circuito",
+        "Só se as tomadas forem de 20 A e ficarem longe das luzes"
+      ],
+      "why": "A NBR 5410 pede circuitos de iluminação separados dos de tomadas de uso geral.",
+      "source": "procobre"
+    },
+    {
+      "id": "ele-32",
+      "topic": "iluminacao",
+      "question": "Numa ligação de lâmpada com interruptor simples, qual fio o interruptor deve cortar?",
+      "options": [
+        "A fase",
+        "O neutro",
+        "O terra",
+        "Tanto faz"
+      ],
+      "why": "Liga-se a fase ao interruptor e o neutro direto na lâmpada. Assim, com o interruptor desligado, a lâmpada fica sem tensão.",
+      "source": "procobre"
+    },
+    {
+      "id": "ele-33",
+      "topic": "diagnostico",
+      "question": "O cliente levou choque ao trocar a lâmpada com o interruptor desligado. Qual é o erro provável?",
+      "options": [
+        "O interruptor corta o neutro em vez da fase",
+        "A lâmpada era de LED, que guarda carga mesmo desligada",
+        "O interruptor é de tecla larga e não desliga totalmente",
+        "O disjuntor é grande demais e não desarmou no choque"
+      ],
+      "why": "Se o interruptor corta o neutro, o soquete continua com fase mesmo desligado. O certo é a fase passar pelo interruptor.",
+      "source": "procobre"
+    },
+    {
+      "id": "ele-34",
+      "topic": "iluminacao",
+      "question": "No soquete de rosca, onde vai cada fio?",
+      "options": [
+        "Retorno no contato central e neutro na rosca",
+        "Neutro no contato central e retorno na rosca",
+        "Terra no contato central e fase na rosca",
+        "Tanto faz, a lâmpada funciona dos dois jeitos"
+      ],
+      "why": "Com o neutro na rosca, quem encosta na parte de metal da lâmpada ao trocar não toca a fase.",
+      "source": "procobre"
+    },
+    {
+      "id": "ele-35",
+      "topic": "iluminacao",
+      "question": "Ao instalar uma luminária com corpo de metal, o que não pode faltar?",
+      "options": [
+        "Ligar o terra na carcaça",
+        "Ligar o neutro na carcaça metálica, que serve de terra",
+        "Isolar a carcaça por dentro com fita isolante",
+        "Nada: a lâmpada já é isolada e a carcaça não recebe energia"
+      ],
+      "why": "O terra na carcaça metálica faz a fuga de corrente ir para a terra e o DR desligar, em vez de passar pela pessoa.",
+      "source": "procobre"
+    },
+    {
+      "id": "ele-36",
+      "topic": "tomadas",
+      "question": "Qual é a diferença entre a tomada de 10 A e a de 20 A no padrão brasileiro?",
+      "options": [
+        "A de 20 A tem furo maior e aceita os dois plugues",
+        "Nenhuma, é só a cor e a marca que mudam",
+        "A de 10 A aceita os dois plugues",
+        "A de 20 A tem três furos, e a de 10 A, só dois"
+      ],
+      "why": "Plugue de 10 A tem pino de 4 mm e o de 20 A, de 4,8 mm. A tomada de 20 A aceita os dois. A de 10 A não aceita o de 20 A, de propósito.",
+      "source": "nbr14136"
+    },
+    {
+      "id": "ele-37",
+      "topic": "tomadas",
+      "question": "O plugue do micro-ondas (20 A) não entra na tomada de 10 A da cozinha. O que você faz?",
+      "options": [
+        "Confiro se o circuito suporta e troco a tomada",
+        "Uso um adaptador de 20 A para 10 A, que é feito para isso",
+        "Lixo os pinos do plugue até entrarem na tomada de 10 A",
+        "Troco a tomada por uma de 20 A e o problema está resolvido"
+      ],
+      "why": "O pino grosso existe para o aparelho não ir para um circuito que não aguenta. A tomada só vira 20 A se o circuito for dimensionado para isso.",
+      "source": "nbr14136"
+    },
+    {
+      "id": "ele-38",
+      "topic": "instalacao",
+      "question": "Onde as emendas de fios devem ficar?",
+      "options": [
+        "Em caixas acessíveis (de passagem ou de tomada)",
+        "Dentro do eletroduto, onde ficam protegidas da umidade",
+        "Embutidas no reboco, bem isoladas com fita",
+        "Em qualquer lugar, desde que a emenda esteja bem isolada"
+      ],
+      "why": "Emendas só em caixas acessíveis, nunca ao longo do eletroduto. Emenda escondida esquenta sem ninguém ver e não tem como ser revisada.",
+      "source": "nbr5410"
+    },
+    {
+      "id": "ele-39",
+      "topic": "diagnostico",
+      "question": "A tomada está escurecida e o plugue começou a derreter. Qual é a causa mais provável?",
+      "options": [
+        "Mau contato ou sobrecarga na tomada",
+        "Tensão baixa na rua",
+        "Tomada branca",
+        "Excesso de aterramento na instalação da casa"
+      ],
+      "why": "Contato frouxo e sobrecarga geram calor no ponto da ligação. É preciso trocar a tomada, refazer o aperto e rever a carga do circuito.",
+      "source": "cemig"
+    },
+    {
+      "id": "ele-40",
+      "topic": "diagnostico",
+      "question": "Com aparelhos ligados no circuito, a caneta de teste acende nos dois furos da tomada. O que é mais provável?",
+      "options": [
+        "Neutro interrompido antes da tomada",
+        "Tomada perfeita",
+        "Terra ligado certo",
+        "Caneta com bateria fraca"
+      ],
+      "why": "Com o neutro aberto, a fase volta pelos aparelhos ligados e aparece no furo do neutro. É preciso achar e refazer a conexão do neutro.",
+      "source": "pratica"
+    }
+  ]
+}

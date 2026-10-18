@@ -255,11 +255,11 @@ export default function Ficha() {
                     <OptionChip key={s.id} label={s.short} active={serviceIds.includes(s.id)} onPress={() => toggleService(s.id)} />
                   ))}
                 </View>
-                {serviceIds.length === 0 ? (
-                  <Text variant="caption" color={colors.inkMuted}>
-                    Escolha pelo menos um.
-                  </Text>
-                ) : null}
+                <Text variant="caption" color={colors.inkMuted}>
+                  {serviceIds.length === 0
+                    ? 'Escolha pelo menos um.'
+                    : 'Em cada serviço, você faz um teste rápido antes de aparecer para os clientes.'}
+                </Text>
               </View>
               <Field
                 label="Sua profissão"

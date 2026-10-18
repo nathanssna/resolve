@@ -328,3 +328,26 @@ const styles = StyleSheet.create({
   optTall: { height: 60, minWidth: 68, gap: 2 },
   optOn: { backgroundColor: colors.brandTint, borderColor: colors.ink },
 });
+
+/** Selo do teste da área ("Aprovado em Elétrica"), no perfil público e no resultado do teste. */
+export function AreaBadge({ label }: { label: string }) {
+  return (
+    <View style={areaStyles.badge}>
+      <Icon name="shield-check" size={16} />
+      <Text variant="label">{label}</Text>
+    </View>
+  );
+}
+
+const areaStyles = StyleSheet.create({
+  badge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingVertical: 6,
+    paddingHorizontal: spacing[3],
+    borderRadius: radius.pill,
+    backgroundColor: colors.brandTint,
+    alignSelf: 'center',
+  },
+});

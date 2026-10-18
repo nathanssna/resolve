@@ -5,6 +5,7 @@ import { sortProfessionals } from '../rankProfessionals';
 const pro = (id: string, p: Partial<Professional> = {}): Professional => ({
   id,
   serviceIds: [],
+  approvedIds: [],
   name: id,
   role: '',
   bio: '',
@@ -18,6 +19,7 @@ const pro = (id: string, p: Partial<Professional> = {}): Professional => ({
   area: '',
   radiusKm: 10,
   paused: false,
+  lessonsDone: false,
   ...p,
 });
 const ids = (list: Professional[]) => list.map((p) => p.id);

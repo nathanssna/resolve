@@ -18,6 +18,9 @@ EOF
 { mk 'teste+cli@exemplo.invalid' '{"full_name":"Cliente Teste","role":"cliente"}'; mk 'teste+pro@exemplo.invalid' '{"full_name":"Pro Teste","role":"profissional"}'; cat <<'EOF'
 update public.professionals set role_title = 'Faz-tudo', bio = 'Pequenos reparos em casa.', years_experience = 3 where id = (select id from auth.users where email = 'teste+pro@exemplo.invalid');
 insert into public.professional_services select id, s from auth.users, unnest(array['encanador','eletricista']) s where email = 'teste+pro@exemplo.invalid' returning professional_id;
+-- As suítes partem de um profissional já liberado (teste aprovado + identidade confirmada); a suíte `entrada` refaz esse caminho.
+update public.professional_services set approved_at = now() where professional_id = (select id from auth.users where email = 'teste+pro@exemplo.invalid') returning service_id;
+update public.professionals set verified = true, lessons_done_at = now(), released_at = now() where id = (select id from auth.users where email = 'teste+pro@exemplo.invalid') returning id;
 insert into public.addresses (user_id, label, line, area, city, state, is_default) select id, 'Casa', 'Avenida Paulista, 1000', 'Bela Vista', 'São Paulo', 'SP', true from auth.users where email = 'teste+cli@exemplo.invalid' returning id;
 EOF
 } > $S/e2e_users.sql
