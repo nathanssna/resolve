@@ -1,7 +1,7 @@
 # Site da Rezolveaê
 
-Site estático de apresentação: página inicial, Termos de uso, Política de privacidade e Excluir conta
-(o Google Play pede esse endereço no cadastro do app).
+Site estático de apresentação: página inicial (para clientes), Para profissionais (`/profissionais/`),
+Termos de uso, Política de privacidade e Excluir conta (o Google Play pede esse endereço no cadastro do app).
 
 ## Gerar
 
@@ -19,6 +19,7 @@ O build lê o app (`resolve-app`), então o site sempre diz o mesmo que o app:
 | --- | --- |
 | Serviços | `supabase/seed.sql` |
 | Como funciona, Dúvidas | `src/content/help.ts` |
+| Aulas e testes (Para profissionais) | `src/content/lessons.ts` e `supabase/quiz/*.json` |
 | Termos e Privacidade | `src/content/legal.ts` e `src/content/company.ts` |
 | Ícones | `src/components/iconPaths.ts` |
 

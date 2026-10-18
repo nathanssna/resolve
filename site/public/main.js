@@ -120,13 +120,12 @@
   update();
 
   /*
-   * Celular fixo ao lado de textos (Como funciona, Seu painel): a tela troca quando o texto
+   * Celular fixo ao lado dos textos do Como funciona: a tela troca quando o texto
    * chega à altura do celular, não quando o bloco do passo começa a entrar na tela.
    * Ativo = o último texto cujo centro já passou de 60% da altura da tela.
    */
   const synced = [
     { items: [...document.querySelectorAll('.story-step')], text: '.story-txt', key: 'step', targets: document.querySelectorAll('.story-screen'), targetKey: 'screen' },
-    { items: [...document.querySelectorAll('.pd-item')], text: ':scope > div', key: 'part', panel: document.querySelector('.pd-phone') },
   ];
   function syncPhones() {
     if (!wide.matches) return;
@@ -142,7 +141,6 @@
       g.active = active;
       g.items.forEach((x) => x.classList.toggle('on', x.dataset[g.key] === active));
       g.targets?.forEach((x) => x.classList.toggle('on', x.dataset[g.targetKey] === active));
-      g.panel?.setAttribute('data-focus', active);
     }
   }
   addEventListener('scroll', () => requestAnimationFrame(syncPhones), { passive: true });

@@ -4,12 +4,13 @@
  * Os textos vêm do app (resolve-app), para o site nunca contradizer o que o app diz:
  * - serviços: supabase/seed.sql
  * - passo a passo e dúvidas: src/content/help.ts
+ * - aulas e testes do profissional: src/content/lessons.ts e supabase/quiz/*.json
  * - termos e privacidade: src/content/legal.ts (+ company.ts)
  * - ícones: src/components/iconPaths.ts
  *
  * Uso: node site/build.mjs
  */
-import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { cpSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
@@ -25,16 +26,22 @@ const ts = createRequire(join(APP, 'package.json'))('typescript');
 /** Transpila os arquivos TS de conteúdo para um diretório temporário e importa. */
 async function loadContent() {
   const dir = mkdtempSync(join(tmpdir(), 'rezolveae-site-'));
-  const files = { company: 'src/content/company.ts', legal: 'src/content/legal.ts', help: 'src/content/help.ts', icons: 'src/components/iconPaths.ts' };
+  const files = {
+    company: 'src/content/company.ts',
+    legal: 'src/content/legal.ts',
+    help: 'src/content/help.ts',
+    lessons: 'src/content/lessons.ts',
+    icons: 'src/components/iconPaths.ts',
+  };
   for (const [name, path] of Object.entries(files)) {
     const src = readFileSync(join(APP, path), 'utf8');
     const { outputText } = ts.transpileModule(src, { compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 } });
     writeFileSync(join(dir, `${name}.mjs`), outputText.replace(/from '\.\/company'/g, "from './company.mjs'"));
   }
   const load = (name) => import(pathToFileURL(join(dir, `${name}.mjs`)).href);
-  const [company, legal, help, icons] = await Promise.all(['company', 'legal', 'help', 'icons'].map(load));
+  const [company, legal, help, lessons, icons] = await Promise.all(Object.keys(files).map(load));
   rmSync(dir, { recursive: true, force: true });
-  return { company, LEGAL: legal.LEGAL, help, iconPaths: icons.iconPaths };
+  return { company, LEGAL: legal.LEGAL, help, LESSONS: lessons.LESSONS, iconPaths: icons.iconPaths };
 }
 
 /** Lê id, ícone, título e subtítulo de cada serviço do catálogo, na ordem do seed. */
@@ -46,13 +53,23 @@ function loadServices() {
   return list;
 }
 
-const { company, LEGAL, help, iconPaths: appIcons } = await loadContent();
+/** Quantas questões cada teste sorteia (supabase/quiz/<serviço>.json). */
+function loadQuizDraws() {
+  const dir = join(APP, 'supabase/quiz');
+  return readdirSync(dir)
+    .filter((f) => f.endsWith('.json'))
+    .map((f) => JSON.parse(readFileSync(join(dir, f), 'utf8')).draw);
+}
+
+const { company, LEGAL, help, LESSONS, iconPaths: appIcons } = await loadContent();
 /** Ícones Lucide que só o site usa. */
 const iconPaths = {
   ...appIcons,
   smartphone: '<rect width="14" height="20" x="5" y="2" rx="2" ry="2"/> <path d="M12 18h.01"/>',
 };
 const services = loadServices();
+const quizDraws = loadQuizDraws();
+const lessonMinutes = LESSONS.reduce((m, l) => m + l.minutes, 0);
 const EMAIL = company.CONTACT_EMAIL;
 const INSTAGRAM = 'rezolveae';
 const INSTAGRAM_URL = `https://www.instagram.com/${INSTAGRAM}/`;
@@ -90,14 +107,29 @@ const storeButtons = `
     <span class="store" aria-label="Google Play, em breve">${icon('smartphone', { size: 20 })}<span><small>Em breve no</small>Google Play</span></span>
   </div>`;
 
-function layout({ title, description, path, body, root }) {
+/** Links do cabeçalho de cada página com animações; as páginas legais só têm o botão de voltar. */
+const navs = {
+  home: [
+    ['#como-funciona', 'Como funciona'],
+    ['#seguranca', 'Segurança'],
+    ['profissionais/', 'Para profissionais'],
+    ['#duvidas', 'Dúvidas'],
+  ],
+  pro: [
+    ['#entrar', 'Como entrar'],
+    ['#dia-a-dia', 'No dia a dia'],
+    ['#duvidas', 'Dúvidas'],
+    ['../', 'Para clientes'],
+  ],
+};
+
+/** `page`: 'home' (raiz), 'pro' (/profissionais/) ou vazio (páginas legais). */
+function layout({ title, description, body, page }) {
+  const root = page === 'home';
   const base = root ? '' : '../';
-  const nav = root
+  const nav = page
     ? `<nav class="nav" aria-label="Seções">
-        <a href="#como-funciona">Como funciona</a>
-        <a href="#profissionais">Para profissionais</a>
-        <a href="#seguranca">Segurança</a>
-        <a href="#duvidas">Dúvidas</a>
+        ${navs[page].map(([href, label]) => `<a href="${href}">${label}</a>`).join('\n        ')}
       </nav>
       <a class="btn btn-dark btn-sm" href="#baixar">Baixar o app</a>`
     : `<a class="btn btn-dark btn-sm" href="${base}">Conheça a Rezolveaê</a>`;
@@ -120,14 +152,14 @@ function layout({ title, description, path, body, root }) {
 <link rel="apple-touch-icon" href="${base}assets/apple-touch-icon.png">
 <link rel="preload" href="${base}assets/fonts/PlusJakartaSans_800ExtraBold.ttf" as="font" type="font/ttf" crossorigin>
 <link rel="stylesheet" href="${base}style.css">${
-    root
+    page
       ? `
 <script>if (!matchMedia('(prefers-reduced-motion: reduce)').matches) document.documentElement.classList.add('motion');</script>
-<script src="main.js" defer></script>`
+<script src="${base}main.js" defer></script>`
       : ''
   }
 </head>
-<body class="${root ? 'home' : 'page'}">
+<body class="${page ? `home${page === 'pro' ? ' pro-page' : ''}` : 'page'}">
 <a class="skip" href="#conteudo">Pular para o conteúdo</a>
 <header class="header">
   <div class="wrap header-in">
@@ -146,6 +178,7 @@ ${body}
     </div>
     <nav aria-label="Rodapé">
       <a href="mailto:${EMAIL}">${EMAIL}</a>
+      <a href="${base}profissionais/">Para profissionais</a>
       <a class="footer-ig" href="${INSTAGRAM_URL}" target="_blank" rel="noopener">@${INSTAGRAM}</a>
       <a href="${base}termos/">Termos de uso</a>
       <a href="${base}privacidade/">Política de privacidade</a>
@@ -258,26 +291,43 @@ const words = (text, cls) =>
     .map((w, i) => `<span class="${cls}" style="--i:${i}">${esc(w)}</span>`)
     .join(' ');
 
+/* ---------- Partes comuns ---------- */
+
+/** Perguntas da Ajuda em sanfona. */
+const faqList = (questions) =>
+  questions
+    .map(topic)
+    .map((t, i) => `<details class="faq" data-reveal style="--i:${i}"><summary>${esc(t.q)}${icon('chevron-down', { size: 20 })}</summary><p>${esc(t.a)}</p></details>`)
+    .join('');
+
+const ctaSection = (base = '') => `
+<section class="cta" id="baixar" aria-labelledby="baixar-t">
+  <div class="wrap cta-in">
+    <img src="${base}assets/rezolveae-r.png" alt="" width="78" height="100" class="cta-r" data-reveal>
+    <h2 id="baixar-t" data-reveal style="--i:1">Chegando nas lojas</h2>
+    <p data-reveal style="--i:2">O Rezolveaê está quase pronto para iPhone e Android.</p>
+    <div data-reveal style="--i:3">${storeButtons}</div>
+    <a class="cta-ig" href="${INSTAGRAM_URL}" target="_blank" rel="noopener" data-reveal style="--i:4">Enquanto isso, siga <b>@${INSTAGRAM}</b></a>
+  </div>
+</section>`;
+
 /* ---------- Para profissionais ---------- */
 
-/** Os seis recursos da lista de profissionais, cada um com uma mini tela do app. */
+/** Os recursos da lista de profissionais, cada um com uma mini tela do app. */
 const proFeatures = [
   {
-    icon: 'message-circle',
     title: 'Pedidos chegam no chat',
     text: 'O cliente conta o que precisa, com fotos e o bairro.',
     mini: `<div class="mini"><small class="mini-k">PEDIDO NOVO · há 5 min</small><b>Chuveiro não esquenta</b><span>Ana · Centro · Esta semana</span>
       <span class="mini-row">${icon('calendar-clock', { size: 14 })}Enviar proposta${icon('chevron-right', { size: 14 })}</span></div>`,
   },
   {
-    icon: 'banknote',
     title: 'Você dá o preço',
     text: 'Mande valor e data. O cliente aceita ou negocia.',
     mini: `<div class="mini"><small class="mini-k">PROPOSTA</small><b class="mini-price">R$ 180,00</b><span>${icon('calendar-clock', { size: 14 })} Sex 17/10, tarde</span>
       <span class="mini-tag">${icon('check', { size: 12, stroke: 3 })} Aceita</span></div>`,
   },
   {
-    icon: 'calendar',
     title: 'Agenda em ordem',
     text: 'Tudo o que foi combinado, em ordem de data.',
     mini: `<div class="mini mini-list">
@@ -286,62 +336,32 @@ const proFeatures = [
       <div><span><b>Sex, à tarde</b><small>Lustre · Rita · Pituba</small></span><b>R$ 150</b></div></div>`,
   },
   {
-    icon: 'badge-check',
-    title: 'Selo Verificado',
-    text: 'Documento e selfie conferidos pela nossa equipe.',
-    mini: `<div class="mini mini-pro">${avatar('Carlos', 0, true)}<span><b>Carlos Souza</b><small>Eletricista · 8 anos</small><span class="mini-seal">${icon('badge-check', { size: 14, duotone: true, stroke: 2.25 })} Verificado</span></span></div>`,
-  },
-  {
-    icon: 'star',
     title: 'Avaliações que contam',
     text: 'Só avalia quem contratou. Trabalho bem feito vira vitrine.',
     mini: `<div class="mini"><span class="mini-rate"><b>4,9</b>${stars(5, 16)}</span><small>128 avaliações</small><p class="mini-quote">“Rápido e caprichoso, explicou tudo.”<small>Ana</small></p></div>`,
   },
   {
-    icon: 'clock',
     title: 'Pausa quando quiser',
     text: 'Desligue os pedidos e saia das buscas. O combinado continua.',
     mini: `<div class="mini mini-toggle"><span><b><i class="dot"></i>Recebendo pedidos</b><small>Eletricista · até 10 km do Centro</small></span><span class="switch"><i></i></span></div>`,
   },
 ];
 
-/** Tela do painel do profissional; data-r marca as áreas explicadas ao lado. */
-/** Partes do painel do profissional, na ordem das explicações ao lado. */
-const panelRegions = [
-  () => `<div class="ph-hello"><b>Olá, Carlos!</b>${avatar('Carlos', 0)}</div>
-      <div class="ph-accept"><span><b><i class="dot"></i>Recebendo pedidos</b><small>Eletricista · até 10 km do Centro</small></span><span class="switch"><i></i></span></div>`,
-  () => `<p class="ph-h">Para responder <span class="ph-count">2</span></p>
-        <div class="ph-req"><small>PEDIDO NOVO · há 5 min</small><b>Chuveiro não esquenta</b><span>Liguei e só sai água fria.</span><small>Ana · Centro · Esta semana</small>
-          <span class="ph-send">Enviar proposta ${icon('chevron-right', { size: 14 })}</span></div>`,
-  () => `<p class="ph-h">Agenda</p>
-        <div class="ph-line"><span><b>Hoje, à tarde</b><small>Tomada · Paulo · Jardins</small></span><b>R$ 90</b></div>
-        <div class="ph-line"><span><b>Sex, à tarde</b><small>Lustre · Rita · Pituba</small></span><b>R$ 150</b></div>`,
-  () => `<div class="ph-month">${icon('calendar-clock', { size: 16 })}<span>Outubro · 12 serviços · R$ 2.340,00</span>${icon('chevron-right', { size: 14 })}</div>`,
+/** Os quatro passos do "Para começar" do app (ficha → teste → identidade → aulas). */
+const entrySteps = [
+  ['Monte sua ficha', 'Seus serviços, sua profissão e até onde você atende.'],
+  [
+    'Passe no teste',
+    `Um por serviço, com ${Math.min(...quizDraws)} a ${Math.max(...quizDraws)} questões de segurança e do jeito certo de fazer. Não passou? Tente de novo em 3 dias, com outras questões.`,
+  ],
+  ['Confirme quem você é', 'Foto de um documento e uma selfie. Nossa equipe confere em até 24 h e as fotos são apagadas depois.'],
+  [
+    'Faça as aulas',
+    `${LESSONS.length} aulas curtas sobre orçamento, fotos, chat, data combinada e MEI. Cerca de ${lessonMinutes} minutos, uma vez só.`,
+  ],
 ];
 
-/** Tela do painel do profissional; data-r marca as áreas explicadas ao lado. */
-function proHomeScreen() {
-  const badge = (n) => `<span class="pd-badge">${n}</span>`;
-  const [top, ...blocks] = panelRegions;
-  return `<div class="ph-top" data-r="0">${badge(1)}${top()}</div>
-    <div class="ph-body">${blocks.map((r, i) => `<div class="ph-block" data-r="${i + 1}">${badge(i + 2)}${r()}</div>`).join('')}</div>`;
-}
-
-const panelParts = [
-  ['Recebendo pedidos', 'Ligado, você aparece para os clientes da sua região, nos serviços que escolheu. Precisa de folga? Desligue e saia das buscas: o que já está combinado continua.'],
-  ['Para responder', 'Os pedidos novos chegam aqui e na notificação, com a descrição, as fotos e o bairro. Os urgentes vêm primeiro.'],
-  ['Agenda', 'Os serviços combinados em ordem de data. No dia, chega um lembrete; quando terminar, toque em Serviço feito e mande fotos do trabalho pronto.'],
-  ['Seu mês', 'Quantos serviços você fez no mês e quanto eles somam. Um toque abre o histórico completo.'],
-];
-
-const startSteps = [
-  ['Baixe o app', 'Crie a conta com seu e-mail e escolha Sou profissional.'],
-  ['Monte sua ficha', 'Escolha seus serviços, sua profissão e até onde você atende.'],
-  ['Capriche no perfil', 'Foto, apresentação com sua experiência e telefone para o cliente ligar.'],
-  ['Peça o selo', 'Documento e selfie. Nossa equipe confere e você recebe o aviso.'],
-];
-
-function proSection() {
+function proPage() {
   const lines = ['Seu serviço.', 'Seu preço.', 'Sua agenda.'];
   const items = proFeatures
     .map(
@@ -349,27 +369,38 @@ function proSection() {
     )
     .join('');
   const shots = proFeatures.map((c, i) => `<div class="pl-shot${i === 0 ? ' on' : ''}" data-i="${i}">${c.mini}</div>`).join('');
-  const parts = panelParts
-    .map(([t, d], i) => `<li class="pd-item" data-part="${i}" data-i="${i}"><div><span class="pd-n">${i + 1}</span><h3>${t}</h3><p>${d}</p></div>
-        <div class="pd-shot${i === 0 ? ' pd-shot-top' : ''}" aria-hidden="true">${panelRegions[i]()}</div></li>`)
+  const steps = entrySteps
+    .map(([t, d], i) => `<li class="start-step" data-reveal style="--i:${i}"><span class="start-n">${i + 1}</span><h3>${t}</h3><p>${esc(d)}</p></li>`)
     .join('');
-  const steps = startSteps
-    .map(([t, d], i) => `<li class="start-step" data-reveal style="--i:${i}"><span class="start-n">${i + 1}</span><h3>${t}</h3><p>${d}</p></li>`)
-    .join('');
+  const faq = faqList([
+    'Como funciona o teste da minha área?',
+    'O que são as aulas da Rezolveaê?',
+    'Como envio uma proposta?',
+    'Como recebo o pagamento?',
+    'Como concluo um serviço?',
+    'Quando vejo o endereço e o telefone do cliente?',
+  ]);
 
-  return `
-<section class="pro-intro" id="profissionais" data-pin aria-labelledby="pro-t">
-  <div class="pro-pin">
-    <img class="pro-r" src="assets/rezolveae-r.png" alt="" width="797" height="1024">
-    <div class="wrap pro-intro-in">
-      <p class="pro-eyebrow">Para profissionais</p>
-      <h2 id="pro-t" class="pro-lines">${lines.map((l, i) => `<span style="--i:${i}">${l}</span>`).join('')}</h2>
-      <p class="pro-lead" style="--i:3">Os pedidos da sua região chegam no seu celular. Você conversa, manda o valor e recebe direto do cliente.</p>
-    </div>
+  const body = `
+<section class="pro-hero" aria-labelledby="pro-t">
+  <img class="pro-r" src="../assets/rezolveae-r.png" alt="" width="797" height="1024">
+  <div class="wrap pro-intro-in">
+    <p class="pro-eyebrow hero-fade" style="--d:0s">Para profissionais</p>
+    <h1 id="pro-t" class="pro-lines">${lines.map((l, i) => `<span class="hw" style="--i:${i * 2}">${l}</span>`).join('')}</h1>
+    <p class="pro-lead hero-fade" style="--d:.6s">Os pedidos da sua região chegam no seu celular. Você conversa, manda o valor e recebe direto do cliente.</p>
   </div>
 </section>
 
-<section class="pro-list" data-pin data-steps="${proFeatures.length}" aria-labelledby="pl-t">
+<section class="start" id="entrar" aria-labelledby="start-t">
+  <div class="wrap">
+    <h2 id="start-t" data-reveal>4 passos antes do primeiro pedido</h2>
+    <p class="start-sub" data-reveal style="--i:1">O cliente abre a porta sabendo que você foi conferido. Você chega preparado. Tudo pelo app, no seu tempo.</p>
+    <ol class="start-list">${steps}</ol>
+    <p class="start-note" data-reveal>Pronto: você recebe o aviso e passa a aparecer para os clientes da sua região.</p>
+  </div>
+</section>
+
+<section class="pro-list" id="dia-a-dia" data-pin data-steps="${proFeatures.length}" aria-labelledby="pl-t">
   <div class="pl-pin">
     <div class="wrap pl-in">
       <div>
@@ -381,28 +412,34 @@ function proSection() {
   </div>
 </section>
 
-<section class="section pro-detail" aria-labelledby="pd-t">
-  <div class="wrap">
-    <h2 id="pd-t" data-reveal>Seu painel, por dentro</h2>
-    <p class="sub" data-reveal style="--i:1">É a primeira tela que você vê ao abrir o app.</p>
-    <div class="pd" data-carousel data-hscroll data-pin>
-      <div class="pd-stage">${phone(proHomeScreen(), { cls: 'pd-phone', label: 'Painel do profissional no app Rezolveaê' })}</div>
-      <div class="hs-pin">
-      <ol class="pd-list" data-track>${parts}</ol>
-      <div class="step-dots" aria-hidden="true">${Array.from({ length: panelParts.length }, (_, i) => `<i data-i="${i}"${i === 0 ? ' class="on"' : ''}></i>`).join('')}</div>
-      </div>
-    </div>
+<section class="section section-muted" id="duvidas" aria-labelledby="duv-t">
+  <div class="wrap narrow">
+    <h2 id="duv-t" data-reveal>Dúvidas</h2>
+    <div class="faqs">${faq}</div>
+    <p class="faq-more" data-reveal>Outra dúvida? Escreva para <a href="mailto:${EMAIL}">${EMAIL}</a>.</p>
   </div>
 </section>
+${ctaSection('../')}`;
 
-<section class="start" aria-labelledby="start-t">
-  <div class="wrap">
-    <h2 id="start-t" data-reveal>Comece em 4 passos</h2>
-    <ol class="start-list">${steps}</ol>
-    <p class="start-note" data-reveal>O app chega em breve na App Store e no Google Play.</p>
+  return layout({
+    page: 'pro',
+    title: 'Para profissionais · Rezolveaê',
+    description: 'Receba pedidos da sua região pelo app Rezolveaê. Você conversa, manda o valor e recebe direto do cliente.',
+    body,
+  });
+}
+
+/** Chamada curta no início para a página dos profissionais. */
+const proTeaser = `
+<section class="pro-teaser" aria-labelledby="pt-t">
+  <div class="wrap pt-in">
+    <img class="pt-r" src="assets/rezolveae-r.png" alt="" width="797" height="1024">
+    <p class="pro-eyebrow" data-reveal>Para profissionais</p>
+    <h2 id="pt-t" data-reveal style="--i:1"><span>Seu serviço.</span> <span>Seu preço.</span> <em>Sua agenda.</em></h2>
+    <p data-reveal style="--i:2">Receba pedidos da sua região pelo app. Antes de aparecer, você passa por quatro passos simples, que protegem você e o cliente.</p>
+    <a class="btn btn-brand" href="profissionais/" data-reveal style="--i:3">Conheça a área do profissional ${icon('arrow-right', { size: 18 })}</a>
   </div>
 </section>`;
-}
 
 function home() {
   const serviceCards = services
@@ -430,29 +467,27 @@ function home() {
     .join('');
   const stickyScreens = storyScreens.map((f, i) => `<div class="story-screen${i === 0 ? ' on' : ''}" data-screen="${i}" data-i="${i}">${f()}</div>`).join('');
 
+  // As três primeiras são a entrada do profissional (o 4º passo, a ficha, não protege ninguém).
   const safety = [
-    ['map-pin', 'Endereço protegido', topic('Quem vê meu endereço e telefone?').a],
-    ['badge-check', 'Identidade conferida', 'Profissionais com o selo Verificado enviaram documento com foto e selfie, conferidos pela nossa equipe.'],
-    ['star', 'Avaliações reais', 'Só quem contratou e confirmou o serviço pode avaliar o profissional.'],
-    ['shield-check', 'Equipe de olho', 'Denuncie ou bloqueie qualquer conta direto no app. Nossa equipe analisa as denúncias em até 24 horas.'],
+    ['badge-check', 'Identidade conferida', 'Todo profissional envia um documento com foto e uma selfie. Nossa equipe confere antes de ele aparecer para você.'],
+    ['shield-check', 'Aprovado na área', 'Para atender um serviço, ele passa num teste sobre segurança e o jeito certo de fazer. O perfil mostra “Aprovado em” cada área.'],
+    ['book-open', 'Preparado para atender', `Antes do primeiro pedido, ele conclui as ${LESSONS.length} aulas da Rezolveaê: orçamento claro, fotos do serviço, conversa pelo chat e data cumprida.`],
+    ['map-pin', 'Endereço protegido', 'Antes de combinar, o profissional vê só o bairro. Endereço e telefone aparecem depois que você aceita a proposta.'],
   ]
     .map(
       ([ic, t, d], i) =>
-        `<li class="card" data-reveal style="--i:${i}"><span class="card-ico">${icon(ic, { size: 22, duotone: ic !== 'shield-check' })}</span><h3>${t}</h3><p>${esc(d)}</p></li>`,
+        `<li class="card" data-reveal style="--i:${i}"><span class="card-ico">${icon(ic, { size: 22, duotone: ic !== 'book-open' })}</span><h3>${t}</h3><p>${esc(d)}</p></li>`,
     )
     .join('');
 
-  const faq = [
+  const faq = faqList([
     'Como funciona a proposta?',
     'Como pago o profissional?',
     'Como o serviço é concluído?',
+    'O que quer dizer "Aprovado em"?',
     'O que é o selo Verificado?',
-    'Como recebo pedidos?',
-    'Como ganho o selo Verificado?',
-  ]
-    .map(topic)
-    .map((t, i) => `<details class="faq" data-reveal style="--i:${i}"><summary>${esc(t.q)}${icon('chevron-down', { size: 20 })}</summary><p>${esc(t.a)}</p></details>`)
-    .join('');
+    'Como bloqueio ou denuncio alguém?',
+  ]);
 
   const statement = 'Do chuveiro que queimou ao guarda-roupa novo, tem alguém perto de você pronto para resolver.';
 
@@ -498,15 +533,15 @@ function home() {
   </div>
 </section>
 
-${proSection()}
-
 <section class="section" id="seguranca" aria-labelledby="seg-t">
   <div class="wrap">
     <h2 id="seg-t" data-reveal>Segurança dos dois lados</h2>
-    <p class="sub" data-reveal style="--i:1">Regras pensadas para quem abre a porta de casa e para quem vai até ela.</p>
+    <p class="sub" data-reveal style="--i:1">Antes de aparecer para você, todo profissional passa por três etapas. E as regras protegem quem abre a porta e quem vai até ela.</p>
     <ul class="cards">${safety}</ul>
   </div>
 </section>
+
+${proTeaser}
 
 <section class="section section-muted" id="duvidas" aria-labelledby="duv-t">
   <div class="wrap narrow">
@@ -516,18 +551,10 @@ ${proSection()}
   </div>
 </section>
 
-<section class="cta" id="baixar" aria-labelledby="baixar-t">
-  <div class="wrap cta-in">
-    <img src="assets/rezolveae-r.png" alt="" width="78" height="100" class="cta-r" data-reveal>
-    <h2 id="baixar-t" data-reveal style="--i:1">Chegando nas lojas</h2>
-    <p data-reveal style="--i:2">O Rezolveaê está quase pronto para iPhone e Android.</p>
-    <div data-reveal style="--i:3">${storeButtons}</div>
-    <a class="cta-ig" href="${INSTAGRAM_URL}" target="_blank" rel="noopener" data-reveal style="--i:4">Enquanto isso, siga <b>@${INSTAGRAM}</b></a>
-  </div>
-</section>`;
+${ctaSection()}`;
 
   return layout({
-    root: true,
+    page: 'home',
     title: 'Rezolveae',
     description: 'Encontre eletricista, encanador, montador, faxina e mais perto de você. Peça orçamento, converse pelo chat e combine tudo pelo app Rezolveaê.',
     body,
@@ -583,6 +610,7 @@ cpSync(join(SITE, 'main.js'), join(OUT, 'main.js'));
 
 const pages = {
   'index.html': home(),
+  'profissionais/index.html': proPage(),
   'termos/index.html': legalPage(LEGAL.termos, { description: 'Termos de uso do app Rezolveaê.' }),
   'privacidade/index.html': legalPage(LEGAL.privacidade, { description: 'Como a Rezolveaê trata seus dados, conforme a LGPD.' }),
   'excluir-conta/index.html': deletionPage(),
