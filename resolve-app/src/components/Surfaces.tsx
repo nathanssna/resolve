@@ -406,26 +406,3 @@ const goldStyles = StyleSheet.create({
   sheet: { backgroundColor: colors.surface, borderTopLeftRadius: radius.sheet, borderTopRightRadius: radius.sheet, padding: spacing[5], paddingTop: spacing[3], gap: spacing[3] },
   handle: { alignSelf: 'center', width: 40, height: 4, borderRadius: radius.pill, backgroundColor: colors.surfaceStrong, marginBottom: spacing[1] },
 });
-
-/** Selo do teste da área ("Aprovado em Elétrica"), no perfil público e no resultado do teste. */
-export function AreaBadge({ label }: { label: string }) {
-  return (
-    <View style={areaStyles.badge}>
-      <Icon name="shield-check" size={16} />
-      <Text variant="label">{label}</Text>
-    </View>
-  );
-}
-
-const areaStyles = StyleSheet.create({
-  badge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    paddingVertical: 6,
-    paddingHorizontal: spacing[3],
-    borderRadius: radius.pill,
-    backgroundColor: colors.brandTint,
-    alignSelf: 'center',
-  },
-});

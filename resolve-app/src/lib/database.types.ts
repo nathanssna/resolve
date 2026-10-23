@@ -630,10 +630,10 @@ export type Database = {
           base_area: string
           bio: string
           created_at: string
+          gold_at: string | null
           id: string
           jobs_count: number
           latitude: number | null
-          gold_at: string | null
           lessons_done_at: string | null
           longitude: number | null
           paused: boolean
@@ -653,10 +653,10 @@ export type Database = {
           base_area?: string
           bio?: string
           created_at?: string
+          gold_at?: string | null
           id: string
           jobs_count?: number
           latitude?: number | null
-          gold_at?: string | null
           lessons_done_at?: string | null
           longitude?: number | null
           paused?: boolean
@@ -676,10 +676,10 @@ export type Database = {
           base_area?: string
           bio?: string
           created_at?: string
+          gold_at?: string | null
           id?: string
           jobs_count?: number
           latitude?: number | null
-          gold_at?: string | null
           lessons_done_at?: string | null
           longitude?: number | null
           paused?: boolean
@@ -2058,12 +2058,18 @@ export type Database = {
         }
       }
       rate_order: {
-        Args: { p_comment?: string; p_order_id: string; p_rating: number }
+        Args: {
+          p_comment?: string
+          p_on_time?: boolean
+          p_order_id: string
+          p_rating: number
+        }
         Returns: {
           client_id: string
           comment: string | null
           created_at: string
           id: string
+          on_time: boolean | null
           order_id: string
           professional_id: string
           rating: number
@@ -2196,13 +2202,13 @@ export type Database = {
           isSetofReturn: false
         }
       }
-      start_quiz: { Args: { p_service_id: string }; Returns: Json }
       start_lesson_quiz: { Args: { p_lesson_id: string }; Returns: Json }
-      submit_quiz: {
+      start_quiz: { Args: { p_service_id: string }; Returns: Json }
+      submit_lesson_quiz: {
         Args: { p_answers: number[]; p_attempt_id: string }
         Returns: Json
       }
-      submit_lesson_quiz: {
+      submit_quiz: {
         Args: { p_answers: number[]; p_attempt_id: string }
         Returns: Json
       }

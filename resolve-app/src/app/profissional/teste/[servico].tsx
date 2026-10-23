@@ -3,7 +3,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, BackHandler, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { AreaBadge, Button, CatalogFallback, Icon, ProgressBar, StickyFooter, Text, TopBar, type IconName } from '@/components';
+import { Button, CatalogFallback, Icon, ProgressBar, StickyFooter, Tag, Text, TopBar, type IconName } from '@/components';
 import { authErrorMessage } from '@/lib/authErrors';
 import { quizStatus, startQuiz, submitQuiz, type QuizAttempt, type QuizResult, type QuizStatus } from '@/lib/quiz';
 import { useAuth } from '@/state/auth';
@@ -175,7 +175,8 @@ export default function Teste() {
               <Text variant="caption" color={colors.inkMuted}>
                 Os clientes veem no seu perfil
               </Text>
-              <AreaBadge label={`Aprovado em ${area}`} />
+              {/* No perfil, o serviço aprovado ganha o escudo na seção Serviços. */}
+              <Tag icon="shield-check">{service?.title ?? area}</Tag>
             </View>
           ) : null}
         </ScrollView>

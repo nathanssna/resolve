@@ -32,7 +32,8 @@ const login = async (email) => (await (await fetch(`${URL_}/auth/v1/token?grant_
 
   // Começa do zero: sem teste aprovado, sem identidade, sem aulas.
   sql(`update public.professional_services set approved_at = null where professional_id = '${proId}';
-       update public.professionals set verified = false, released_at = null, lessons_done_at = null where id = '${proId}';
+       update public.professionals set verified = false, released_at = null, lessons_done_at = null, gold_at = null where id = '${proId}';
+       update public.profiles set identity_verified_at = null where id = '${proId}';
        delete from public.lesson_progress where professional_id = '${proId}';
        delete from private.quiz_attempts where professional_id = '${proId}';
        delete from private.lesson_attempts where professional_id = '${proId}';
@@ -82,7 +83,7 @@ const login = async (email) => (await (await fetch(`${URL_}/auth/v1/token?grant_
   await page.goto(`${APP}/inicio`);
   ok(await waitText('Para começar'), 'painel mostra "Para começar"');
   const t0 = await text();
-  ok(t0.includes('Você ainda não aparece para clientes') && t0.includes('Faltam 3 passos'), 'topo: ainda não aparece, faltam 3 passos');
+  ok(t0.includes('Você ainda não aparece para clientes') && t0.includes('Faltam 2 passos'), 'topo: ainda não aparece, faltam 2 passos');
   ok(t0.includes('Teste de Elétrica') && t0.includes('Teste de Hidráulica') && t0.includes('Confirmar identidade') && t0.includes('Aulas da Rezolveaê') && t0.includes('0 de 5'), 'um teste por serviço da ficha + identidade + aulas');
   ok(t0.includes('Quando você for liberado'), 'Para responder explica que os pedidos chegam depois de liberado');
   await shot('1-painel-antes');
@@ -245,7 +246,7 @@ const login = async (email) => (await (await fetch(`${URL_}/auth/v1/token?grant_
   ok(pt.includes('Profissional de Ouro'), 'mostra Profissional de Ouro');
   await cli.screenshot({ path: `${SHOTS}entrada-13-perfil.png` });
   await cli.evaluate(() => [...document.querySelectorAll('[role="button"]')].find((e) => e.innerText.trim() === 'Profissional de Ouro')?.click());
-  try { await cli.waitForFunction(() => document.body.innerText.includes('As aulas são opcionais. Ele fez porque quis.'), { timeout: 10000, polling: 200 }); ok(true, 'tocar na marca explica o que ela quer dizer'); } catch { ok(false, 'tocar na marca explica o que ela quer dizer'); }
+  try { await cli.waitForFunction(() => document.body.innerText.includes('Este profissional cumpre as quatro etapas'), { timeout: 10000, polling: 200 }); ok(true, 'tocar na marca explica o que ela quer dizer'); } catch { ok(false, 'tocar na marca explica o que ela quer dizer'); }
   await sleep(600); await cli.screenshot({ path: `${SHOTS}entrada-14-ouro.png` });
 
   ok(errors.length === 0, `sem erros na página${errors.length ? ': ' + errors.join(' | ') : ''}`);
