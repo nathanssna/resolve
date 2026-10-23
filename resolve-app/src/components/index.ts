@@ -15,7 +15,7 @@ export { Avatar } from './Avatar';
 export { Rating } from './Rating';
 export { ServiceCard } from './ServiceCard';
 export { ActionSheet, type SheetAction } from './ActionSheet';
-export { ActionButton, AreaBadge, Badge, ListRow, OptionChip, SectionHeader, Segmented, Sheet, StickyFooter, ToggleRow } from './Surfaces';
+export { ActionButton, AreaBadge, Badge, GoldBadge, ListRow, OptionChip, SectionHeader, Segmented, Sheet, StickyFooter, ToggleRow } from './Surfaces';
 export { Text } from './Text';
 export { ProposalSheet } from './ProposalSheet';
 export { goBack, IconButton, TopBar, type TopBarAction } from './TopBar';

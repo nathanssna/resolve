@@ -33,9 +33,10 @@ export const LEGAL: Record<'termos' | 'privacidade', LegalDoc> = {
         title: 'Para profissionais',
         body: [
           'As informações da sua ficha (profissão, experiência, serviços) devem ser verdadeiras. Você é responsável pela qualidade e segurança do serviço, pelas habilitações exigidas por lei e pelos tributos sobre o que recebe.',
-          'Para aparecer aos clientes, você precisa ter a identidade confirmada, passar no teste de conhecimento de cada serviço que oferece e concluir as aulas da Rezolveaê. Quem não passa no teste pode tentar de novo depois do prazo informado no app.',
+          'Para aparecer aos clientes, você precisa ter a identidade confirmada e passar no teste de conhecimento de cada serviço que oferece. Quem não passa no teste pode tentar de novo depois do prazo informado no app.',
           'O selo Verificado indica que nossa equipe conferiu um documento com foto e uma selfie sua. Ele confirma a identidade, não a qualidade do serviço.',
-          'O selo "Aprovado em" de uma área indica que você passou no teste de conhecimento da Rezolveaê sobre aquela área. Ele não é um certificado profissional, não substitui cursos ou habilitações exigidas por lei e não garante a qualidade do serviço.',
+          'O escudo ao lado de um serviço no seu perfil indica que você passou no teste de conhecimento da Rezolveaê sobre aquela área. Ele não é um certificado profissional, não substitui cursos ou habilitações exigidas por lei e não garante a qualidade do serviço.',
+          'As aulas da Rezolveaê são opcionais. A marca "Profissional de Ouro", que aparece para os clientes e dá mais destaque na lista de profissionais, é de quem concluiu as aulas, fez pelo menos 10 serviços pela Rezolveaê, tem nota 4,7 ou mais e é pontual segundo os clientes, com poucos cancelamentos em cima da hora. Ela é conferida todo dia e sai se você deixar de cumprir. Não é certificado e não garante a qualidade do serviço.',
         ],
       },
       {
@@ -62,6 +63,7 @@ export const LEGAL: Record<'termos' | 'privacidade', LegalDoc> = {
         title: 'Avaliações',
         body: [
           'Depois de um serviço concluído, o cliente pode avaliar o profissional. A avaliação aparece no perfil público dele, com o primeiro nome de quem avaliou. Avaliações falsas ou ofensivas podem ser removidas.',
+          'Na avaliação, o cliente também responde se o profissional chegou no horário combinado. Essa resposta não aparece no perfil: ela entra só na conta de pontualidade do Profissional de Ouro.',
           'O profissional também pode dar uma nota de 1 a 5 ao cliente. A nota de cada profissional não é mostrada: o cliente vê só a média de todas, a partir de 3 avaliações, e os profissionais que ele chamar veem a mesma média.',
         ],
       },

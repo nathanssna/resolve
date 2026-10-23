@@ -48,7 +48,6 @@ export default function Teste() {
   const service = getService(servico);
   const me = getProfessional(session?.user.id);
   const verified = !!me?.verified;
-  const lessonsDone = !!me?.lessonsDone;
 
   const [status, setStatus] = useState<{ state: 'loading' | 'ready' | 'error'; row: QuizStatus | null }>({ state: 'loading', row: null });
   const [attempt, setAttempt] = useState<QuizAttempt | null>(null);
@@ -184,18 +183,9 @@ export default function Teste() {
           {result.passed && !verified ? (
             <>
               <Text variant="bodySm" color={colors.inkBody} style={styles.center}>
-                {lessonsDone ? 'Falta 1 passo: confirmar sua identidade.' : 'Faltam 2 passos: confirmar sua identidade e concluir as aulas.'}
+                Falta 1 passo: confirmar sua identidade.
               </Text>
               <Button variant="primary" block iconRight="arrow-right" onPress={() => router.replace('/verificacao')}>
-                Continuar
-              </Button>
-            </>
-          ) : result.passed && !lessonsDone ? (
-            <>
-              <Text variant="bodySm" color={colors.inkBody} style={styles.center}>
-                Falta concluir as aulas da Rezolveaê.
-              </Text>
-              <Button variant="primary" block iconRight="arrow-right" onPress={() => router.replace('/aulas')}>
                 Continuar
               </Button>
             </>

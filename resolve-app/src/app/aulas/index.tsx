@@ -3,15 +3,19 @@ import { useCallback, useState } from 'react';
 import { Modal, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { Button, Icon, ProgressBar, Text, TopBar } from '@/components';
+import { Button, GoldBadge, Icon, ProgressBar, Text, TopBar } from '@/components';
 import { LESSONS, type Lesson } from '@/content/lessons';
-import { lessonProgress, lessonSpots, lessonsWhySeen, markLessonsWhySeen, topicsOf, type LessonSpot } from '@/lib/lessons';
+import { lessonSpots, lessonStatus, lessonsWhySeen, markLessonsWhySeen, topicsOf, type LessonSpot } from '@/lib/lessons';
 import { colors, fonts, radius, spacing } from '@/theme/tokens';
 
 const open = (l: Lesson) => router.push({ pathname: '/aulas/[id]', params: { id: l.id } });
 const TOTAL_MIN = LESSONS.reduce((m, l) => m + l.minutes, 0);
+const dayMonth = (iso: string) => {
+  const d = new Date(iso);
+  return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}`;
+};
 
-/** Por que as aulas existem: abre sozinha na primeira visita e depois pelo "Por quê?". */
+/** Por que fazer as aulas: abre sozinha na primeira visita e depois pelo "Por quê?". */
 function WhySheet({ visible, onClose }: { visible: boolean; onClose: () => void }) {
   const insets = useSafeAreaInsets();
   return (
@@ -20,7 +24,7 @@ function WhySheet({ visible, onClose }: { visible: boolean; onClose: () => void 
       <View style={[styles.sheet, { paddingBottom: Math.max(insets.bottom, spacing[4]) }]}>
         <View style={styles.handle} />
         <Text variant="titleMd" accessibilityRole="header">
-          Por que as aulas?
+          Por que fazer as aulas?
         </Text>
         <Text variant="body" color={colors.inkBody}>
           Pense no último serviço que você fez bem feito. O cliente ficou satisfeito, elogiou, talvez até tirou foto.
@@ -30,7 +34,8 @@ function WhySheet({ visible, onClose }: { visible: boolean; onClose: () => void 
           ele pediu. Ninguém ensina essa parte. E é ela que decide se sobra dinheiro no fim do mês e se o cliente te chama de novo.
         </Text>
         <Text variant="body" color={colors.inkBody}>
-          É disso que as aulas falam. Todo profissional da Rezolveaê passa por elas.
+          É disso que as aulas falam. Concluir as cinco já te coloca um pouco mais acima na lista, e é a primeira etapa do Profissional
+          de Ouro, a marca que o cliente vê no seu perfil.
         </Text>
         <View style={styles.facts}>
           <View style={styles.fact}>
@@ -40,7 +45,7 @@ function WhySheet({ visible, onClose }: { visible: boolean; onClose: () => void 
           <View style={styles.fact}>
             <Icon name="check" size={18} color={colors.inkBody} />
             <Text variant="label" color={colors.inkBody} style={{ flex: 1 }}>
-              Não é prova: errou, é só tentar de novo.
+              No fim de cada aula, 8 perguntas. Acertou 7, concluiu.
             </Text>
           </View>
           <View style={styles.fact}>
@@ -59,21 +64,25 @@ function WhySheet({ visible, onClose }: { visible: boolean; onClose: () => void 
 }
 
 /**
- * As cinco aulas da Rezolveaê: obrigatórias para aparecer aos clientes; depois, ficam para reler.
+ * As cinco aulas da Rezolveaê: opcionais; uma das etapas do Profissional de Ouro. Depois, ficam para reler.
  * Vão em ordem: cada uma abre depois de concluir a anterior. Topo com o quanto falta, a aula da vez em
  * destaque (com "Continuar" se parou no meio) e a lista enxuta.
  */
 export default function Aulas() {
   const [done, setDone] = useState<string[] | null>(null);
+  // Aulas em que a pessoa não passou nas perguntas: até quando espera para responder de novo.
+  const [waits, setWaits] = useState<Record<string, string>>({});
   const [spots, setSpots] = useState<Record<string, LessonSpot>>({});
   const [why, setWhy] = useState(false);
   useFocusEffect(
     useCallback(() => {
       let alive = true;
-      lessonProgress().then(
-        async (ids) => {
+      lessonStatus().then(
+        async (rows) => {
           if (!alive) return;
+          const ids = rows.filter((r) => r.completed_at).map((r) => r.lesson_id);
           setDone(ids);
+          setWaits(Object.fromEntries(rows.filter((r) => r.retry_at && Date.parse(r.retry_at) > Date.now()).map((r) => [r.lesson_id, r.retry_at!])));
           // Primeira visita com aulas pendentes: mostra o porquê uma vez.
           if (ids.length < LESSONS.length && !(await lessonsWhySeen()) && alive) {
             markLessonsWhySeen();
@@ -110,9 +119,12 @@ export default function Aulas() {
               </View>
               <ProgressBar value={finished / LESSONS.length} tone="brand" />
               <View style={styles.required}>
-                <Icon name="shield-check" size={16} color={colors.inkBody} />
                 <Text variant="bodySm" color={colors.inkBody}>
-                  Obrigatórias para aparecer aos clientes ·
+                  Uma das etapas do
+                </Text>
+                <GoldBadge size="sm" explain={false} />
+                <Text variant="bodySm" color={colors.inkBody}>
+                  ·
                 </Text>
                 <Pressable accessibilityRole="button" onPress={() => setWhy(true)} hitSlop={10}>
                   <Text variant="bodySm" style={styles.whyLink}>
@@ -129,7 +141,7 @@ export default function Aulas() {
               <View style={{ flex: 1, gap: 2 }}>
                 <Text variant="titleMd" style={styles.strong}>{`Você concluiu as ${LESSONS.length} aulas`}</Text>
                 <Text variant="label" color={colors.inkMuted}>
-                  Elas ficam aqui para reler quando quiser.
+                  Uma das etapas do Profissional de Ouro. Elas ficam aqui para reler quando quiser.
                 </Text>
               </View>
             </View>
@@ -158,8 +170,13 @@ export default function Aulas() {
               ) : (
                 <Text variant="label" color={colors.inkMuted}>{`${next.minutes} min · ${nextTopics} tópicos`}</Text>
               )}
-              <Button variant="primary" block iconRight="arrow-right" onPress={() => open(next)} style={{ marginTop: spacing[2] }}>
-                {nextSpot ? 'Continuar' : 'Começar a aula'}
+              {waits[next.id] ? (
+                <Text variant="label" color={colors.inkBody}>
+                  {`Não foi dessa vez nas perguntas. Você responde de novo a partir de ${dayMonth(waits[next.id])}; até lá, dá para reler.`}
+                </Text>
+              ) : null}
+              <Button variant={waits[next.id] ? 'dark' : 'primary'} block iconRight="arrow-right" onPress={() => open(next)} style={{ marginTop: spacing[2] }}>
+                {waits[next.id] ? 'Reler a aula' : nextSpot ? 'Continuar' : 'Começar a aula'}
               </Button>
             </View>
           ) : null}
@@ -197,7 +214,13 @@ export default function Aulas() {
                       {l.title}
                     </Text>
                     <Text variant="caption" color={ok ? colors.success : now ? colors.ink : colors.inkMuted} style={styles.semi}>
-                      {ok ? 'Concluída' : now ? `Agora · ${where}` : `${l.minutes} min · abre depois da aula ${i}`}
+                      {ok
+                        ? 'Concluída'
+                        : now
+                          ? waits[l.id]
+                            ? `Perguntas de novo a partir de ${dayMonth(waits[l.id])}`
+                            : `Agora · ${where}`
+                          : `${l.minutes} min · abre depois da aula ${i}`}
                     </Text>
                   </View>
                   <Icon name={closed ? 'lock' : 'chevron-right'} size={18} color={colors.inkMuted} />

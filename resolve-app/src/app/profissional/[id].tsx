@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { AreaBadge, Avatar, Button, CatalogFallback, EmptyState, Icon, Rating, SectionHeader, StickyFooter, Tag, Text, TopBar } from '@/components';
+import { Avatar, Button, GoldBadge, CatalogFallback, EmptyState, Icon, Rating, SectionHeader, StickyFooter, Tag, Text, TopBar } from '@/components';
 import type { Database } from '@/lib/database.types';
 import { GENERIC_PLACE } from '@/lib/geo';
 import { supabase } from '@/lib/supabase';
@@ -99,6 +99,7 @@ export default function PerfilProfissional() {
             </Text>
             {pro.verified ? <Icon name="badge-check" size={22} fill={colors.brand} label="Verificado" /> : null}
           </View>
+          {pro.gold ? <GoldBadge /> : null}
           {pro.role ? (
             <Text variant="body" color={colors.inkMuted}>
               {pro.role}
@@ -110,13 +111,6 @@ export default function PerfilProfissional() {
               <Text variant="bodySm" color={colors.inkMuted}>
                 {`Atende ${pro.area.split(',')[0]} e até ${pro.radiusKm} km`}
               </Text>
-            </View>
-          ) : null}
-          {pro.approvedIds.length ? (
-            <View style={styles.badges}>
-              {pro.approvedIds.map((sid) => (
-                <AreaBadge key={sid} label={`Aprovado em ${getService(sid)?.testLabel ?? sid}`} />
-              ))}
             </View>
           ) : null}
         </View>
@@ -175,14 +169,24 @@ export default function PerfilProfissional() {
         <View style={styles.block}>
           <SectionHeader title="Serviços" />
           <View style={styles.tags}>
-            {/* Só as áreas aprovadas: é o que o cliente vê (as outras ainda não aparecem). */}
+            {/* Só as áreas aprovadas: é o que o cliente vê (as outras ainda não aparecem). O escudo diferencia das palavras que o profissional escreveu. */}
             {pro.approvedIds.map((sid) => (
-              <Tag key={sid}>{getService(sid)?.title ?? sid}</Tag>
+              <Tag key={sid} icon="shield-check">
+                {getService(sid)?.title ?? sid}
+              </Tag>
             ))}
             {pro.tags.map((t) => (
               <Tag key={t}>{t}</Tag>
             ))}
           </View>
+          {pro.approvedIds.length ? (
+            <View style={styles.approvedNote}>
+              <Icon name="shield-check" size={14} color={colors.inkMuted} />
+              <Text variant="caption" color={colors.inkMuted} style={{ flex: 1 }}>
+                Aprovado no teste de conhecimento da Rezolveaê
+              </Text>
+            </View>
+          ) : null}
         </View>
 
         <View style={styles.block}>
@@ -258,13 +262,13 @@ const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.surface },
   content: { padding: spacing[5], paddingTop: spacing[2], gap: spacing[6], paddingBottom: spacing[8] },
   head: { alignItems: 'center', gap: spacing[2] },
-  badges: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: spacing[2], marginTop: spacing[1] },
   stats: { flexDirection: 'row', gap: spacing[2] },
   statLabel: { textAlign: 'center' },
   stat: { flex: 1, padding: spacing[3], borderRadius: radius.lg, backgroundColor: colors.surfaceMuted, gap: 2, alignItems: 'center' },
   lateRate: { flexDirection: 'row', alignItems: 'center', gap: spacing[2], padding: spacing[3], borderRadius: radius.lg, backgroundColor: colors.dangerTint },
   block: { gap: spacing[3] },
   tags: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing[2] },
+  approvedNote: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: -spacing[1] },
   review: { padding: spacing[4], borderRadius: radius.lg, borderWidth: 1, borderColor: colors.line, gap: spacing[2] },
   reviewHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
 });

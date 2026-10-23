@@ -19,6 +19,7 @@ const pro = (id: string, p: Partial<Professional> = {}): Professional => ({
   area: '',
   radiusKm: 10,
   paused: false,
+  gold: false,
   lessonsDone: false,
   ...p,
 });
@@ -33,6 +34,18 @@ describe('sortProfessionals', () => {
     ];
     // nota: 100 + 0 - 12 = 88; volume: 90 + 10 - 12 = 88 (empate fica na ordem); rapido: 90 + 0,2 - 1 = 89,2
     expect(ids(sortProfessionals(list, 'recomendados'))).toEqual(['rapido', 'volume', 'nota']);
+  });
+
+  it('recomendados: Profissional de Ouro vale meia estrela a mais', () => {
+    const list = [pro('nota', { rating: 4.8 }), pro('ouro', { rating: 4.5, gold: true }), pro('baixa', { rating: 4, gold: true })];
+    // nota: 96 + 0,2 - 6 = 90,2; ouro: 90 + 0,2 - 6 + 10 = 94,2; baixa: 80 + 0,2 - 6 + 10 = 84,2
+    expect(ids(sortProfessionals(list, 'recomendados'))).toEqual(['ouro', 'nota', 'baixa']);
+  });
+
+  it('recomendados: só as aulas valem um quinto de estrela', () => {
+    const list = [pro('nota', { rating: 4.6 }), pro('aulas', { rating: 4.5, lessonsDone: true }), pro('ouro', { rating: 4.5, lessonsDone: true, gold: true })];
+    // nota: 92 + 0,2 - 6 = 86,2; aulas: 90 + 0,2 - 6 + 4 = 88,2; ouro: 90 + 0,2 - 6 + 10 = 94,2
+    expect(ids(sortProfessionals(list, 'recomendados'))).toEqual(['ouro', 'aulas', 'nota']);
   });
 
   it('recomendados: volume acima de 500 serviços não conta mais', () => {

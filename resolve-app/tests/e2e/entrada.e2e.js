@@ -1,5 +1,6 @@
-// Caminho de entrada do profissional: painel "Para começar" → teste aprovado (Elétrica) → identidade → aulas → liberado,
-// e um teste reprovado (Hidráulica) com a espera de 3 dias. Supabase real, contas temporárias (npm run e2e:users).
+// Caminho de entrada do profissional: painel "Para começar" → teste aprovado (Elétrica) → identidade → liberado,
+// um teste reprovado (Hidráulica) com a espera de 3 dias, e as aulas opcionais: errar as perguntas (espera de 3 dias),
+// concluir as cinco e virar Profissional de Ouro, que o cliente vê no perfil. Supabase real, contas temporárias (npm run e2e:users).
 // No fim, o profissional de teste volta ao estado liberado que as outras suítes esperam.
 const fs = require('fs'); const { execSync } = require('child_process');
 const puppeteer = require('puppeteer-core');
@@ -34,6 +35,7 @@ const login = async (email) => (await (await fetch(`${URL_}/auth/v1/token?grant_
        update public.professionals set verified = false, released_at = null, lessons_done_at = null where id = '${proId}';
        delete from public.lesson_progress where professional_id = '${proId}';
        delete from private.quiz_attempts where professional_id = '${proId}';
+       delete from private.lesson_attempts where professional_id = '${proId}';
        delete from public.verifications where user_id = '${proId}';`);
   // Gabarito, só para o robô escolher (o app nunca recebe isso).
   const key = new Map(sql("select question, options[1] as right, options[2] as wrong from private.quiz_questions where service_id in ('eletricista', 'encanador')").map((r) => [r.question, r]));
@@ -97,7 +99,7 @@ const login = async (email) => (await (await fetch(`${URL_}/auth/v1/token?grant_
   ok(r1.total === 20 && r1.n === 20, '20 questões respondidas');
   ok(r1.withSource === 20, 'fonte em todas as questões');
   ok(await waitText('Aprovado em Elétrica'), 'resultado: Aprovado em Elétrica');
-  ok((await text()).includes('Você acertou 20 de 20') && (await text()).includes('Faltam 2 passos: confirmar sua identidade e concluir as aulas'), 'nota e próximos passos');
+  ok((await text()).includes('Você acertou 20 de 20') && (await text()).includes('Falta 1 passo: confirmar sua identidade.'), 'nota e próximo passo');
   await shot('4-aprovado');
   ok((await visibleToClient()).length === 0, 'sem identidade, o cliente ainda não vê');
   await tap('Continuar');
@@ -115,25 +117,32 @@ const login = async (email) => (await (await fetch(`${URL_}/auth/v1/token?grant_
   await page.goto(`${APP}/inicio`);
   ok(await waitText('Tente de novo a partir de'), 'painel mostra a espera de Hidráulica');
 
-  console.log('\nIdentidade confirmada: ainda faltam as aulas');
+  console.log('\nIdentidade confirmada: liberado, sem precisar das aulas');
   sql(`insert into public.verifications (user_id, document_path, selfie_path) values ('${proId}', '${proId}/a.jpg', '${proId}/b.jpg');`);
   await page.goto(`${APP}/inicio`);
   ok(await waitText('Conferindo sua identidade'), 'topo: conferindo sua identidade');
+  ok((await text()).includes('Para começar') && (await text()).includes('2 de 3'), 'Para começar: 2 de 3 passos');
+  ok((await text()).includes('Impulso na carreira') && (await text()).includes('10 serviços pela Rezolveaê'), 'Impulso na carreira: as 4 etapas do Profissional de Ouro');
   await shot('6-em-analise');
   sql(`update public.verifications set status = 'approved' where user_id = '${proId}' and status = 'pending';`);
-  ok(!sql(`select released_at from public.professionals where id = '${proId}'`)[0].released_at, 'sem as aulas, ainda não liberado');
-  ok((await visibleToClient()).length === 0, 'sem as aulas, o cliente ainda não vê');
+  ok(sql(`select released_at from public.professionals where id = '${proId}'`)[0].released_at, 'liberado no banco');
+  ok(JSON.stringify(await visibleToClient()) === JSON.stringify(['eletricista']), 'cliente vê só Elétrica');
   await page.goto(`${APP}/inicio`);
-  ok(await waitText('Falta 1 passo para receber pedidos'), 'topo: falta 1 passo');
+  ok(await waitText('Recebendo pedidos'), 'painel: Recebendo pedidos');
+  ok(await waitText('Faça o teste de Hidráulica'), 'Seu perfil lembra o teste que falta');
+  ok(await waitText('Impulso na carreira'), 'as etapas do Ouro continuam no fim do painel');
+  await shot('7-liberado');
 
-  console.log('\nAulas: a primeira pelo app, as outras pela API');
-  await tap('Aulas da Rezolveaê');
-  ok(await waitText('Por que as aulas?'), 'primeira visita: explica por que as aulas existem');
-  ok((await text()).includes('Pense no último serviço que você fez bem feito') && (await text()).includes('São 23 minutos, uma vez só'), 'porquê: o texto da cena e o tempo');
+  console.log('\nAulas (opcionais): a primeira pelo app, as outras pela API');
+  // Gabarito das aulas, só para o robô (o app nunca recebe isso).
+  const lkey = new Map(sql("select question, options[1] as right, options[2] as wrong from private.lesson_questions where active").map((r) => [r.question, r]));
+  await tap('Começar as aulas · 23 min');
+  ok(await waitText('Por que fazer as aulas?'), 'primeira visita: explica por que fazer as aulas');
+  ok((await text()).includes('primeira etapa do Profissional') && (await text()).includes('São 23 minutos, uma vez só'), 'porquê: a etapa do Ouro e o tempo');
   await sleep(800); await shot('8a-porque');
   await tap('Entendi');
-  await page.waitForFunction(() => !document.body.innerText.includes('Por que as aulas?'), { timeout: 10000, polling: 200 });
-  ok(await waitText('Obrigatórias para aparecer aos clientes'), 'lista das aulas diz que são obrigatórias');
+  await page.waitForFunction(() => !document.body.innerText.includes('Por que fazer as aulas?'), { timeout: 10000, polling: 200 });
+  ok(await waitText('Uma das etapas do'), 'lista das aulas: uma das etapas do Profissional de Ouro');
   ok((await text()).includes('0 de 5 concluídas') && (await text()).includes('faltam 23 min'), 'topo: 0 de 5 concluídas, faltam 23 min');
   ok((await text()).includes('PRÓXIMA AULA · 1 DE 5') && (await text()).includes('Agora · 6 min'), 'aula 1 em destaque e marcada na lista');
   ok((await text()).includes('4 min · abre depois da aula 1'), 'aula 2 fechada até concluir a 1');
@@ -141,11 +150,11 @@ const login = async (email) => (await (await fetch(`${URL_}/auth/v1/token?grant_
   await page.goto(`${APP}/aulas/fotos`);
   ok(await waitText('Esta aula ainda não abriu'), 'aberta pelo link, a aula 2 continua fechada');
   await page.goto(`${APP}/aulas`);
-  ok(await waitText('Começar a aula') && !(await text()).includes('Por que as aulas?'), 'na volta, a explicação não abre sozinha');
+  ok(await waitText('Começar a aula') && !(await text()).includes('Por que fazer as aulas?'), 'na volta, a explicação não abre sozinha');
   await tap('Por quê?');
-  ok(await waitText('Por que as aulas?'), '"Por quê?" abre a explicação de novo');
+  ok(await waitText('Por que fazer as aulas?'), '"Por quê?" abre a explicação de novo');
   await tap('Entendi');
-  await page.waitForFunction(() => !document.body.innerText.includes('Por que as aulas?'), { timeout: 10000, polling: 200 });
+  await page.waitForFunction(() => !document.body.innerText.includes('Por que fazer as aulas?'), { timeout: 10000, polling: 200 });
   await tap('Começar a aula');
   ok(await waitText('AULA 1 DE 5'), 'abre a aula 1 na abertura');
   ok((await text()).includes('6 tópicos') && (await text()).includes('1 de 6'), 'abertura: 6 tópicos, contador 1 de 6');
@@ -161,6 +170,7 @@ const login = async (email) => (await (await fetch(`${URL_}/auth/v1/token?grant_
     await tap('Próximo tópico');
   }
   ok(topics === 6 && (await text()).includes('FIM DA AULA'), 'seis tópicos e o fim da aula no último');
+  ok((await text()).includes('8 perguntas sobre o que você leu. Para concluir, são 7 acertos.'), 'avisa: 8 perguntas, 7 acertos');
   // Sai no meio e volta: a lista mostra onde parou e a aula reabre no mesmo tópico.
   await page.goto(`${APP}/aulas`);
   ok(await waitText('CONTINUE DE ONDE PAROU'), 'lista: continue de onde parou');
@@ -168,51 +178,75 @@ const login = async (email) => (await (await fetch(`${URL_}/auth/v1/token?grant_
   await shot('8b-aulas-continuar');
   await tap('Continuar');
   ok(await waitText('Ir para as perguntas'), 'reabre no tópico em que parou');
-  await tap('Ir para as perguntas');
-  // Perguntas: tenta as opções até acertar (errar mostra o porquê e Reler a aula).
-  let wrongSeen = false, asked = 0;
-  for (;;) {
-    await page.waitForFunction(() => document.querySelectorAll('[role="radio"]').length > 0, { timeout: 10000, polling: 200 });
-    asked++;
-    for (let i = 0; ; i++) {
-      await page.evaluate((i) => [...document.querySelectorAll('[role="radio"]')][i].click(), i);
-      await page.waitForFunction(() => /Isso\.|Ainda não\./.test(document.body.innerText), { timeout: 5000, polling: 100 });
-      if ((await text()).includes('Isso.')) break;
-      if (!wrongSeen) { wrongSeen = (await text()).includes('Reler a aula'); await shot('10-errou'); }
-      await tap('Tentar de novo');
+
+  // Responde as perguntas da aula: `wrong` = quantas errar (as primeiras).
+  const answerLesson = async (wrong) => {
+    let n = 0;
+    for (;;) {
+      await page.waitForFunction((k) => document.body.innerText.includes(`PERGUNTA ${k} DE 8`), { timeout: 15000, polling: 200 }, n + 1);
+      // A pergunta da tela é a linha do texto que está no gabarito.
+      const k = (await text()).split('\n').map((l) => lkey.get(l.trim())).find(Boolean);
+      ok(n > 0 || !!k, 'acha a pergunta no gabarito');
+      const want = n < wrong ? k?.wrong : k?.right;
+      await page.evaluate((w) => [...document.querySelectorAll('[role="radio"]')].find((e) => e.innerText.trim() === w)?.click(), want);
+      n++;
+      if (n === 1) ok(!/Isso\.|Ainda não\./.test(await text()), 'não diz na hora se acertou');
+      if ((await text()).includes('Enviar respostas')) { await tap('Enviar respostas'); break; }
+      await tap('Próxima pergunta');
     }
-    if ((await text()).includes('Concluir a aula')) { await tap('Concluir a aula'); break; }
-    await tap('Próxima pergunta');
-  }
-  ok(asked === 4, '4 perguntas na aula');
-  ok(wrongSeen, 'errar mostra "Reler a aula"');
+    return n;
+  };
+  await tap('Ir para as perguntas');
+  ok((await answerLesson(2)) === 8, '8 perguntas na aula');
+  ok(await waitText('Ainda não foi dessa vez'), 'errou 2: não conclui');
+  ok((await text()).includes('Você acertou 6 de 8. Para concluir a aula, são 7.') && (await text()).includes('Releia com calma') && (await text()).includes('a partir de'), 'nota, o que reler e quando responder de novo');
+  await shot('10-errou');
+  ok(sql(`select count(*)::int as n from public.lesson_progress where professional_id = '${proId}'`)[0].n === 0, 'nada registrado como concluído');
+  await page.goto(`${APP}/aulas`);
+  ok(await waitText('Perguntas de novo a partir de'), 'lista mostra a espera');
+  ok((await text()).includes('Reler a aula'), 'e convida a reler enquanto isso');
+  // Passa a espera de 3 dias.
+  sql(`update private.lesson_attempts set finished_at = now() - interval '4 days' where professional_id = '${proId}';`);
+  await page.goto(`${APP}/aulas/orcamento`);
+  ok(await waitText('Ir para as perguntas'), 'depois da espera, pode responder de novo');
+  await tap('Ir para as perguntas');
+  await answerLesson(0);
   ok(await waitText('Ler a próxima'), 'aula concluída, sugere a próxima');
   ok(!(await page.evaluate(() => localStorage.getItem('resolve:lessons:spot') ?? '')).includes('orcamento'), 'concluída, o ponto salvo é apagado');
   await shot('11-concluida');
   ok(sql(`select count(*)::int as n from public.lesson_progress where professional_id = '${proId}'`)[0].n === 1, 'conclusão registrada no banco');
-  const rpc = (id) => fetch(`${URL_}/rest/v1/rpc/complete_lesson`, { method: 'POST', headers: { apikey: KEY, Authorization: `Bearer ${proS.access_token}`, 'content-type': 'application/json' }, body: JSON.stringify({ p_lesson_id: id }) }).then((r) => r.json());
+  const rpc = (fn, body) => fetch(`${URL_}/rest/v1/rpc/${fn}`, { method: 'POST', headers: { apikey: KEY, Authorization: `Bearer ${proS.access_token}`, 'content-type': 'application/json' }, body: JSON.stringify(body) }).then((r) => r.json());
+  ok((await rpc('complete_lesson', { p_lesson_id: 'fotos' })).code !== undefined, 'não dá para concluir aula pela API antiga');
   let last;
-  for (const id of ['fotos', 'chat', 'data', 'mei']) last = await rpc(id);
-  ok(last.done === 5 && last.total === 5 && last.released === true, 'quinta aula libera');
-
-  console.log('\nLiberado');
-  ok(sql(`select released_at from public.professionals where id = '${proId}'`)[0].released_at, 'liberado no banco');
-  ok(JSON.stringify(await visibleToClient()) === JSON.stringify(['eletricista']), 'cliente vê só Elétrica');
+  for (const id of ['fotos', 'chat', 'data', 'mei']) {
+    const a = await rpc('start_lesson_quiz', { p_lesson_id: id });
+    const orders = sql(`select orders from private.lesson_attempts where id = '${a.attempt_id}'`)[0].orders;
+    last = await rpc('submit_lesson_quiz', { p_attempt_id: a.attempt_id, p_answers: orders.map((o) => o.indexOf(0)) });
+  }
+  ok(last.done === 5 && last.lessons === 5 && last.gold === false, 'quinta aula: aulas concluídas, mas sem serviços ainda não é Ouro');
+  ok(sql(`select lessons_done_at, gold_at from public.professionals where id = '${proId}'`).every((r) => r.lessons_done_at && !r.gold_at), 'aulas registradas, sem a marca');
+  await page.goto(`${APP}/aulas`);
+  ok(await waitText('Você concluiu as 5 aulas'), 'lista: aulas concluídas, uma das etapas');
   await page.goto(`${APP}/inicio`);
-  ok(await waitText('Recebendo pedidos'), 'painel: Recebendo pedidos');
-  ok(await waitText('Faça o teste de Hidráulica'), 'Seu perfil lembra o teste que falta');
-  await shot('12-liberado');
+  ok(await waitText('Impulso na carreira') && (await text()).includes('Concluídas') && (await text()).includes('0 de 10'), 'Início: aulas concluídas, 0 de 10 serviços');
+  await shot('12-etapas');
 
   console.log('\nPerfil para o cliente');
   const cli = await (await browser.createBrowserContext()).newPage();
   await cli.setViewport({ width: 390, height: 844 });
   await cli.evaluateOnNewDocument((k, v) => localStorage.setItem(k, v), `sb-${REF}-auth-token`, JSON.stringify(cliS));
   cli.on('pageerror', (e) => errors.push(`cliente: ${e.message}`));
+  // A marca de Ouro depende de 10 serviços: aqui ela é ligada direto no banco, só para ver o que o cliente vê.
+  sql(`update public.professionals set gold_at = now() where id = '${proId}';`);
   await cli.goto(`${APP}/profissional/${proId}`);
-  try { await cli.waitForFunction(() => document.body.innerText.includes('Aprovado em Elétrica'), { timeout: 20000, polling: 300 }); ok(true, 'perfil mostra "Aprovado em Elétrica"'); } catch { ok(false, 'perfil mostra "Aprovado em Elétrica"'); }
+  try { await cli.waitForFunction(() => document.body.innerText.includes('Aprovado no teste de conhecimento da Rezolveaê'), { timeout: 20000, polling: 300 }); ok(true, 'serviços: escudo e "Aprovado no teste de conhecimento"'); } catch { ok(false, 'serviços: escudo e "Aprovado no teste de conhecimento"'); }
   const pt = await cli.evaluate(() => document.body.innerText);
-  ok(!pt.includes('Aprovado em Hidráulica') && !pt.includes('Encanador'), 'e não mostra Hidráulica, que não passou');
+  ok(!pt.includes('Aprovado em') && !pt.includes('Encanador'), 'sem o selo antigo no topo, e sem Encanador, que não passou');
+  ok(pt.includes('Profissional de Ouro'), 'mostra Profissional de Ouro');
   await cli.screenshot({ path: `${SHOTS}entrada-13-perfil.png` });
+  await cli.evaluate(() => [...document.querySelectorAll('[role="button"]')].find((e) => e.innerText.trim() === 'Profissional de Ouro')?.click());
+  try { await cli.waitForFunction(() => document.body.innerText.includes('As aulas são opcionais. Ele fez porque quis.'), { timeout: 10000, polling: 200 }); ok(true, 'tocar na marca explica o que ela quer dizer'); } catch { ok(false, 'tocar na marca explica o que ela quer dizer'); }
+  await sleep(600); await cli.screenshot({ path: `${SHOTS}entrada-14-ouro.png` });
 
   ok(errors.length === 0, `sem erros na página${errors.length ? ': ' + errors.join(' | ') : ''}`);
   await browser.close();
@@ -220,7 +254,9 @@ const login = async (email) => (await (await fetch(`${URL_}/auth/v1/token?grant_
   // Volta ao profissional liberado nos dois serviços, como as outras suítes esperam.
   sql(`update public.professional_services set approved_at = now() where professional_id = '${proId}';
        update public.professionals set verified = true, lessons_done_at = coalesce(lessons_done_at, now()) where id = '${proId}';
-       delete from private.quiz_attempts where professional_id = '${proId}';`);
+       delete from private.quiz_attempts where professional_id = '${proId}';
+       delete from private.lesson_attempts where professional_id = '${proId}';
+       update public.professionals set gold_at = null where id = '${proId}';`);
 
   console.log(`\n${pass} ok, ${fail} falhas`); process.exit(fail ? 1 : 0);
 })().catch((e) => { console.error('ERRO', e.message); process.exit(2); });

@@ -65,7 +65,7 @@ const login = async (email) => (await (await fetch(`${URL_}/auth/v1/token?grant_
   };
   const done = await deal('Trocar duas tomadas da sala', 'eletricista');
   sql(`update public.orders set status = 'concluido', completed_at = now() where id = '${done.id}'`);
-  await rpc(cliS, 'rate_order', { p_order_id: done.id, p_rating: 5, p_comment: 'Pontual e caprichoso' });
+  await rpc(cliS, 'rate_order', { p_order_id: done.id, p_rating: 5, p_comment: 'Pontual e caprichoso', p_on_time: true });
   const today = await deal('Torneira pingando no banheiro', 'encanador');
   sql(`update public.orders set scheduled_at = ((now() at time zone 'America/Sao_Paulo')::date + 1 + time '13:00') at time zone 'America/Sao_Paulo' where id = '${today.id}'`);
   await req(proS, '/rest/v1/messages', { method: 'POST', body: JSON.stringify({ conversation_id: conv, body: 'Chego às 14h, pode ser?' }) });

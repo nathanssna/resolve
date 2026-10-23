@@ -3,8 +3,9 @@ import { useCallback, useEffect, useState } from 'react';
 import { Pressable, RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { Avatar, Badge, Button, CatalogFallback, Icon, ProgressBar, SuspendedNotice, Text } from '@/components';
+import { Avatar, Badge, Button, CatalogFallback, GoldBadge, Icon, ProgressBar, SuspendedNotice, Text } from '@/components';
 import { LESSONS } from '@/content/lessons';
+import type { Database } from '@/lib/database.types';
 import { lessonProgress } from '@/lib/lessons';
 import { quizStatus, type QuizStatus } from '@/lib/quiz';
 import { supabase } from '@/lib/supabase';
@@ -14,7 +15,7 @@ import { useAuth } from '@/state/auth';
 import { useCatalog, type Professional } from '@/state/catalog';
 import { colors, fonts, radius, spacing } from '@/theme/tokens';
 import { confirm, notify } from '@/utils/dialog';
-import { firstName, formatBRL, formatDay, timeAgo } from '@/utils/format';
+import { firstName, formatBRL, formatDay, formatDecimal, timeAgo } from '@/utils/format';
 import { serviceStage, type ServiceStage } from '@/utils/serviceStage';
 
 /*
@@ -228,7 +229,10 @@ function WaitingRow({ conv, job }: { conv: Conversation; job: Job }) {
 }
 
 /** `at`: quando foi carregado (para saber se a espera do teste já passou). */
-type Entry = { tests: QuizStatus[]; verification: Verification | null; lessons: string[]; at: number };
+type GoldProgress = Database['public']['Functions']['gold_progress']['Returns'][number];
+
+/** `at`: quando foi carregado (para saber se a espera do teste já passou). `gold`: as etapas do Profissional de Ouro. */
+type Entry = { tests: QuizStatus[]; verification: Verification | null; lessons: string[]; gold: GoldProgress | null; at: number };
 
 /** Testes da ficha e a verificação de identidade; recarrega ao voltar para o painel. */
 function useEntry(uid: string | undefined) {
@@ -237,8 +241,9 @@ function useEntry(uid: string | undefined) {
     useCallback(() => {
       if (!uid) return;
       let alive = true;
-      Promise.all([quizStatus(), latestVerification(), lessonProgress()]).then(
-        ([tests, verification, lessons]) => alive && setEntry({ tests, verification, lessons, at: Date.now() }),
+      const gold = supabase.rpc('gold_progress').then(({ data }) => data?.[0] ?? null);
+      Promise.all([quizStatus(), latestVerification(), lessonProgress(), gold]).then(
+        ([tests, verification, lessons, goldProgress]) => alive && setEntry({ tests, verification, lessons, gold: goldProgress, at: Date.now() }),
         () => {},
       );
       return () => {
@@ -258,7 +263,7 @@ const dayMonth = (iso: string) => {
 function EntryStatus({ entry, me }: { entry: Entry | null; me: Professional }) {
   const tested = me.approvedIds.length > 0;
   const reviewing = entry?.verification?.status === 'pending';
-  const missing = Number(!tested) + Number(!me.verified) + Number(!me.lessonsDone);
+  const missing = Number(!tested) + Number(!me.verified);
   return (
     <View style={styles.accepting}>
       {reviewing && tested ? <Icon name="clock" size={20} /> : <View style={[styles.dot, { backgroundColor: colors.inkMuted }]} />}
@@ -278,7 +283,7 @@ function EntryStatus({ entry, me }: { entry: Entry | null; me: Professional }) {
 
 type EntryRow = { key: string; n: number; title: string; detail: string; done?: boolean; wait?: boolean; onPress?: () => void };
 
-/** Para começar: ficha → teste da área → identidade → aulas. O próximo passo fica em destaque. */
+/** Para começar: ficha → teste da área → identidade. O próximo passo fica em destaque. */
 function EntrySteps({ me, entry }: { me: Professional; entry: Entry | null }) {
   if (!entry) return null;
   const v = entry.verification;
@@ -320,20 +325,9 @@ function EntrySteps({ me, entry }: { me: Professional; entry: Entry | null }) {
       wait: v?.status === 'pending',
       onPress: () => router.push('/verificacao'),
     },
-    {
-      key: 'aulas',
-      n: 4,
-      title: 'Aulas da Rezolveaê',
-      detail: me.lessonsDone
-        ? 'Concluídas'
-        : `${entry.lessons.length} de ${LESSONS.length} · cerca de ${LESSONS.reduce((m, l) => m + l.minutes, 0)} min`,
-      done: me.lessonsDone,
-      onPress: () => router.push('/aulas'),
-    },
   ];
-  // A identidade em análise não trava: as aulas podem ser feitas enquanto isso.
   const next = rows.find((r) => !r.done && !r.wait);
-  const done = 1 + Number(me.approvedIds.length > 0) + Number(me.verified) + Number(me.lessonsDone);
+  const done = 1 + Number(me.approvedIds.length > 0) + Number(me.verified);
 
   return (
     <View style={styles.section}>
@@ -341,10 +335,10 @@ function EntrySteps({ me, entry }: { me: Professional; entry: Entry | null }) {
         <Text variant="titleSm" accessibilityRole="header">
           Para começar
         </Text>
-        <Text variant="label" color={colors.inkMuted}>{`${done} de 4`}</Text>
+        <Text variant="label" color={colors.inkMuted}>{`${done} de 3`}</Text>
       </View>
       <View style={[styles.box, styles.steps]}>
-        <ProgressBar value={done / 4} tone="brand" />
+        <ProgressBar value={done / 3} tone="brand" />
         {rows.map((r) => {
           const current = r === next;
           return (
@@ -378,6 +372,94 @@ function EntrySteps({ me, entry }: { me: Professional; entry: Entry | null }) {
             </Pressable>
           );
         })}
+      </View>
+    </View>
+  );
+}
+
+const percent = (part: number, total: number) => `${Math.round((100 * part) / total)}%`;
+
+/**
+ * Impulso na carreira: as 4 etapas do Profissional de Ouro e o que falta em cada uma, enquanto ele não tem a marca.
+ * As aulas são a única que dá para fazer agora; as outras vêm do trabalho pela Rezolveaê.
+ */
+function GoldSteps({ lessons, gold }: { lessons: string[]; gold: GoldProgress | null }) {
+  const lessonsDone = LESSONS.filter((l) => lessons.includes(l.id)).length;
+  const left = LESSONS.filter((l) => !lessons.includes(l.id)).reduce((m, l) => m + l.minutes, 0);
+  const g = gold;
+  const ratingOk = !!g && g.reviews >= g.reviews_needed && g.rating >= g.rating_needed;
+  const onTimeOk = !!g && g.on_time_answers >= g.reviews_needed && g.on_time_yes >= g.on_time_needed * g.on_time_answers;
+  const lateOk = !!g && (g.orders_90d === 0 || g.late_90d < g.late_max * g.orders_90d);
+  const steps = [
+    {
+      title: 'Aulas da Rezolveaê',
+      detail: g?.lessons_done ? 'Concluídas' : `${lessonsDone} de ${LESSONS.length} · faltam ${left} min`,
+      done: !!g?.lessons_done,
+    },
+    {
+      title: `${g?.jobs_needed ?? 10} serviços pela Rezolveaê`,
+      detail: `${Math.min(g?.jobs_done ?? 0, g?.jobs_needed ?? 10)} de ${g?.jobs_needed ?? 10}`,
+      done: !!g && g.jobs_done >= g.jobs_needed,
+    },
+    {
+      title: `Nota ${formatDecimal(g?.rating_needed ?? 4.7)} ou mais`,
+      detail: !g?.reviews
+        ? `Com pelo menos ${g?.reviews_needed ?? 5} avaliações`
+        : `${formatDecimal(g.rating)} com ${g.reviews === 1 ? '1 avaliação' : `${g.reviews} avaliações`}${g.reviews < g.reviews_needed ? ` · faltam ${g.reviews_needed - g.reviews}` : ''}`,
+      done: ratingOk,
+    },
+    {
+      title: 'Pontualidade',
+      detail: !g?.on_time_answers
+        ? `${percent(g?.on_time_needed ?? 0.9, 1)} no horário, segundo os clientes, e quase nenhum cancelamento em cima da hora`
+        : `${percent(g.on_time_yes, g.on_time_answers)} no horário${g.late_90d ? ` · ${g.late_90d} ${g.late_90d === 1 ? 'cancelamento' : 'cancelamentos'} em cima da hora em 90 dias` : ''}`,
+      done: onTimeOk && lateOk,
+    },
+  ];
+  const done = steps.filter((x) => x.done).length;
+  return (
+    <View style={styles.section}>
+      <View style={styles.sectionTitle}>
+        <Text variant="titleSm" accessibilityRole="header">
+          Impulso na carreira
+        </Text>
+        <Text variant="label" color={colors.inkMuted}>{`${done} de ${steps.length}`}</Text>
+      </View>
+      <View style={[styles.box, styles.steps]}>
+        <View style={{ gap: spacing[2] }}>
+          <View style={{ alignSelf: 'flex-start' }}>
+            <GoldBadge size="sm" explain={false} />
+          </View>
+          <Text variant="bodySm" color={colors.inkBody}>
+            Os clientes veem a marca no seu perfil e você aparece mais acima na lista. Ela é de quem cumpre estas 4 etapas:
+          </Text>
+        </View>
+        {steps.map((x, i) => (
+          <View key={x.title} style={styles.entryRow}>
+            <View style={[styles.entryNum, x.done && styles.entryDone]}>
+              {x.done ? (
+                <Icon name="check" size={14} color={colors.success} />
+              ) : (
+                <Text variant="caption" color={colors.inkMuted} style={styles.bold}>
+                  {String(i + 1)}
+                </Text>
+              )}
+            </View>
+            <View style={{ flex: 1, gap: 1 }}>
+              <Text variant="label" color={x.done ? colors.inkMuted : colors.ink}>
+                {x.title}
+              </Text>
+              <Text variant="caption" color={x.done ? colors.success : colors.inkMuted}>
+                {x.detail}
+              </Text>
+            </View>
+          </View>
+        ))}
+        {!g?.lessons_done ? (
+          <Button variant="dark" size="md" iconRight="arrow-right" onPress={() => router.push('/aulas')} style={{ alignSelf: 'flex-start' }}>
+            {lessonsDone ? 'Continuar as aulas' : `Começar as aulas · ${left} min`}
+          </Button>
+        ) : null}
       </View>
     </View>
   );
@@ -518,8 +600,10 @@ export function ProHome() {
   // Só aparece no catálogo quem tem nome e pelo menos um serviço.
   const me = getProfessional(session?.user.id);
   const entry = useEntry(session?.user.id);
-  // Liberado: identidade confirmada, pelo menos um teste aprovado e as aulas. Antes disso, o painel mostra os passos.
-  const released = !!me && me.verified && me.approvedIds.length > 0 && me.lessonsDone;
+  // Liberado: identidade confirmada e pelo menos um teste aprovado. Antes disso, o painel mostra os passos.
+  const released = !!me && me.verified && me.approvedIds.length > 0;
+  // Profissional de Ouro: as etapas ficam logo depois dos passos enquanto ele não está liberado; depois, no fim do painel.
+  const invite = me && !me.gold && entry ? <GoldSteps lessons={entry.lessons} gold={entry.gold} /> : null;
 
   const jobs = conversations.flatMap((conv) => conv.jobs.map((job) => ({ conv, job })));
   // Urgentes primeiro; depois, quem espera há mais tempo.
@@ -581,7 +665,10 @@ export function ProHome() {
           released ? (
             <ProfileSteps me={me} tests={entry?.tests ?? []} />
           ) : (
-            <EntrySteps me={me} entry={entry} />
+            <>
+              <EntrySteps me={me} entry={entry} />
+              {invite}
+            </>
           )
         ) : (
           <View style={styles.setup}>
@@ -676,6 +763,7 @@ export function ProHome() {
             ) : null}
 
             <LineRow icon="calendar-clock" text={monthText} onPress={() => router.push({ pathname: '/pedidos', params: { aba: 'historico' } })} />
+            {released ? invite : null}
           </>
         ) : null}
       </View>

@@ -58,8 +58,12 @@ const CLIENT: HelpSection = {
       a: 'O profissional enviou um documento com foto e uma selfie segurando o documento, e nossa equipe confirmou a identidade dele. O selo não garante a qualidade do serviço: veja também as avaliações.',
     },
     {
-      q: 'O que quer dizer "Aprovado em"?',
-      a: 'Que o profissional passou no teste de conhecimento da Rezolveaê sobre aquela área, com questões de segurança e de como fazer o serviço do jeito certo. Todo profissional precisa passar no teste para aparecer. Não é um certificado de curso: veja também as avaliações.',
+      q: 'O que quer dizer o escudo ao lado do serviço?',
+      a: 'Que o profissional passou no teste de conhecimento da Rezolveaê sobre aquele serviço, com questões de segurança e de como fazer do jeito certo. Todo profissional precisa passar no teste para aparecer. Não é um certificado de curso: veja também as avaliações.',
+    },
+    {
+      q: 'O que é Profissional de Ouro?',
+      a: 'É o profissional que cumpre quatro etapas: concluiu as aulas da Rezolveaê, já fez pelo menos 10 serviços pelo app, tem nota 4,7 ou mais e chega no horário (pelo menos 90% de "Sim" em "Chegou no horário combinado?" e quase nenhum cancelamento em cima da hora nos últimos 90 dias). Se deixar de cumprir, a marca sai. Ela não garante a qualidade do serviço: veja também as avaliações.',
     },
     {
       q: 'Quero oferecer meus serviços',
@@ -105,11 +109,11 @@ const PRO: HelpSection = {
     },
     {
       q: 'O que preciso para começar a receber pedidos?',
-      a: 'Quatro passos, que aparecem no Início: preencher a ficha, passar no teste de cada serviço que você oferece, confirmar sua identidade (foto de um documento e uma selfie) e concluir as cinco aulas da Rezolveaê. Você recebe um aviso quando for liberado.',
+      a: 'Três passos, que aparecem no Início: preencher a ficha, passar no teste de cada serviço que você oferece e confirmar sua identidade (foto de um documento e uma selfie). Você recebe um aviso quando for liberado.',
     },
     {
       q: 'O que são as aulas da Rezolveaê?',
-      a: 'Cinco aulas curtas, de 4 a 6 minutos, sobre orçamento, fotos do serviço, atendimento pelo chat, cumprir a data combinada e MEI. Elas abrem em ordem, cada uma depois de concluir a anterior, e terminam com algumas perguntas. Dá para parar e continuar depois de onde parou. Depois de concluídas, ficam em Perfil para reler.',
+      a: 'Cinco aulas curtas, de 4 a 6 minutos, sobre orçamento, fotos do serviço, atendimento pelo chat, cumprir a data combinada e MEI. São opcionais. Quem conclui as cinco já aparece um pouco mais acima na lista, e as aulas são a primeira etapa do Profissional de Ouro (as outras são 10 serviços, nota 4,7 e pontualidade; veja o andamento no Início). Elas abrem em ordem, cada uma depois de concluir a anterior, e terminam com 8 perguntas: com 7 acertos, a aula está concluída. Se não chegar lá, você relê e responde de novo depois de 3 dias. Dá para parar a leitura e continuar de onde parou. Ficam em Perfil para reler.',
     },
     {
       q: 'Como funciona o teste da minha área?',

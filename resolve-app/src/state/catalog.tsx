@@ -54,7 +54,9 @@ export type Professional = {
   radiusKm: number;
   /** Pausou o recebimento de pedidos: fora das listas, sem pedido novo. */
   paused: boolean;
-  /** Concluiu as aulas da Rezolveaê (4º passo da entrada). */
+  /** Profissional de Ouro (aulas + serviços + nota + pontualidade): o cliente vê a marca e ele sobe na lista. */
+  gold: boolean;
+  /** Concluiu as aulas da Rezolveaê (etapa do Ouro): sozinho, dá um empurrão na lista. */
   lessonsDone: boolean;
 };
 
@@ -92,7 +94,7 @@ async function fetchCatalog(): Promise<Data> {
       supabase
         .from('professionals')
         .select(
-          'id, role_title, bio, years_experience, reply_minutes, jobs_count, tags, verified, rating, review_count, base_area, service_radius_km, paused, lessons_done_at, profile:profiles!inner(full_name, avatar_url), professional_services(service_id, approved_at)',
+          'id, role_title, bio, years_experience, reply_minutes, jobs_count, tags, verified, rating, review_count, base_area, service_radius_km, paused, lessons_done_at, gold_at, profile:profiles!inner(full_name, avatar_url), professional_services(service_id, approved_at)',
         )
         .order('id')
         .range(from, to),
@@ -139,6 +141,7 @@ async function fetchCatalog(): Promise<Data> {
       area: p.base_area,
       radiusKm: p.service_radius_km,
       paused: p.paused,
+      gold: !!p.gold_at,
       lessonsDone: !!p.lessons_done_at,
     }))
     // Ficha incompleta (sem nome ou sem serviço) não aparece para o cliente.

@@ -157,6 +157,8 @@ const login = async (email) => (await (await fetch(`${URL_}/auth/v1/token?grant_
   await cli.press('Sim, foi feito');
   ok(await cli.waitText('Como foi o serviço de Pro?'), 'concluído; pede avaliação');
   await cli.press('5 estrelas');
+  ok(await cli.waitText('Pro chegou no horário combinado?'), 'pergunta se chegou no horário');
+  await cli.press('Sim');
   await cli.type('Conte como foi (opcional)', 'Pontual e caprichoso, recomendo!');
   await cli.page.screenshot({ path: SHOTS + 'b2-2-avaliar.png' });
   await cli.press('Enviar avaliação');

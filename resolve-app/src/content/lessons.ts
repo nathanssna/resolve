@@ -1,13 +1,14 @@
 /**
- * Aulas da Rezolveaê: o 4º passo obrigatório da entrada do profissional (ficha → teste → identidade → aulas).
+ * Aulas da Rezolveaê: opcionais; quem conclui as cinco vira Profissional de Ouro.
  * Os ids precisam existir em public.lessons (migration 20261018140000_lessons.sql).
  *
  * Cada aula conta uma história com o próprio leitor dentro dela, e cada uma do seu jeito: os blocos
  * são livres (parágrafo, título, mensagem de chat, conta, destaque). As regras, a lei e os números
  * aparecem dentro da história, quando fazem sentido.
  *
- * No fim, perguntas sobre o porquê das coisas: fáceis para quem leu, difíceis para quem pulou.
- * Em cada pergunta, a primeira alternativa é a certa (a tela embaralha).
+ * No fim, 8 perguntas sobre o porquê das coisas: fáceis para quem leu, difíceis para quem pulou.
+ * Elas ficam em supabase/lessons/questions.json (vão para o banco com npm run quiz:sql): o servidor
+ * embaralha e corrige, para o Profissional de Ouro valer de verdade.
  * Valores de MEI e DAS são de 2026: revisar todo ano.
  */
 
@@ -23,8 +24,6 @@ export type LessonBlock =
   /** Uma frase para guardar. */
   | { kind: 'mark'; text: string };
 
-export type LessonQuestion = { question: string; options: string[]; why: string };
-
 export type Lesson = {
   id: string;
   title: string;
@@ -32,7 +31,6 @@ export type Lesson = {
   /** Uma frase que convida a ler. */
   summary: string;
   blocks: LessonBlock[];
-  questions: LessonQuestion[];
   sources: { label: string; url?: string }[];
 };
 
@@ -82,48 +80,6 @@ export const LESSONS: Lesson[] = [
       { kind: 'p', text: 'Na Rezolveaê, a sua proposta no chat já é o seu orçamento: valor, dia e período. Use a observação para escrever o que está incluído e o que não está. Se o cliente demorar, a proposta vence, e você manda outra com a data atualizada. O pagamento é direto entre você e ele.' },
       { kind: 'mark', text: 'Um orçamento claro não é burocracia. É o que faz o cliente confiar em você e o que garante que o seu trabalho seja pago.' },
     ],
-    questions: [
-      {
-        question: 'No serviço de R$ 600, por que sobraram só R$ 300?',
-        options: [
-          'O preço foi dado no olho, sem os custos',
-          'O cliente pagou menos do que tinha sido combinado no começo',
-          'Choveu demais na terça',
-          'Pintura é um serviço que dá pouco lucro, não tem como mudar',
-        ],
-        why: 'O preço foi dado no olho. Tudo o que não entrou na conta saiu do bolso do profissional.',
-      },
-      {
-        question: 'Como se calcula o valor da sua hora?',
-        options: [
-          'Ganho desejado mais custos, dividido pelas horas cobráveis',
-          'O salário mínimo dividido por todas as horas que existem no mês',
-          'O preço do concorrente',
-          'O ganho desejado dividido por todas as horas, inclusive o trânsito e a loja',
-        ],
-        why: 'Nem toda hora é cobrável: trânsito, loja e orçamento também tomam tempo. Por isso divide-se só pelas horas que você consegue cobrar.',
-      },
-      {
-        question: 'Pelo Código de Defesa do Consumidor, o que o orçamento precisa ter?',
-        options: [
-          'Mão de obra, materiais, pagamento e datas',
-          'Só o valor total, escrito bem claro, para o cliente não se confundir',
-          'O valor total, o seu nome completo e o seu telefone de contato',
-          'A lista de material, a marca de cada item e a sua assinatura no fim',
-        ],
-        why: 'É o que diz o artigo 40. Com isso, o cliente sabe o que paga e você se protege.',
-      },
-      {
-        question: 'Atrás do guarda-roupa aparece um problema que não estava no orçamento. O que fazer?',
-        options: [
-          'Parar, mostrar a parede ao cliente, explicar e combinar o novo valor antes de seguir',
-          'Resolver o problema e cobrar no final, junto com o resto do serviço',
-          'Pintar por cima e não comentar nada, para não atrasar a entrega',
-          'Ir embora e deixar o cliente decidir sozinho o que fazer com a parede',
-        ],
-        why: 'Fazer serviço sem orçamento e sem autorização é prática abusiva. Parar e combinar mantém a confiança.',
-      },
-    ],
     sources: [
       { label: 'Código de Defesa do Consumidor, arts. 39 (VI) e 40', url: 'https://www.planalto.gov.br/ccivil_03/leis/l8078compilado.htm' },
       { label: 'Idec: a obrigatoriedade de orçamento para a execução de serviços', url: 'https://idec.org.br/em-acao/artigo/a-obrigatoriedade-de-orcamento-para-a-execuco-de-servicos' },
@@ -160,48 +116,6 @@ export const LESSONS: Lesson[] = [
       { kind: 'h', text: 'A foto que você quer mostrar para o mundo' },
       { kind: 'p', text: 'Ficou tão bonito que dá vontade de postar. Ótimo, é a melhor propaganda que existe. Mas imagine agora que é a sua casa na foto de outra pessoa: o número do portão aparecendo, o porta-retratos da sua família no fundo, a placa do seu carro na garagem. Você gostaria?' },
       { kind: 'p', text: 'A imagem da casa e das pessoas é dado pessoal, protegido pela Lei Geral de Proteção de Dados. Então, antes de postar, peça autorização ao cliente. E fotografe só o serviço: nada de pessoas, documentos, número da casa ou objetos pessoais. Muitos clientes autorizam com prazer quando veem que você teve esse cuidado, e esse cuidado também vira propaganda.' },
-    ],
-    questions: [
-      {
-        question: 'Por que o antes e o depois devem ser do mesmo lugar e do mesmo ângulo?',
-        options: [
-          'Para quem não estava lá ver a diferença',
-          'Porque o app só aceita fotos que foram tiradas exatamente do mesmo ponto',
-          'Porque a câmera do celular ajusta melhor a luz quando o ângulo se repete',
-          'Para economizar espaço'
-        ],
-        why: 'Quem vê a foto só sabe o que aparece nela. Com o mesmo ângulo, a comparação fala sozinha.',
-      },
-      {
-        question: 'Você marcou Serviço feito com fotos e o cliente não respondeu. O que acontece?',
-        options: [
-          'Em 7 dias o serviço é concluído sozinho',
-          'O serviço fica em aberto para sempre',
-          'O serviço é cancelado depois de 3 dias',
-          'Você precisa voltar lá para o cliente confirmar',
-        ],
-        why: 'Com foto, o app conclui o serviço em 7 dias sem resposta. Sem foto, só o cliente conclui.',
-      },
-      {
-        question: 'Por que não fotografar contra a janela?',
-        options: [
-          'A luz de frente escurece o serviço',
-          'Porque o reflexo do vidro da janela pode estragar a câmera do celular',
-          'Porque os vizinhos podem ver, pela janela, que você está fotografando',
-          'Porque o app recusa fotos em que aparece uma janela ao fundo'
-        ],
-        why: 'Contra a luz, o celular escurece o que está na frente. O seu trabalho some na foto.',
-      },
-      {
-        question: 'Antes de postar a foto de um serviço na internet, o que fazer?',
-        options: [
-          'Pedir autorização ao cliente e fotografar só o serviço, sem pessoas nem dados da casa',
-          'Nada, porque o serviço foi feito por você e a foto também é sua',
-          'Só cobrir o rosto das pessoas com um desenho antes de publicar',
-          'Postar logo e apagar depois, se o cliente reclamar da foto',
-        ],
-        why: 'A imagem da casa e das pessoas é dado pessoal. Com autorização e só o serviço na foto, você divulga sem expor ninguém.',
-      },
     ],
     sources: [
       { label: 'Lei Geral de Proteção de Dados (Lei nº 13.709/2018)', url: 'https://www.planalto.gov.br/ccivil_03/_ato2015-2018/2018/lei/l13709.htm' },
@@ -243,48 +157,6 @@ export const LESSONS: Lesson[] = [
       { kind: 'p', text: 'Combinando pelo app, fica tudo registrado: o que foi pedido, o preço, a data. Se o cliente disser depois que não foi aquilo, a conversa está lá. Você recebe avaliação, que é o que traz o próximo cliente. E se der problema, a equipe da Rezolveaê consegue ajudar. Fora do app, você está por sua conta. Por isso, até vocês combinarem, telefone, e-mail e redes sociais escritos no chat aparecem escondidos para os dois.' },
       { kind: 'p', text: 'E no fim do serviço, agradeça. Diga que ele pode avaliar no app, sem pressionar. Quem foi bem atendido do primeiro "boa noite" até o "obrigado" costuma avaliar sozinho.' },
     ],
-    questions: [
-      {
-        question: 'Por que o terceiro profissional foi escolhido, mesmo sem ser o primeiro a responder?',
-        options: [
-          'Mostrou que entendeu o problema',
-          'Porque cobrou menos',
-          'Porque mandou a mensagem mais longa e mais educada da conversa',
-          'Porque passou o telefone dele no chat para resolver mais rápido',
-        ],
-        why: 'O cliente escolhe quem mostra que entendeu o problema. Rapidez sozinha não basta.',
-      },
-      {
-        question: 'Um pedido urgente fica sem nenhuma resposta sua. O que acontece?',
-        options: [
-          'Fecha sozinho em 24 horas',
-          'Fica esperando até você responder',
-          'Fecha em 3 dias, como os outros',
-          'É passado automaticamente para outro profissional',
-        ],
-        why: 'Pedido sem resposta fecha em 3 dias, ou em 24 horas quando o cliente marca que é urgente.',
-      },
-      {
-        question: 'Por que repetir com as suas palavras o que o cliente pediu?',
-        options: [
-          'Para o cliente corrigir o engano ainda no chat, antes de você chegar na casa dele',
-          'Para a conversa ficar mais longa e o app mostrar você primeiro',
-          'Porque o app só libera a proposta depois de uma confirmação escrita',
-          'Para o cliente desistir logo se o serviço for complicado demais',
-        ],
-        why: 'Se você entendeu errado, o cliente corrige ali mesmo. Na hora do serviço, o erro sai caro.',
-      },
-      {
-        question: 'O cliente pede seu WhatsApp antes de combinar. Por que vale manter a conversa no app?',
-        options: [
-          'Registro, avaliação e ajuda da equipe',
-          'Porque no app a internet fica mais rápida do que no WhatsApp',
-          'Porque fora do app o cliente sempre acaba pagando mais caro',
-          'Não vale, passe o número',
-        ],
-        why: 'No app, a conversa protege os dois, a avaliação traz o próximo cliente e a equipe consegue ajudar.',
-      },
-    ],
     sources: [{ label: 'Regras do chat, dos pedidos e do contato escondido na Rezolveaê (Ajuda do app)' }],
   },
 
@@ -321,48 +193,6 @@ export const LESSONS: Lesson[] = [
       { kind: 'p', text: 'Agora imagine a mesma terça com você no controle. Na sexta anterior, você viu que a terça estava cheia e propôs a tarde. Ela trocou a folga. Na terça, às 7h, você confirmou. Às 13h10, tocou a campainha, se apresentou pelo nome e disse que veio pela Rezolveaê. Trocou o disjuntor, testou, tirou a foto do quadro pronto e marcou Serviço feito.' },
       { kind: 'p', text: 'À noite, chega a avaliação. Cinco estrelas e um comentário: "Chegou na hora". Parece pouco. Para quem lê antes de chamar alguém, é tudo.' },
     ],
-    questions: [
-      {
-        question: 'Por que o atraso das 11h50 pesou tanto para a cliente?',
-        options: [
-          'Ela tirou folga contando com a manhã',
-          'Porque ficou mais caro',
-          'Porque o app cobra uma multa da cliente quando o serviço atrasa',
-          'Porque o disjuntor acabou queimando de vez enquanto ela esperava',
-        ],
-        why: 'O período combinado é uma promessa: o cliente organiza o dia em cima dela.',
-      },
-      {
-        question: 'Até quando dá para cancelar sem consequência?',
-        options: [
-          'Até 12 horas antes do período',
-          'Até 1 hora antes do horário em que você ia chegar',
-          'Até o fim do dia do serviço, desde que explique o motivo',
-          'A qualquer momento, desde que avise o cliente pelo chat',
-        ],
-        why: 'Depois de 12 horas antes do começo do período, até o fim do dia, conta como em cima da hora.',
-      },
-      {
-        question: 'O que acontece com três cancelamentos em cima da hora em 30 dias?',
-        options: [
-          'Pedidos pausados por 7 dias',
-          'Nada acontece',
-          'A sua conta é excluída e você precisa criar outra',
-          'Você paga uma multa para cada cliente que ficou esperando',
-        ],
-        why: 'A pausa de 7 dias protege os clientes de quem cancela em cima da hora com frequência.',
-      },
-      {
-        question: 'Você percebe na véspera que não vai conseguir ir. O que é melhor fazer?',
-        options: [
-          'Remarcar pelo app na mesma hora e avisar o cliente pelo chat do serviço',
-          'Esperar o dia chegar para ver se no fim dá tempo de ir',
-          'Não ir e explicar depois, quando o cliente perguntar',
-          'Cancelar no próprio dia, uma hora antes do horário'
-        ],
-        why: 'Na véspera, com mais de 12 horas de antecedência, remarcar não tem consequência e o cliente consegue se organizar.',
-      },
-    ],
     sources: [{ label: 'Regras de períodos, confirmação, remarcação e cancelamento na Rezolveaê (Ajuda do app)' }],
   },
 
@@ -398,48 +228,6 @@ export const LESSONS: Lesson[] = [
       { kind: 'p', text: 'Uma última coisa: as regras de imposto e de nota estão mudando com a reforma tributária. Quando surgir dúvida, confira no Sebrae ou com um contador antes de decidir.' },
       { kind: 'mark', text: 'O MEI não é papelada. É a chave que abre o cliente grande e que te protege no mês em que você não puder trabalhar.' },
       { kind: 'p', text: 'Na Rezolveaê, o pagamento do serviço é sempre direto entre você e o cliente. Com o MEI, você está pronto para qualquer um deles, inclusive os que pedem nota.' },
-    ],
-    questions: [
-      {
-        question: 'Além de emitir nota, o que o MEI garante a quem paga as guias em dia?',
-        options: [
-          'Direitos do INSS, como auxílio-doença',
-          'Isenção de impostos',
-          'Um empréstimo automático do governo no primeiro ano de CNPJ',
-          'Preferência nos pedidos da Rezolveaê, na frente dos outros'
-        ],
-        why: 'O DAS inclui a contribuição ao INSS. Por isso o MEI protege você no mês em que não puder trabalhar.',
-      },
-      {
-        question: 'Quanto custa abrir o MEI e onde se abre?',
-        options: [
-          'É gratuito, só pelo gov.br',
-          'R$ 300, em sites especializados',
-          'R$ 86,05, no cartório',
-          'É gratuito em qualquer site que tenha a bandeira do Brasil',
-        ],
-        why: 'A abertura é de graça no Portal do Empreendedor. Site que cobra para abrir não é do governo.',
-      },
-      {
-        question: 'Chega pelo WhatsApp uma cobrança do MEI ameaçando multa e pedindo Pix. O que fazer?',
-        options: [
-          'Não pagar e conferir no Portal',
-          'Pagar logo, para não correr o risco de perder o CNPJ',
-          'Responder a mensagem pedindo um desconto na multa',
-          'Pagar metade agora e conferir o resto depois com calma',
-        ],
-        why: 'O DAS verdadeiro não chega por mensagem. É você que gera a guia no Portal.',
-      },
-      {
-        question: 'Para qual cliente a nota fiscal de serviço do MEI é obrigatória?',
-        options: [
-          'Para cliente empresa',
-          'Para todo cliente',
-          'Só para os serviços que passam de R$ 1.000',
-          'Para nenhum cliente, porque a nota do MEI é sempre opcional'
-        ],
-        why: 'Para empresa a nota é obrigatória. Para pessoa física, você emite quando ela pedir.',
-      },
     ],
     sources: [
       { label: 'Portal do Empreendedor (gov.br): abrir o MEI, guia DAS e declaração anual', url: 'https://www.gov.br/empresas-e-negocios/pt-br/empreendedor' },

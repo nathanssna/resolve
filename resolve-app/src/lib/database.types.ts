@@ -295,16 +295,22 @@ export type Database = {
         Row: {
           active: boolean
           id: string
+          pass: number
+          retry_days: number
           sort_order: number
         }
         Insert: {
           active?: boolean
           id: string
+          pass?: number
+          retry_days?: number
           sort_order?: number
         }
         Update: {
           active?: boolean
           id?: string
+          pass?: number
+          retry_days?: number
           sort_order?: number
         }
         Relationships: []
@@ -627,6 +633,7 @@ export type Database = {
           id: string
           jobs_count: number
           latitude: number | null
+          gold_at: string | null
           lessons_done_at: string | null
           longitude: number | null
           paused: boolean
@@ -649,6 +656,7 @@ export type Database = {
           id: string
           jobs_count?: number
           latitude?: number | null
+          gold_at?: string | null
           lessons_done_at?: string | null
           longitude?: number | null
           paused?: boolean
@@ -671,6 +679,7 @@ export type Database = {
           id?: string
           jobs_count?: number
           latitude?: number | null
+          gold_at?: string | null
           lessons_done_at?: string | null
           longitude?: number | null
           paused?: boolean
@@ -1037,6 +1046,7 @@ export type Database = {
           comment: string | null
           created_at: string
           id: string
+          on_time: boolean | null
           order_id: string
           professional_id: string
           rating: number
@@ -1046,6 +1056,7 @@ export type Database = {
           comment?: string | null
           created_at?: string
           id?: string
+          on_time?: boolean | null
           order_id: string
           professional_id: string
           rating: number
@@ -1055,6 +1066,7 @@ export type Database = {
           comment?: string | null
           created_at?: string
           id?: string
+          on_time?: boolean | null
           order_id?: string
           professional_id?: string
           rating?: number
@@ -1573,7 +1585,6 @@ export type Database = {
           isSetofReturn: false
         }
       }
-      complete_lesson: { Args: { p_lesson_id: string }; Returns: Json }
       complete_onboarding: {
         Args: {
           p_full_name: string
@@ -1877,7 +1888,34 @@ export type Database = {
           service_id: string
         }[]
       }
+      gold_progress: {
+        Args: never
+        Returns: {
+          gold: boolean
+          jobs_done: number
+          jobs_needed: number
+          late_90d: number
+          late_max: number
+          lessons_done: boolean
+          on_time_answers: number
+          on_time_needed: number
+          on_time_yes: number
+          orders_90d: number
+          rating: number
+          rating_needed: number
+          reviews: number
+          reviews_needed: number
+        }[]
+      }
       is_disposable_email: { Args: { p_email: string }; Returns: boolean }
+      lesson_status: {
+        Args: never
+        Returns: {
+          completed_at: string
+          lesson_id: string
+          retry_at: string
+        }[]
+      }
       mark_conversation_read: {
         Args: { p_conversation_id: string }
         Returns: undefined
@@ -2159,7 +2197,12 @@ export type Database = {
         }
       }
       start_quiz: { Args: { p_service_id: string }; Returns: Json }
+      start_lesson_quiz: { Args: { p_lesson_id: string }; Returns: Json }
       submit_quiz: {
+        Args: { p_answers: number[]; p_attempt_id: string }
+        Returns: Json
+      }
+      submit_lesson_quiz: {
         Args: { p_answers: number[]; p_attempt_id: string }
         Returns: Json
       }

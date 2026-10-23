@@ -1,4 +1,5 @@
-// Gera supabase/quiz.sql a partir dos bancos de questões (supabase/quiz/*.json).
+// Gera supabase/quiz.sql a partir dos bancos de questões (supabase/quiz/*.json) e das perguntas
+// das aulas (supabase/lessons/questions.json).
 // Uso: npm run quiz:sql. Depois aplique no banco: npx supabase db query --linked -f supabase/quiz.sql
 //
 // Cada banco: { service, title, draw, pass, minutes, sources: { chave: texto }, questions: [...] }.
@@ -9,6 +10,7 @@ import { fileURLToPath } from 'node:url';
 
 const DIR = dirname(fileURLToPath(import.meta.url));
 const OUT = join(DIR, '..', 'quiz.sql');
+const LESSONS = join(DIR, '..', 'lessons', 'questions.json');
 
 // Nome curto da fonte, mostrado no canto da questão durante o teste.
 const SOURCE = {
@@ -49,6 +51,16 @@ for (const b of banks) {
     if (!SOURCE[x.source]) errors.push(`${b.file}: ${x.id} — falta o nome curto da fonte "${x.source}" em build.mjs`);
   }
 }
+// Aulas: { pass, retry_days, lessons: { <aula>: [{ id, question, options, why }] } }, options[0] é a certa.
+const lessons = JSON.parse(readFileSync(LESSONS, 'utf8'));
+for (const [lesson, qs] of Object.entries(lessons.lessons)) {
+  if (qs.length < lessons.pass) errors.push(`aula ${lesson}: só ${qs.length} perguntas para passar com ${lessons.pass}`);
+  for (const x of qs) {
+    if (ids.has(x.id)) errors.push(`aula ${lesson}: id repetido ${x.id}`);
+    ids.add(x.id);
+    if (!(x.options?.length >= 2) || new Set(x.options).size !== x.options.length) errors.push(`aula ${lesson}: ${x.id} precisa de alternativas diferentes`);
+  }
+}
 if (errors.length) {
   console.error(errors.join('\n'));
   process.exit(1);
@@ -81,6 +93,24 @@ for (const b of banks) {
     '',
   );
 }
+const lessonIds = Object.keys(lessons.lessons);
+lines.push(`-- Aulas (8 perguntas cada, conclui com ${lessons.pass}, espera ${lessons.retry_days} dias)`);
+lines.push(`update public.lessons set pass = ${lessons.pass}, retry_days = ${lessons.retry_days} where id = any (${arr(lessonIds)});`);
+lines.push('insert into private.lesson_questions (id, lesson_id, sort_order, question, options, why, active, updated_at) values');
+lines.push(
+  lessonIds
+    .flatMap((l) => lessons.lessons[l].map((x, i) => `  (${q(x.id)}, ${q(l)}, ${i + 1}, ${q(x.question)}, ${arr(x.options)}, ${q(x.why)}, true, now())`))
+    .join(',\n'),
+);
+lines.push(
+  'on conflict (id) do update set lesson_id = excluded.lesson_id, sort_order = excluded.sort_order, question = excluded.question,',
+  '  options = excluded.options, why = excluded.why, active = true, updated_at = now();',
+);
+lines.push(
+  `update private.lesson_questions set active = false, updated_at = now() where id <> all (${arr(lessonIds.flatMap((l) => lessons.lessons[l].map((x) => x.id)))});`,
+  '',
+);
 lines.push('commit;', '');
 writeFileSync(OUT, lines.join('\n'));
-console.log(`supabase/quiz.sql: ${banks.length} testes, ${ids.size} questões`);
+const lessonCount = lessonIds.reduce((n, l) => n + lessons.lessons[l].length, 0);
+console.log(`supabase/quiz.sql: ${banks.length} testes, ${ids.size - lessonCount} questões; ${lessonIds.length} aulas, ${lessonCount} perguntas`);

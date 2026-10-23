@@ -1,6 +1,7 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { colors, fonts, radius, spacing } from '@/theme/tokens';
+import { Icon, type IconName } from './Icon';
 import { Text } from './Text';
 
 type ChipProps = { active?: boolean; onPress?: () => void; children: string };
@@ -22,10 +23,11 @@ export function FilterChip({ active, onPress, children }: ChipProps) {
   );
 }
 
-/** Etiqueta de especialidade (não clicável). */
-export function Tag({ children }: { children: string }) {
+/** Etiqueta de especialidade (não clicável). `icon` vai antes do texto. */
+export function Tag({ children, icon }: { children: string; icon?: IconName }) {
   return (
     <View style={styles.tag}>
+      {icon ? <Icon name={icon} size={14} /> : null}
       <Text variant="caption">{children}</Text>
     </View>
   );
@@ -47,6 +49,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing[3],
     borderRadius: radius.pill,
     backgroundColor: colors.surfaceMuted,
-    justifyContent: 'center',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
   },
 });

@@ -97,6 +97,7 @@ export default function Profissionais() {
               aside={`~${p.replyMin} min`}
               asideLabel="para responder"
               badge={p.id === best ? 'RECOMENDADO' : p.id === fastest ? 'RESPONDE RÁPIDO' : undefined}
+              gold={p.gold}
               selected={p.id === selected}
               onPress={() => setSelected(p.id)}
             />

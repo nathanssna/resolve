@@ -1,0 +1,456 @@
+{
+  "pass": 7,
+  "retry_days": 3,
+  "lessons": {
+    "orcamento": [
+      {
+        "id": "orcamento-1",
+        "question": "No serviço de R$ 600, por que sobraram só R$ 300?",
+        "options": [
+          "O preço foi dado no olho, sem os custos",
+          "O cliente pagou menos do que tinha sido combinado no começo",
+          "Choveu demais na terça",
+          "Pintura é um serviço que dá pouco lucro, não tem como mudar"
+        ],
+        "why": "O preço foi dado no olho. Tudo o que não entrou na conta saiu do bolso do profissional."
+      },
+      {
+        "id": "orcamento-2",
+        "question": "Como se calcula o valor da sua hora?",
+        "options": [
+          "Ganho desejado mais custos, dividido pelas horas cobráveis",
+          "O salário mínimo dividido por todas as horas que existem no mês",
+          "O preço do concorrente",
+          "O ganho desejado dividido por todas as horas, inclusive o trânsito e a loja"
+        ],
+        "why": "Nem toda hora é cobrável: trânsito, loja e orçamento também tomam tempo. Por isso divide-se só pelas horas que você consegue cobrar."
+      },
+      {
+        "id": "orcamento-3",
+        "question": "Pelo Código de Defesa do Consumidor, o que o orçamento precisa ter?",
+        "options": [
+          "Mão de obra, materiais, pagamento e datas",
+          "Só o valor total, escrito bem claro, para o cliente não se confundir",
+          "O valor total, o seu nome completo e o seu telefone de contato",
+          "A lista de material, a marca de cada item e a sua assinatura no fim"
+        ],
+        "why": "É o que diz o artigo 40. Com isso, o cliente sabe o que paga e você se protege."
+      },
+      {
+        "id": "orcamento-4",
+        "question": "Atrás do guarda-roupa aparece um problema que não estava no orçamento. O que fazer?",
+        "options": [
+          "Parar, mostrar a parede ao cliente, explicar e combinar o novo valor antes de seguir",
+          "Resolver o problema e cobrar no final, junto com o resto do serviço",
+          "Pintar por cima e não comentar nada, para não atrasar a entrega",
+          "Ir embora e deixar o cliente decidir sozinho o que fazer com a parede"
+        ],
+        "why": "Fazer serviço sem orçamento e sem autorização é prática abusiva. Parar e combinar mantém a confiança."
+      },
+      {
+        "id": "orcamento-5",
+        "question": "No orçamento bem feito, por que a chuva de terça não sai mais do seu bolso?",
+        "options": [
+          "Já estava prevista na folga para imprevistos",
+          "Porque o cliente paga um adicional por cada dia de chuva",
+          "Porque em dia de chuva o profissional não trabalha e não gasta",
+          "Porque o DAS do MEI cobre os dias parados"
+        ],
+        "why": "O orçamento certo soma o trabalho, o material, a gasolina e uma folga para o imprevisto. O que der errado já está pago."
+      },
+      {
+        "id": "orcamento-6",
+        "question": "Por que muitos clientes escolhem o orçamento mais caro e detalhado, e não o \"R$ 500, tudo incluso\"?",
+        "options": [
+          "Entendem exatamente o que estão pagando",
+          "Porque acham que preço mais alto é sempre sinal de serviço melhor",
+          "Porque o app mostra primeiro o orçamento mais caro",
+          "Porque o tudo incluso é proibido por lei"
+        ],
+        "why": "\"Tudo incluso\" assusta quem já levou susto. Mão de obra, material, pagamento e datas por escrito dão segurança."
+      },
+      {
+        "id": "orcamento-7",
+        "question": "Se vocês não combinarem outro prazo, por quanto tempo vale o orçamento?",
+        "options": [
+          "10 dias depois que o cliente recebe",
+          "30 dias, que é o prazo de qualquer garantia",
+          "Até o fim do mês em que foi feito",
+          "Até o serviço ser feito, sem prazo"
+        ],
+        "why": "É o que diz o artigo 40 do Código de Defesa do Consumidor. Depois de aprovado, ele vale para os dois."
+      },
+      {
+        "id": "orcamento-8",
+        "question": "O cliente quer que você vá até a casa só para dar o preço. Qual é a saída que a aula sugere?",
+        "options": [
+          "Pedir fotos, vídeo e medidas, e orçar dali",
+          "Ir e cobrar a visita, porque é o seu tempo",
+          "Ir de graça, mas cobrar a visita se ele não fechar",
+          "Recusar o pedido e esperar um cliente que já saiba o que quer"
+        ],
+        "why": "O Idec considera abusivo cobrar pelo orçamento. Com fotos e medidas, quase sempre dá para orçar sem gastar a tarde."
+      }
+    ],
+    "fotos": [
+      {
+        "id": "fotos-1",
+        "question": "Por que o antes e o depois devem ser do mesmo lugar e do mesmo ângulo?",
+        "options": [
+          "Para quem não estava lá ver a diferença",
+          "Porque o app só aceita fotos que foram tiradas exatamente do mesmo ponto",
+          "Porque a câmera do celular ajusta melhor a luz quando o ângulo se repete",
+          "Para economizar espaço"
+        ],
+        "why": "Quem vê a foto só sabe o que aparece nela. Com o mesmo ângulo, a comparação fala sozinha."
+      },
+      {
+        "id": "fotos-2",
+        "question": "Você marcou Serviço feito com fotos e o cliente não respondeu. O que acontece?",
+        "options": [
+          "Em 7 dias o serviço é concluído sozinho",
+          "O serviço fica em aberto para sempre",
+          "O serviço é cancelado depois de 3 dias",
+          "Você precisa voltar lá para o cliente confirmar"
+        ],
+        "why": "Com foto, o app conclui o serviço em 7 dias sem resposta. Sem foto, só o cliente conclui."
+      },
+      {
+        "id": "fotos-3",
+        "question": "Por que não fotografar contra a janela?",
+        "options": [
+          "A luz de frente escurece o serviço",
+          "Porque o reflexo do vidro da janela pode estragar a câmera do celular",
+          "Porque os vizinhos podem ver, pela janela, que você está fotografando",
+          "Porque o app recusa fotos em que aparece uma janela ao fundo"
+        ],
+        "why": "Contra a luz, o celular escurece o que está na frente. O seu trabalho some na foto."
+      },
+      {
+        "id": "fotos-4",
+        "question": "Antes de postar a foto de um serviço na internet, o que fazer?",
+        "options": [
+          "Pedir autorização ao cliente e fotografar só o serviço, sem pessoas nem dados da casa",
+          "Nada, porque o serviço foi feito por você e a foto também é sua",
+          "Só cobrir o rosto das pessoas com um desenho antes de publicar",
+          "Postar logo e apagar depois, se o cliente reclamar da foto"
+        ],
+        "why": "A imagem da casa e das pessoas é dado pessoal. Com autorização e só o serviço na foto, você divulga sem expor ninguém."
+      },
+      {
+        "id": "fotos-5",
+        "question": "No primeiro final, por que você teve que voltar lá de graça?",
+        "options": [
+          "Não tinha como provar o conserto",
+          "Porque a peça nova tinha defeito de fábrica",
+          "Porque o app obriga a voltar sempre que o cliente reclama de qualquer coisa",
+          "Porque você esqueceu de testar a pia antes de ir embora"
+        ],
+        "why": "Você trocou e testou, mas sem foto era a sua palavra contra a do cliente."
+      },
+      {
+        "id": "fotos-6",
+        "question": "Você marcou Serviço feito sem foto e o cliente não respondeu. Quem pode concluir o serviço?",
+        "options": [
+          "Só o cliente",
+          "O app, sozinho, em 7 dias",
+          "Você mesmo, depois de 3 dias sem resposta",
+          "A equipe da Rezolveaê, automaticamente, no fim do mês"
+        ],
+        "why": "Com foto, o serviço é concluído sozinho em 7 dias. Sem foto, só o cliente conclui."
+      },
+      {
+        "id": "fotos-7",
+        "question": "O cliente diz que o serviço não foi feito, mas você tem as fotos. O que pode fazer no app?",
+        "options": [
+          "Discordar, e a equipe olha a conversa e as fotos",
+          "Nada, a palavra do cliente sempre vale mais",
+          "Apagar a avaliação dele",
+          "Cancelar o serviço e pedir outro ao cliente"
+        ],
+        "why": "Ao discordar, a equipe da Rezolveaê lê a conversa e olha as fotos para decidir. As fotos falam por você."
+      },
+      {
+        "id": "fotos-8",
+        "question": "Por que arrumar o local antes da foto final?",
+        "options": [
+          "Sobra de material e pó contam uma história de pressa",
+          "Porque o app não aceita foto com sujeira",
+          "Para a foto ficar mais clara",
+          "Porque o cliente só paga depois de ver tudo limpo na foto"
+        ],
+        "why": "Quem vê a foto não estava lá. A bagunça faz um serviço perfeito parecer feito às pressas."
+      }
+    ],
+    "chat": [
+      {
+        "id": "chat-1",
+        "question": "Por que o terceiro profissional foi escolhido, mesmo sem ser o primeiro a responder?",
+        "options": [
+          "Mostrou que entendeu o problema",
+          "Porque cobrou menos",
+          "Porque mandou a mensagem mais longa e mais educada da conversa",
+          "Porque passou o telefone dele no chat para resolver mais rápido"
+        ],
+        "why": "O cliente escolhe quem mostra que entendeu o problema. Rapidez sozinha não basta."
+      },
+      {
+        "id": "chat-2",
+        "question": "Um pedido urgente fica sem nenhuma resposta sua. O que acontece?",
+        "options": [
+          "Fecha sozinho em 24 horas",
+          "Fica esperando até você responder",
+          "Fecha em 3 dias, como os outros",
+          "É passado automaticamente para outro profissional"
+        ],
+        "why": "Pedido sem resposta fecha em 3 dias, ou em 24 horas quando o cliente marca que é urgente."
+      },
+      {
+        "id": "chat-3",
+        "question": "Por que repetir com as suas palavras o que o cliente pediu?",
+        "options": [
+          "Para o cliente corrigir o engano ainda no chat, antes de você chegar na casa dele",
+          "Para a conversa ficar mais longa e o app mostrar você primeiro",
+          "Porque o app só libera a proposta depois de uma confirmação escrita",
+          "Para o cliente desistir logo se o serviço for complicado demais"
+        ],
+        "why": "Se você entendeu errado, o cliente corrige ali mesmo. Na hora do serviço, o erro sai caro."
+      },
+      {
+        "id": "chat-4",
+        "question": "O cliente pede seu WhatsApp antes de combinar. Por que vale manter a conversa no app?",
+        "options": [
+          "Registro, avaliação e ajuda da equipe",
+          "Porque no app a internet fica mais rápida do que no WhatsApp",
+          "Porque fora do app o cliente sempre acaba pagando mais caro",
+          "Não vale, passe o número"
+        ],
+        "why": "No app, a conversa protege os dois, a avaliação traz o próximo cliente e a equipe consegue ajudar."
+      },
+      {
+        "id": "chat-5",
+        "question": "Por que o \"Faço por 250\" do segundo profissional deixou o cliente inseguro?",
+        "options": [
+          "Pareceu um chute: ele nem perguntou o que era",
+          "Porque 250 era caro demais para trocar uma mangueira",
+          "Porque ele respondeu rápido demais",
+          "Porque ele não deu boa-noite"
+        ],
+        "why": "Sem perguntar nada, o preço podia mudar na hora. A rapidez foi boa, mas a sensação foi de chute."
+      },
+      {
+        "id": "chat-6",
+        "question": "Você não pode atender agora. O que responder?",
+        "options": [
+          "Um horário certo, como \"consigo amanhã às 8h\"",
+          "Nada, para o cliente não criar expectativa",
+          "\"Agora não dá\", e mais nada",
+          "\"Assim que der eu te aviso\""
+        ],
+        "why": "Um horário certo já te coloca na frente de quem ficou calado. Do lado do cliente, quem não responde não existe."
+      },
+      {
+        "id": "chat-7",
+        "question": "Até vocês combinarem o serviço, o que acontece com telefone e e-mail escritos no chat?",
+        "options": [
+          "Ficam escondidos para os dois",
+          "Aparecem só para o cliente",
+          "Aparecem normalmente para os dois",
+          "A conversa é bloqueada por uma semana"
+        ],
+        "why": "Até combinar, telefone, e-mail e redes sociais escritos no chat aparecem escondidos. Assim tudo fica registrado no app."
+      },
+      {
+        "id": "chat-8",
+        "question": "Como pedir a avaliação no fim do serviço?",
+        "options": [
+          "Agradecer e dizer que ele pode avaliar, sem pressionar",
+          "Pedir cinco estrelas antes de ir embora",
+          "Oferecer desconto no próximo serviço em troca da nota",
+          "Não falar nada, porque pedir avaliação é proibido"
+        ],
+        "why": "Quem foi bem atendido do \"boa noite\" ao \"obrigado\" costuma avaliar sozinho. Pressão estraga isso."
+      }
+    ],
+    "data": [
+      {
+        "id": "data-1",
+        "question": "Por que o atraso das 11h50 pesou tanto para a cliente?",
+        "options": [
+          "Ela tirou folga contando com a manhã",
+          "Porque ficou mais caro",
+          "Porque o app cobra uma multa da cliente quando o serviço atrasa",
+          "Porque o disjuntor acabou queimando de vez enquanto ela esperava"
+        ],
+        "why": "O período combinado é uma promessa: o cliente organiza o dia em cima dela."
+      },
+      {
+        "id": "data-2",
+        "question": "Até quando dá para cancelar sem consequência?",
+        "options": [
+          "Até 12 horas antes do período",
+          "Até 1 hora antes do horário em que você ia chegar",
+          "Até o fim do dia do serviço, desde que explique o motivo",
+          "A qualquer momento, desde que avise o cliente pelo chat"
+        ],
+        "why": "Depois de 12 horas antes do começo do período, até o fim do dia, conta como em cima da hora."
+      },
+      {
+        "id": "data-3",
+        "question": "O que acontece com três cancelamentos em cima da hora em 30 dias?",
+        "options": [
+          "Pedidos pausados por 7 dias",
+          "Nada acontece",
+          "A sua conta é excluída e você precisa criar outra",
+          "Você paga uma multa para cada cliente que ficou esperando"
+        ],
+        "why": "A pausa de 7 dias protege os clientes de quem cancela em cima da hora com frequência."
+      },
+      {
+        "id": "data-4",
+        "question": "Você percebe na véspera que não vai conseguir ir. O que é melhor fazer?",
+        "options": [
+          "Remarcar pelo app na mesma hora e avisar o cliente pelo chat do serviço",
+          "Esperar o dia chegar para ver se no fim dá tempo de ir",
+          "Não ir e explicar depois, quando o cliente perguntar",
+          "Cancelar no próprio dia, uma hora antes do horário"
+        ],
+        "why": "Na véspera, com mais de 12 horas de antecedência, remarcar não tem consequência e o cliente consegue se organizar."
+      },
+      {
+        "id": "data-5",
+        "question": "Segundo a aula, por que a hora de evitar o atraso é a hora de combinar?",
+        "options": [
+          "O atraso nasce de marcar serviço demais na mesma manhã",
+          "Porque depois de combinado não dá mais para mudar a data",
+          "Porque o cliente só lê a primeira mensagem",
+          "Porque o trânsito é sempre igual"
+        ],
+        "why": "Ninguém atrasa por maldade: quase sempre são três serviços na mesma manhã, contando com um trânsito que não existe."
+      },
+      {
+        "id": "data-6",
+        "question": "No app, o período da tarde vai de quando a quando?",
+        "options": [
+          "Das 13h às 17h",
+          "Das 12h às 18h",
+          "Das 14h às 18h",
+          "Das 13h às 20h"
+        ],
+        "why": "Manhã é das 8h às 12h, tarde das 13h às 17h e noite das 18h às 20h. O cliente organiza o dia em cima disso."
+      },
+      {
+        "id": "data-7",
+        "question": "Você vai se atrasar. Quando avisar faz diferença?",
+        "options": [
+          "Antes do horário: às 8h é cuidado",
+          "Só quando chegar, para explicar pessoalmente",
+          "No fim do período, quando já souber a hora certa",
+          "Tanto faz, desde que avise"
+        ],
+        "why": "\"Vou chegar umas 10h30\" às 8h é cuidado. Às 11h50, é desculpa."
+      },
+      {
+        "id": "data-8",
+        "question": "Se cancelar em cima da hora virar costume, o que o cliente passa a ver no seu perfil?",
+        "options": [
+          "A taxa de cancelamento em cima da hora",
+          "Nada, isso fica só entre você e a Rezolveaê",
+          "Um aviso de conta suspensa",
+          "Os motivos de cada cancelamento"
+        ],
+        "why": "A taxa aparece no perfil para todo cliente ver antes de te chamar. Cada regra existe por causa de alguém que esperou no portão."
+      }
+    ],
+    "mei": [
+      {
+        "id": "mei-1",
+        "question": "Além de emitir nota, o que o MEI garante a quem paga as guias em dia?",
+        "options": [
+          "Direitos do INSS, como auxílio-doença",
+          "Isenção de impostos",
+          "Um empréstimo automático do governo no primeiro ano de CNPJ",
+          "Preferência nos pedidos da Rezolveaê, na frente dos outros"
+        ],
+        "why": "O DAS inclui a contribuição ao INSS. Por isso o MEI protege você no mês em que não puder trabalhar."
+      },
+      {
+        "id": "mei-2",
+        "question": "Quanto custa abrir o MEI e onde se abre?",
+        "options": [
+          "É gratuito, só pelo gov.br",
+          "R$ 300, em sites especializados",
+          "R$ 86,05, no cartório",
+          "É gratuito em qualquer site que tenha a bandeira do Brasil"
+        ],
+        "why": "A abertura é de graça no Portal do Empreendedor. Site que cobra para abrir não é do governo."
+      },
+      {
+        "id": "mei-3",
+        "question": "Chega pelo WhatsApp uma cobrança do MEI ameaçando multa e pedindo Pix. O que fazer?",
+        "options": [
+          "Não pagar e conferir no Portal",
+          "Pagar logo, para não correr o risco de perder o CNPJ",
+          "Responder a mensagem pedindo um desconto na multa",
+          "Pagar metade agora e conferir o resto depois com calma"
+        ],
+        "why": "O DAS verdadeiro não chega por mensagem. É você que gera a guia no Portal."
+      },
+      {
+        "id": "mei-4",
+        "question": "Para qual cliente a nota fiscal de serviço do MEI é obrigatória?",
+        "options": [
+          "Para cliente empresa",
+          "Para todo cliente",
+          "Só para os serviços que passam de R$ 1.000",
+          "Para nenhum cliente, porque a nota do MEI é sempre opcional"
+        ],
+        "why": "Para empresa a nota é obrigatória. Para pessoa física, você emite quando ela pedir."
+      },
+      {
+        "id": "mei-5",
+        "question": "Quanto o MEI que presta serviço paga de DAS por mês em 2026?",
+        "options": [
+          "R$ 86,05, mesmo num mês fraco",
+          "5% do que faturou no mês",
+          "Depende de quantas notas emitiu",
+          "Nada, o MEI é isento de imposto"
+        ],
+        "why": "O valor é fixo: R$ 81,05 de INSS e R$ 5 de ISS. O imposto da sua nota já está ali dentro."
+      },
+      {
+        "id": "mei-6",
+        "question": "Até quanto por ano pode faturar quem é MEI?",
+        "options": [
+          "R$ 81 mil",
+          "R$ 150 mil",
+          "R$ 36 mil",
+          "Não tem limite"
+        ],
+        "why": "São R$ 81 mil por ano, cerca de R$ 6.750 por mês em média, numa ocupação da lista permitida."
+      },
+      {
+        "id": "mei-7",
+        "question": "O que você precisa para emitir a nota de serviço no Emissor Nacional?",
+        "options": [
+          "A conta gov.br prata ou ouro",
+          "Um certificado digital comprado à parte",
+          "Um contador que emita por você",
+          "Ir pessoalmente à prefeitura"
+        ],
+        "why": "No nfse.gov.br ou no app NFS-e Mobile, com a mesma conta gov.br de sempre. Não precisa de certificado digital."
+      },
+      {
+        "id": "mei-8",
+        "question": "Até quando entregar a declaração anual do MEI (DASN-SIMEI)?",
+        "options": [
+          "Até 31 de maio",
+          "Até 31 de dezembro",
+          "Até 30 de abril, junto com o Imposto de Renda",
+          "Só quando fechar o MEI"
+        ],
+        "why": "Uma vez por ano, até 31 de maio, você declara o que faturou no ano anterior, de graça no Portal."
+      }
+    ]
+  }
+}

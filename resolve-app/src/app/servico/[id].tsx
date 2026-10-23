@@ -3,7 +3,7 @@ import { useMemo } from 'react';
 import { Pressable, ScrollView, Share, StyleSheet, View } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { Avatar, Button, CatalogFallback, CheckItem, EmptyState, Icon, Rating, SectionHeader, StickyFooter, Text, TopBar } from '@/components';
+import { Avatar, Button, CatalogFallback, CheckItem, EmptyState, GoldBadge, Icon, Rating, SectionHeader, StickyFooter, Text, TopBar } from '@/components';
 import { authErrorMessage } from '@/lib/authErrors';
 import { useAddresses } from '@/state/addresses';
 import { useApp } from '@/state/app';
@@ -19,7 +19,7 @@ function ProRow({ pro, serviceId }: { pro: Professional; serviceId: string }) {
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={`${pro.name}${pro.verified ? ', verificado' : ''}, ${pro.reviews ? `nota ${formatDecimal(pro.rating)}` : 'novo na Rezolveaê'}, responde em cerca de ${pro.replyMin} minutos`}
+      accessibilityLabel={`${pro.name}${pro.verified ? ', verificado' : ''}${pro.gold ? ', Profissional de Ouro' : ''}, ${pro.reviews ? `nota ${formatDecimal(pro.rating)}` : 'novo na Rezolveaê'}, responde em cerca de ${pro.replyMin} minutos`}
       onPress={() => router.push({ pathname: '/profissional/[id]', params: { id: pro.id, serviceId } })}
       style={({ pressed }) => [styles.pro, pressed && { opacity: 0.7 }]}
     >
@@ -31,6 +31,7 @@ function ProRow({ pro, serviceId }: { pro: Professional; serviceId: string }) {
           </Text>
           {pro.verified ? <Icon name="badge-check" size={16} fill={colors.brand} /> : null}
         </View>
+        {pro.gold ? <GoldBadge size="sm" /> : null}
         <View style={styles.proName}>
           {/* Sem avaliações ainda: "Novo" em vez de uma nota 0,0. */}
           {pro.reviews ? <Rating value={pro.rating} count={pro.reviews} size={13} /> : <Text variant="bodySm" style={{ fontFamily: fonts.bold }}>Novo</Text>}

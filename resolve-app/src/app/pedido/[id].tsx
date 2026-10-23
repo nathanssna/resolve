@@ -12,6 +12,7 @@ import {
   EmptyState,
   Field,
   Icon,
+  OptionChip,
   ListRow,
   PhotoViewer,
   Rating,
@@ -43,6 +44,7 @@ export default function PedidoDetalhe() {
   const order = orders.find((o) => o.id === id);
   const [stars, setStars] = useState(0);
   const [comment, setComment] = useState('');
+  const [onTime, setOnTime] = useState<boolean | null>(null);
   const [busy, setBusy] = useState(false);
   const [doneOpen, setDoneOpen] = useState(false);
   const [rescheduleOpen, setRescheduleOpen] = useState(acao === 'remarcar');
@@ -234,6 +236,19 @@ export default function PedidoDetalhe() {
             {!order.rating ? (
               <>
                 {stars ? (
+                  <View style={styles.onTime}>
+                    <Text variant="label">{`${name} chegou no horário combinado?`}</Text>
+                    <View style={styles.onTimeRow}>
+                      <View style={{ flex: 1 }}>
+                        <OptionChip label="Sim" active={onTime === true} onPress={() => setOnTime(true)} />
+                      </View>
+                      <View style={{ flex: 1 }}>
+                        <OptionChip label="Não" active={onTime === false} onPress={() => setOnTime(false)} />
+                      </View>
+                    </View>
+                  </View>
+                ) : null}
+                {stars ? (
                   <View style={{ alignSelf: 'stretch' }}>
                     <Field
                       label="Conte como foi (opcional)"
@@ -245,7 +260,7 @@ export default function PedidoDetalhe() {
                     />
                   </View>
                 ) : null}
-                <Button variant="dark" block disabled={!stars || busy} onPress={() => run(() => rateOrder(order.id, stars, comment))}>
+                <Button variant="dark" block disabled={!stars || onTime === null || busy} onPress={() => run(() => rateOrder(order.id, stars, comment, onTime!))}>
                   Enviar avaliação
                 </Button>
                 {stars ? (
@@ -335,6 +350,8 @@ const styles = StyleSheet.create({
   rate: { padding: spacing[4], borderRadius: radius.xl, backgroundColor: colors.brandTint, alignItems: 'center' },
   stars: { flexDirection: 'row', gap: spacing[2], paddingVertical: spacing[2] },
   quote: { textAlign: 'center', fontStyle: 'italic' },
+  onTime: { alignSelf: 'stretch', gap: spacing[2] },
+  onTimeRow: { flexDirection: 'row', gap: spacing[2] },
   reschedule: { alignSelf: 'flex-start', marginTop: spacing[2] },
   links: { flexDirection: 'row', justifyContent: 'center' },
   cancel: { textDecorationLine: 'underline' },

@@ -1,8 +1,9 @@
-import type { ReactNode } from 'react';
-import { Pressable, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
+import { useState, type ReactNode } from 'react';
+import { Modal, Pressable, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { colors, radius, shadows, spacing } from '@/theme/tokens';
+import { colors, fonts, radius, shadows, spacing } from '@/theme/tokens';
+import { Button } from './Button';
 import { Icon, type IconName } from './Icon';
 import { Text } from './Text';
 
@@ -327,6 +328,83 @@ const styles = StyleSheet.create({
   },
   optTall: { height: 60, minWidth: 68, gap: 2 },
   optOn: { backgroundColor: colors.brandTint, borderColor: colors.ink },
+});
+
+/** Profissional de Ouro: aulas + 10 serviços + nota 4,7 + pontualidade. `sm` nas listas, `md` no perfil.
+ * Tocar abre a explicação para o cliente; `explain={false}` onde a tela já explica (aulas, convite). */
+export function GoldBadge({ size = 'md', explain = true }: { size?: 'sm' | 'md'; explain?: boolean }) {
+  const sm = size === 'sm';
+  const [open, setOpen] = useState(false);
+  const insets = useSafeAreaInsets();
+  const badge = (
+    <View style={[goldStyles.badge, sm && goldStyles.sm]}>
+      <Text variant={sm ? 'caption' : 'label'} color={colors.onBrand} style={goldStyles.text}>
+        Profissional de Ouro
+      </Text>
+    </View>
+  );
+  if (!explain) return badge;
+  return (
+    <>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel="Profissional de Ouro"
+        accessibilityHint="Mostra o que a marca quer dizer"
+        hitSlop={8}
+        onPress={() => setOpen(true)}
+        style={({ pressed }) => [{ alignSelf: sm ? 'flex-start' : 'center' }, pressed && { opacity: 0.7 }]}
+      >
+        {badge}
+      </Pressable>
+      <Modal visible={open} transparent animationType="slide" onRequestClose={() => setOpen(false)}>
+        <Pressable style={goldStyles.backdrop} onPress={() => setOpen(false)} accessibilityLabel="Fechar" />
+        <View style={[goldStyles.sheet, { paddingBottom: Math.max(insets.bottom, spacing[4]) }]}>
+          <View style={goldStyles.handle} />
+          <View style={{ alignSelf: 'flex-start' }}>{badge}</View>
+          <Text variant="body" color={colors.inkBody}>
+            Este profissional cumpre as quatro etapas da Rezolveaê:
+          </Text>
+          <View style={{ gap: spacing[2] }}>
+            {[
+              'Concluiu as aulas sobre orçamento, atendimento e data combinada',
+              'Já fez pelo menos 10 serviços pela Rezolveaê',
+              'Tem nota 4,7 ou mais',
+              'Chega no horário, segundo os clientes, e quase nunca cancela em cima da hora',
+            ].map((t) => (
+              <View key={t} style={goldStyles.item}>
+                <Icon name="check" size={18} color={colors.success} />
+                <Text variant="bodySm" color={colors.inkBody} style={{ flex: 1 }}>
+                  {t}
+                </Text>
+              </View>
+            ))}
+          </View>
+          <Text variant="caption" color={colors.inkMuted}>
+            Se deixar de cumprir, a marca sai. Ela não é um certificado e não garante a qualidade do serviço: veja também as avaliações.
+          </Text>
+          <Button variant="dark" block onPress={() => setOpen(false)} style={{ marginTop: spacing[2] }}>
+            Entendi
+          </Button>
+        </View>
+      </Modal>
+    </>
+  );
+}
+
+const goldStyles = StyleSheet.create({
+  badge: {
+    paddingVertical: 5,
+    paddingHorizontal: spacing[3],
+    borderRadius: radius.pill,
+    backgroundColor: colors.brand,
+    alignSelf: 'center',
+  },
+  sm: { paddingVertical: 2, paddingHorizontal: 9, alignSelf: 'flex-start' },
+  text: { fontFamily: fonts.bold },
+  item: { flexDirection: 'row', alignItems: 'flex-start', gap: spacing[2] },
+  backdrop: { flex: 1, backgroundColor: 'rgba(17,18,19,0.45)' },
+  sheet: { backgroundColor: colors.surface, borderTopLeftRadius: radius.sheet, borderTopRightRadius: radius.sheet, padding: spacing[5], paddingTop: spacing[3], gap: spacing[3] },
+  handle: { alignSelf: 'center', width: 40, height: 4, borderRadius: radius.pill, backgroundColor: colors.surfaceStrong, marginBottom: spacing[1] },
 });
 
 /** Selo do teste da área ("Aprovado em Elétrica"), no perfil público e no resultado do teste. */

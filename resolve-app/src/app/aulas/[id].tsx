@@ -3,10 +3,10 @@ import { useEffect, useRef, useState } from 'react';
 import { Modal, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { Button, EmptyState, Icon, StickyFooter, Text, TopBar } from '@/components';
+import { Button, EmptyState, GoldBadge, Icon, StickyFooter, Text, TopBar } from '@/components';
 import { authErrorMessage } from '@/lib/authErrors';
-import { completeLesson, lessonProgress, lessonSpots, saveLessonSpot, topicsOf, type Topic } from '@/lib/lessons';
-import { LESSONS, type Lesson, type LessonBlock } from '@/content/lessons';
+import { lessonSpots, lessonStatus, saveLessonSpot, startLessonQuiz, submitLessonQuiz, topicsOf, type LessonQuiz, type LessonQuizResult, type LessonStatus, type Topic } from '@/lib/lessons';
+import { LESSONS, type LessonBlock } from '@/content/lessons';
 import { useAuth } from '@/state/auth';
 import { useCatalog } from '@/state/catalog';
 import { colors, fonts, radius, spacing } from '@/theme/tokens';
@@ -65,93 +65,73 @@ function Block({ b }: { b: LessonBlock }) {
   }
 }
 
-/** Embaralha as alternativas de uma pergunta (a primeira do conteúdo é a certa). */
-const shuffle = (n: number) => {
-  const order = Array.from({ length: n }, (_, i) => i);
-  for (let i = n - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [order[i], order[j]] = [order[j], order[i]];
-  }
-  return order;
+const dayMonth = (iso: string) => {
+  const d = new Date(iso);
+  return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}`;
 };
 
-/** Perguntas do fim: uma por vez; errou, vê o porquê e pode reler a aula. */
-function Questions({ lesson, onReread, onDone }: { lesson: Lesson; onReread: () => void; onDone: () => void }) {
+/** Perguntas do fim: uma por vez, sem dizer se acertou; o servidor corrige quando a última é enviada. */
+function Questions({ quiz, onSubmit }: { quiz: LessonQuiz; onSubmit: (answers: number[]) => Promise<void> }) {
   const [index, setIndex] = useState(0);
-  const [orders] = useState(() => lesson.questions.map((q) => shuffle(q.options.length)));
-  const [picked, setPicked] = useState<number | null>(null);
-  const q = lesson.questions[index];
-  const right = picked === 0;
-  const last = index === lesson.questions.length - 1;
+  const [answers, setAnswers] = useState<number[]>(() => quiz.questions.map(() => -1));
+  const [sending, setSending] = useState(false);
+  const q = quiz.questions[index];
+  const picked = answers[index];
+  const last = index === quiz.questions.length - 1;
+
+  const next = async () => {
+    if (!last) return setIndex(index + 1);
+    setSending(true);
+    await onSubmit(answers);
+    setSending(false);
+  };
 
   return (
     <>
       <ScrollView contentContainerStyle={styles.qContent}>
-        <View style={styles.dots} accessibilityLabel={`Pergunta ${index + 1} de ${lesson.questions.length}`}>
-          {lesson.questions.map((_, i) => (
-            <View key={i} style={[styles.dot, i < index && { backgroundColor: colors.success }, i === index && { backgroundColor: colors.ink }]} />
+        <View style={styles.dots} accessibilityLabel={`Pergunta ${index + 1} de ${quiz.questions.length}`}>
+          {quiz.questions.map((_, i) => (
+            <View key={i} style={[styles.dot, i <= index && { backgroundColor: colors.ink }]} />
           ))}
         </View>
+        <Text variant="overline" color={colors.inkMuted}>{`PERGUNTA ${index + 1} DE ${quiz.questions.length}`}</Text>
         <Text variant="titleMd" accessibilityRole="header">
           {q.question}
         </Text>
         <View accessibilityRole="radiogroup" style={{ gap: spacing[2] }}>
-          {orders[index].map((o) => {
-            const chosen = picked === o;
+          {q.options.map((o, i) => {
+            const chosen = picked === i;
             return (
               <Pressable
-                key={q.options[o]}
+                key={o}
                 accessibilityRole="radio"
-                accessibilityState={{ checked: chosen, disabled: picked !== null }}
-                disabled={picked !== null}
-                onPress={() => setPicked(o)}
-                style={[styles.option, chosen && (right ? styles.optionRight : styles.optionWrong)]}
+                accessibilityState={{ checked: chosen }}
+                aria-checked={chosen}
+                onPress={() => setAnswers((a) => a.map((x, k) => (k === index ? i : x)))}
+                style={[styles.option, chosen && styles.optionOn]}
               >
                 <Text variant={chosen ? 'labelLg' : 'body'} style={{ flex: 1 }}>
-                  {q.options[o]}
+                  {o}
                 </Text>
-                {chosen ? <Icon name={right ? 'check' : 'x'} size={18} color={right ? colors.success : colors.danger} /> : null}
               </Pressable>
             );
           })}
         </View>
-        {picked !== null ? (
-          <View style={styles.feedback} accessibilityLiveRegion="polite">
-            <Text variant="labelLg">{right ? 'Isso.' : 'Ainda não.'}</Text>
-            {/* O porquê só depois de acertar: ao errar, a resposta está na aula. */}
-            <Text variant="body" color={colors.inkBody}>
-              {right ? q.why : 'A resposta está na aula. Releia o trecho e tente de novo.'}
-            </Text>
-            {!right ? (
-              <Button variant="link" onPress={onReread} style={{ alignSelf: 'flex-start' }}>
-                Reler a aula
-              </Button>
-            ) : null}
-          </View>
-        ) : null}
+        <Text variant="caption" color={colors.inkMuted}>
+          {`Para concluir a aula, são ${quiz.pass} acertos de ${quiz.questions.length}. O resultado aparece no fim.`}
+        </Text>
       </ScrollView>
       <StickyFooter>
-        {picked === null ? (
-          <Text variant="bodySm" color={colors.inkMuted} style={{ textAlign: 'center' }}>
-            Escolha uma resposta.
-          </Text>
-        ) : right ? (
-          <Button
-            variant="primary"
-            block
-            onPress={() => {
-              if (last) return onDone();
-              setIndex(index + 1);
-              setPicked(null);
-            }}
-          >
-            {last ? 'Concluir a aula' : 'Próxima pergunta'}
+        <View style={styles.footerRow}>
+          {index > 0 ? (
+            <Pressable accessibilityRole="button" accessibilityLabel="Pergunta anterior" onPress={() => setIndex(index - 1)} style={styles.back}>
+              <Icon name="arrow-left" size={22} />
+            </Pressable>
+          ) : null}
+          <Button variant="primary" style={{ flex: 1 }} disabled={picked < 0 || sending} onPress={next}>
+            {last ? 'Enviar respostas' : 'Próxima pergunta'}
           </Button>
-        ) : (
-          <Button variant="dark" block onPress={() => setPicked(null)}>
-            Tentar de novo
-          </Button>
-        )}
+        </View>
       </StickyFooter>
     </>
   );
@@ -234,7 +214,7 @@ export default function Aula() {
   const lesson = LESSONS[index];
   const next = LESSONS[index + 1];
 
-  const [phase, setPhase] = useState<'read' | 'questions' | 'done'>('read');
+  const [phase, setPhase] = useState<'read' | 'questions' | 'done' | 'failed'>('read');
   const [page, setPage] = useState(0);
   // Até onde já leu; quem concluiu as aulas pode ir direto a qualquer tópico.
   const [furthest, setFurthest] = useState(() => (me?.lessonsDone ? Infinity : 0));
@@ -243,13 +223,18 @@ export default function Aula() {
   // As aulas vão em ordem: esta só abre depois de concluir a anterior.
   const [ready, setReady] = useState(false);
   const [locked, setLocked] = useState(false);
+  // Situação desta aula no servidor: já concluída, ou esperando para responder de novo.
+  const [mine, setMine] = useState<LessonStatus | null>(null);
   const previous = LESSONS[index - 1];
   useEffect(() => {
     if (!lesson) return;
     let alive = true;
-    Promise.all([lessonSpots(), previous ? lessonProgress().catch(() => null) : null]).then(([spots, doneIds]) => {
+    Promise.all([lessonSpots(), lessonStatus().catch(() => null)]).then(([spots, status]) => {
       if (!alive) return;
-      if (previous && doneIds && !doneIds.includes(previous.id)) setLocked(true);
+      if (previous && status && !status.find((s) => s.lesson_id === previous.id)?.completed_at) setLocked(true);
+      // Espera que já passou não conta.
+      const row = status?.find((s) => s.lesson_id === lesson.id) ?? null;
+      setMine(row?.retry_at && Date.parse(row.retry_at) <= Date.now() ? { ...row, retry_at: null } : row);
       const spot = spots[lesson.id];
       const max = topicsOf(lesson).length - 1;
       if (spot) {
@@ -262,7 +247,9 @@ export default function Aula() {
       alive = false;
     };
   }, [lesson, previous]);
-  const [result, setResult] = useState<{ done: number; total: number; released: boolean } | null>(null);
+  const [quiz, setQuiz] = useState<LessonQuiz | null>(null);
+  const [result, setResult] = useState<LessonQuizResult | null>(null);
+  const [starting, setStarting] = useState(false);
   const scroll = useRef<ScrollView>(null);
 
   const goTo = (i: number) => {
@@ -274,15 +261,33 @@ export default function Aula() {
     saveLessonSpot(lesson.id, { page: i, furthest: Math.min(reached, topicsOf(lesson).length - 1) });
   };
 
-  const finish = async () => {
+  const ask = async () => {
+    setStarting(true);
     try {
-      const r = await completeLesson(lesson.id);
-      saveLessonSpot(lesson.id, null);
-      setResult(r);
-      setPhase('done');
-      refreshCatalog({ silent: true });
+      setQuiz(await startLessonQuiz(lesson.id));
+      setPhase('questions');
     } catch (e) {
-      notify(`Não foi possível registrar a aula. ${authErrorMessage(e)}`);
+      notify(authErrorMessage(e));
+    } finally {
+      setStarting(false);
+    }
+  };
+
+  const submit = async (answers: number[]) => {
+    if (!quiz) return;
+    try {
+      const r = await submitLessonQuiz(quiz.attempt_id, answers);
+      setResult(r);
+      if (r.passed) {
+        saveLessonSpot(lesson.id, null);
+        setMine((m) => (m ? { ...m, completed_at: new Date().toISOString() } : m));
+        refreshCatalog({ silent: true });
+      } else {
+        setMine((m) => (m ? { ...m, retry_at: r.retry_at } : m));
+      }
+      setPhase(r.passed ? 'done' : 'failed');
+    } catch (e) {
+      notify(`Não foi possível enviar as respostas. ${authErrorMessage(e)}`);
     }
   };
 
@@ -299,7 +304,7 @@ export default function Aula() {
 
   // ---------------------------------------------------------------- concluída
   if (phase === 'done') {
-    const all = result && result.done === result.total;
+    const all = result && result.done === result.lessons;
     return (
       <SafeAreaView style={styles.safe}>
         <ScrollView contentContainerStyle={styles.doneContent}>
@@ -314,17 +319,18 @@ export default function Aula() {
           </Text>
           {result ? (
             <>
-              <View style={styles.doneDots} accessibilityLabel={`${result.done} de ${result.total} aulas concluídas`}>
-                {Array.from({ length: result.total }, (_, i) => (
+              <View style={styles.doneDots} accessibilityLabel={`${result.done} de ${result.lessons} aulas concluídas`}>
+                {Array.from({ length: result.lessons }, (_, i) => (
                   <View key={i} style={[styles.doneDot, i < result.done && { backgroundColor: colors.brand }]} />
                 ))}
               </View>
+              {result.gold ? <GoldBadge explain={false} /> : null}
               <Text variant="bodySm" color={colors.inkMuted} style={styles.center}>
-                {result.released
-                  ? 'Pronto, você foi liberado: seu perfil já aparece para os clientes.'
+                {result.gold
+                  ? 'Agora você é Profissional de Ouro: os clientes veem a marca no seu perfil e você aparece mais acima na lista.'
                   : all
-                    ? 'Você concluiu as aulas. Falta pouco: veja no Início o que ainda falta.'
-                    : `${result.done} de ${result.total} aulas concluídas.`}
+                    ? 'Você concluiu as aulas, uma das etapas do Profissional de Ouro, e já aparece um pouco mais acima na lista. Veja no Início o que falta.'
+                    : `Você acertou ${result.score} de ${result.total}. ${result.done} de ${result.lessons} aulas concluídas.`}
               </Text>
             </>
           ) : null}
@@ -359,18 +365,63 @@ export default function Aula() {
   }
 
   // ---------------------------------------------------------------- perguntas
-  if (phase === 'questions') {
+  if (phase === 'questions' && quiz) {
     return (
       <SafeAreaView style={styles.safe} edges={['top']}>
         <TopBar title="Perguntas" onBack={() => setPhase('read')} />
-        <Questions
-          lesson={lesson}
-          onReread={() => {
-            setPage(0);
-            setPhase('read');
-          }}
-          onDone={finish}
-        />
+        <Questions quiz={quiz} onSubmit={submit} />
+      </SafeAreaView>
+    );
+  }
+
+  // ---------------------------------------------------------------- não passou
+  if (phase === 'failed' && result && quiz) {
+    return (
+      <SafeAreaView style={styles.safe}>
+        <ScrollView contentContainerStyle={styles.doneContent}>
+          <View style={[styles.doneIcon, { backgroundColor: colors.surfaceMuted }]}>
+            <Icon name="book-open" size={44} />
+          </View>
+          <Text variant="titleLg" accessibilityRole="header" style={styles.center}>
+            Ainda não foi dessa vez
+          </Text>
+          <Text variant="body" color={colors.inkBody} style={styles.center}>
+            {`Você acertou ${result.score} de ${result.total}. Para concluir a aula, são ${result.pass}.`}
+          </Text>
+          {result.wrong.length ? (
+            <View style={styles.wrongBox}>
+              <Text variant="label">Releia com calma o que a aula conta sobre:</Text>
+              {result.wrong.map((i) => (
+                <View key={i} style={styles.wrongRow}>
+                  <Icon name="x" size={16} color={colors.danger} />
+                  <Text variant="bodySm" color={colors.inkBody} style={{ flex: 1 }}>
+                    {quiz.questions[i]?.question}
+                  </Text>
+                </View>
+              ))}
+            </View>
+          ) : null}
+          {result.retry_at ? (
+            <Text variant="bodySm" color={colors.inkMuted} style={styles.center}>
+              {`Você pode responder de novo a partir de ${dayMonth(result.retry_at)}.`}
+            </Text>
+          ) : null}
+        </ScrollView>
+        <StickyFooter>
+          <Button
+            variant="dark"
+            block
+            onPress={() => {
+              goTo(0);
+              setPhase('read');
+            }}
+          >
+            Reler a aula
+          </Button>
+          <Button variant="link" onPress={() => router.back()} style={{ alignSelf: 'center' }}>
+            Voltar às aulas
+          </Button>
+        </StickyFooter>
       </SafeAreaView>
     );
   }
@@ -390,6 +441,8 @@ export default function Aula() {
   const topics = topicsOf(lesson);
   const topic = topics[page];
   const last = page === topics.length - 1;
+  const completed = !!mine?.completed_at;
+  const waitUntil = mine?.retry_at ?? null;
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
       <View style={styles.header}>
@@ -470,7 +523,11 @@ export default function Aula() {
       <StickyFooter>
         {last ? (
           <Text variant="bodySm" color={colors.inkMuted} style={styles.center}>
-            {`${lesson.questions.length} perguntas rápidas sobre o que você leu`}
+            {completed
+              ? 'Você já concluiu esta aula.'
+              : waitUntil
+                ? `Você pode responder de novo a partir de ${dayMonth(waitUntil)}.`
+                : '8 perguntas sobre o que você leu. Para concluir, são 7 acertos.'}
           </Text>
         ) : null}
         <View style={styles.footerRow}>
@@ -479,9 +536,21 @@ export default function Aula() {
               <Icon name="arrow-left" size={22} />
             </Pressable>
           ) : null}
-          <Button variant="primary" iconRight="arrow-right" style={{ flex: 1 }} onPress={() => (last ? setPhase('questions') : goTo(page + 1))}>
-            {page === 0 ? 'Começar a aula' : last ? 'Ir para as perguntas' : 'Próximo tópico'}
-          </Button>
+          {last && (completed || waitUntil) ? (
+            <Button variant="dark" style={{ flex: 1 }} onPress={() => router.back()}>
+              Voltar às aulas
+            </Button>
+          ) : (
+            <Button
+              variant="primary"
+              iconRight="arrow-right"
+              style={{ flex: 1 }}
+              disabled={starting}
+              onPress={() => (last ? ask() : goTo(page + 1))}
+            >
+              {page === 0 ? 'Começar a aula' : last ? 'Ir para as perguntas' : 'Próximo tópico'}
+            </Button>
+          )}
         </View>
       </StickyFooter>
 
@@ -526,9 +595,9 @@ const styles = StyleSheet.create({
   dots: { flexDirection: 'row', gap: 6 },
   dot: { flex: 1, height: 6, borderRadius: radius.pill, backgroundColor: colors.surfaceStrong },
   option: { flexDirection: 'row', alignItems: 'center', gap: spacing[3], paddingVertical: 14, paddingHorizontal: spacing[4], borderRadius: radius.md, backgroundColor: colors.surfaceMuted },
-  optionRight: { backgroundColor: colors.successTint, borderWidth: 2, borderColor: colors.success, paddingVertical: 12, paddingHorizontal: 14 },
-  optionWrong: { backgroundColor: colors.dangerTint, borderWidth: 2, borderColor: colors.danger, paddingVertical: 12, paddingHorizontal: 14 },
-  feedback: { backgroundColor: colors.canvas, borderRadius: radius.lg, padding: spacing[4], gap: spacing[2] },
+  optionOn: { backgroundColor: colors.brandTint, borderWidth: 2, borderColor: colors.ink, paddingVertical: 12, paddingHorizontal: 14 },
+  wrongBox: { alignSelf: 'stretch', backgroundColor: colors.surfaceMuted, borderRadius: radius.lg, padding: spacing[4], gap: spacing[2] },
+  wrongRow: { flexDirection: 'row', alignItems: 'flex-start', gap: spacing[2] },
   doneContent: { padding: spacing[6], paddingTop: 96, alignItems: 'center', gap: spacing[3] },
   doneIcon: { width: 96, height: 96, borderRadius: 48, backgroundColor: colors.brand, alignItems: 'center', justifyContent: 'center', marginBottom: spacing[2] },
   doneDots: { flexDirection: 'row', gap: spacing[2], marginTop: spacing[3] },

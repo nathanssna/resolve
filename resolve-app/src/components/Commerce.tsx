@@ -4,7 +4,7 @@ import { colors, fonts, radius, shadows, spacing } from '@/theme/tokens';
 import { formatDecimal } from '@/utils/format';
 import { Avatar } from './Avatar';
 import { Icon, type IconName } from './Icon';
-import { Badge } from './Surfaces';
+import { Badge, GoldBadge } from './Surfaces';
 import { Text } from './Text';
 
 /** Atalho de serviço da grade do Início: bloco arredondado com ícone duotone. */
@@ -167,6 +167,7 @@ export function ProfessionalOption({
   aside,
   asideLabel,
   badge,
+  gold,
   selected,
   onPress,
 }: {
@@ -181,6 +182,8 @@ export function ProfessionalOption({
   /** Legenda do destaque, ex.: "para responder". */
   asideLabel?: string;
   badge?: string;
+  /** Profissional de Ouro: marca embaixo do nome. */
+  gold?: boolean;
   selected?: boolean;
   onPress?: () => void;
 }) {
@@ -189,7 +192,7 @@ export function ProfessionalOption({
       accessibilityRole="radio"
       accessibilityState={{ checked: !!selected }}
       aria-checked={!!selected}
-      accessibilityLabel={`${name}, ${reviews ? `nota ${formatDecimal(rating)}` : 'novo na Rezolveaê'}, ${aside} ${asideLabel ?? ''}`}
+      accessibilityLabel={`${name}${gold ? ', Profissional de Ouro' : ''}, ${reviews ? `nota ${formatDecimal(rating)}` : 'novo na Rezolveaê'}, ${aside} ${asideLabel ?? ''}`}
       onPress={onPress}
       style={[styles.option, selected && styles.optionOn]}
     >
@@ -197,6 +200,7 @@ export function ProfessionalOption({
       <View style={{ flex: 1, gap: 3 }}>
         {badge ? <Badge tone={selected ? 'ink' : 'brand'}>{badge}</Badge> : null}
         <Text variant="labelLg">{name}</Text>
+        {gold ? <GoldBadge size="sm" /> : null}
         {/* Sem avaliações ainda: "Novo" em vez de uma nota 0,0 que parece ruim. */}
         {reviews ? (
           <View style={styles.optionMeta}>

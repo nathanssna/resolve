@@ -225,7 +225,8 @@ type AppValue = {
   askTeam: (orderId: string) => Promise<void>;
   /** `reason`: obrigatório em cima da hora (ver cancelIsLate); vai para o chat. */
   cancelOrder: (orderId: string, reason?: string) => Promise<void>;
-  rateOrder: (orderId: string, stars: number, comment?: string) => Promise<void>;
+  /** `onTime`: resposta do cliente a "Chegou no horário combinado?" (conta para o Profissional de Ouro). */
+  rateOrder: (orderId: string, stars: number, comment: string | undefined, onTime: boolean) => Promise<void>;
   /** Profissional avalia o cliente (o cliente vê só a média, a partir de 3). */
   rateClient: (orderId: string, stars: number) => Promise<void>;
   /** Cliente cancela / profissional recusa um pedido ainda sem serviço combinado. */
@@ -949,8 +950,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
   );
 
   const rateOrder = useCallback(
-    async (orderId: string, stars: number, comment?: string) => {
-      const { data: review, error } = await supabase.rpc('rate_order', { p_order_id: orderId, p_rating: stars, p_comment: comment?.trim() || undefined });
+    async (orderId: string, stars: number, comment: string | undefined, onTime: boolean) => {
+      const { data: review, error } = await supabase.rpc('rate_order', { p_order_id: orderId, p_rating: stars, p_comment: comment?.trim() || undefined, p_on_time: onTime });
       if (error) throw error;
       update((s) =>
         s.orders[orderId] ? { ...s, orders: { ...s.orders, [orderId]: { ...s.orders[orderId], rating: review.rating, comment: review.comment } } } : s,

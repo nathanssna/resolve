@@ -347,7 +347,7 @@ const proFeatures = [
   },
 ];
 
-/** Os quatro passos do "Para começar" do app (ficha → teste → identidade → aulas). */
+/** Os três passos do "Para começar" do app (ficha → teste → identidade). As aulas são opcionais. */
 const entrySteps = [
   ['Monte sua ficha', 'Seus serviços, sua profissão e até onde você atende.'],
   [
@@ -355,10 +355,6 @@ const entrySteps = [
     `Um por serviço, com ${Math.min(...quizDraws)} a ${Math.max(...quizDraws)} questões de segurança e do jeito certo de fazer. Não passou? Tente de novo em 3 dias, com outras questões.`,
   ],
   ['Confirme quem você é', 'Foto de um documento e uma selfie. Nossa equipe confere em até 24 h e as fotos são apagadas depois.'],
-  [
-    'Faça as aulas',
-    `${LESSONS.length} aulas curtas sobre orçamento, fotos, chat, data combinada e MEI. Cerca de ${lessonMinutes} minutos, uma vez só.`,
-  ],
 ];
 
 function proPage() {
@@ -393,10 +389,11 @@ function proPage() {
 
 <section class="start" id="entrar" aria-labelledby="start-t">
   <div class="wrap">
-    <h2 id="start-t" data-reveal>4 passos antes do primeiro pedido</h2>
+    <h2 id="start-t" data-reveal>3 passos antes do primeiro pedido</h2>
     <p class="start-sub" data-reveal style="--i:1">O cliente abre a porta sabendo que você foi conferido. Você chega preparado. Tudo pelo app, no seu tempo.</p>
     <ol class="start-list">${steps}</ol>
     <p class="start-note" data-reveal>Pronto: você recebe o aviso e passa a aparecer para os clientes da sua região.</p>
+    <p class="start-gold" data-reveal>Quer ir além? Vire <span class="gold-pill">Profissional de Ouro</span>: os clientes veem a marca no seu perfil e você aparece mais acima na lista. Ela é de quem conclui as ${LESSONS.length} aulas da Rezolveaê (cerca de ${lessonMinutes} minutos), faz 10 serviços pelo app, mantém nota 4,7 ou mais e chega no horário.</p>
   </div>
 </section>
 
@@ -436,7 +433,7 @@ const proTeaser = `
     <img class="pt-r" src="assets/rezolveae-r.png" alt="" width="797" height="1024">
     <p class="pro-eyebrow" data-reveal>Para profissionais</p>
     <h2 id="pt-t" data-reveal style="--i:1"><span>Seu serviço.</span> <span>Seu preço.</span> <em>Sua agenda.</em></h2>
-    <p data-reveal style="--i:2">Receba pedidos da sua região pelo app. Antes de aparecer, você passa por quatro passos simples, que protegem você e o cliente.</p>
+    <p data-reveal style="--i:2">Receba pedidos da sua região pelo app. Antes de aparecer, você passa por três passos simples, que protegem você e o cliente.</p>
     <a class="btn btn-brand" href="profissionais/" data-reveal style="--i:3">Conheça a área do profissional ${icon('arrow-right', { size: 18 })}</a>
   </div>
 </section>`;
@@ -467,11 +464,11 @@ function home() {
     .join('');
   const stickyScreens = storyScreens.map((f, i) => `<div class="story-screen${i === 0 ? ' on' : ''}" data-screen="${i}" data-i="${i}">${f()}</div>`).join('');
 
-  // As três primeiras são a entrada do profissional (o 4º passo, a ficha, não protege ninguém).
+  // As duas primeiras são a entrada do profissional; a terceira, as aulas opcionais (Profissional de Ouro).
   const safety = [
     ['badge-check', 'Identidade conferida', 'Todo profissional envia um documento com foto e uma selfie. Nossa equipe confere antes de ele aparecer para você.'],
-    ['shield-check', 'Aprovado na área', 'Para atender um serviço, ele passa num teste sobre segurança e o jeito certo de fazer. O perfil mostra “Aprovado em” cada área.'],
-    ['book-open', 'Preparado para atender', `Antes do primeiro pedido, ele conclui as ${LESSONS.length} aulas da Rezolveaê: orçamento claro, fotos do serviço, conversa pelo chat e data cumprida.`],
+    ['shield-check', 'Aprovado na área', 'Para atender um serviço, ele passa num teste sobre segurança e o jeito certo de fazer. O perfil mostra um escudo ao lado de cada serviço aprovado.'],
+    ['book-open', 'Profissional de Ouro', `A marca é de quem fez as ${LESSONS.length} aulas da Rezolveaê, já tem 10 serviços com nota 4,7 ou mais e chega no horário, segundo os clientes. Se deixar de cumprir, ela sai.`],
     ['map-pin', 'Endereço protegido', 'Antes de combinar, o profissional vê só o bairro. Endereço e telefone aparecem depois que você aceita a proposta.'],
   ]
     .map(
@@ -484,7 +481,8 @@ function home() {
     'Como funciona a proposta?',
     'Como pago o profissional?',
     'Como o serviço é concluído?',
-    'O que quer dizer "Aprovado em"?',
+    'O que quer dizer o escudo ao lado do serviço?',
+    'O que é Profissional de Ouro?',
     'O que é o selo Verificado?',
     'Como bloqueio ou denuncio alguém?',
   ]);

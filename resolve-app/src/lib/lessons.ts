@@ -10,11 +10,49 @@ export async function lessonProgress(): Promise<string[]> {
   return data.map((r) => r.lesson_id);
 }
 
-/** Registra a aula como concluída. `released`: com ela, o profissional acabou de ser liberado. */
-export async function completeLesson(lessonId: string): Promise<{ done: number; total: number; released: boolean }> {
-  const { data, error } = await supabase.rpc('complete_lesson', { p_lesson_id: lessonId });
+/** Situação de cada aula: quando concluiu e, se não passou nas perguntas, a partir de quando responde de novo. */
+export type LessonStatus = { lesson_id: string; completed_at: string | null; retry_at: string | null };
+
+export async function lessonStatus(): Promise<LessonStatus[]> {
+  const { data, error } = await supabase.rpc('lesson_status');
   if (error) throw error;
-  return data as unknown as { done: number; total: number; released: boolean };
+  return data;
+}
+
+/** Perguntas de uma aula, sorteadas e embaralhadas pelo servidor (que sabe qual é a certa). */
+export type LessonQuiz = {
+  attempt_id: string;
+  lesson_id: string;
+  total: number;
+  pass: number;
+  questions: { question: string; options: string[] }[];
+};
+
+/** Resultado. `wrong`: posições das perguntas erradas; `gold`: acabou de virar Profissional de Ouro. */
+export type LessonQuizResult = {
+  score: number;
+  total: number;
+  pass: number;
+  passed: boolean;
+  wrong: number[];
+  retry_at: string | null;
+  done: number;
+  lessons: number;
+  gold: boolean;
+};
+
+/** Começa as perguntas (ou devolve as que ficaram em aberto, iguais). */
+export async function startLessonQuiz(lessonId: string): Promise<LessonQuiz> {
+  const { data, error } = await supabase.rpc('start_lesson_quiz', { p_lesson_id: lessonId });
+  if (error) throw error;
+  return data as unknown as LessonQuiz;
+}
+
+/** Envia as respostas: posição escolhida em cada pergunta. */
+export async function submitLessonQuiz(attemptId: string, answers: number[]): Promise<LessonQuizResult> {
+  const { data, error } = await supabase.rpc('submit_lesson_quiz', { p_attempt_id: attemptId, p_answers: answers });
+  if (error) throw error;
+  return data as unknown as LessonQuizResult;
 }
 
 export type Topic = { title: string; blocks: LessonBlock[] };
@@ -49,7 +87,7 @@ export async function saveLessonSpot(lessonId: string, spot: LessonSpot | null) 
   await AsyncStorage.setItem(SPOT_KEY, JSON.stringify(spots)).catch(() => {});
 }
 
-/** Se a pessoa já viu, neste aparelho, a explicação de por que as aulas existem. */
+/** Se a pessoa já viu, neste aparelho, a explicação do Profissional de Ouro. */
 const WHY_KEY = 'resolve:lessons:why-seen';
 
 export async function lessonsWhySeen(): Promise<boolean> {

@@ -68,7 +68,7 @@ src/
   content/      textos: termos, privacidade, Ajuda, dados da empresa
   theme/        tokens.ts — cores, espaçamentos, raios, tipografia
   utils/        datas e períodos, ordem dos profissionais, formatação no padrão brasileiro
-supabase/       migrations (o banco inteiro), seed.sql (catálogo de serviços), quiz/ (bancos de questões) → quiz.sql
+supabase/       migrations (o banco inteiro), seed.sql (catálogo de serviços), quiz/ (bancos de questões) e lessons/questions.json (perguntas das aulas) → quiz.sql
 tests/          testes do banco e de ponta a ponta (veja tests/README.md); os da lógica ficam em src/**/__tests__
 assets/logo/    logo (PNG) e a arte original do R — o app usa src/components/Logo.tsx
 ```
@@ -96,7 +96,7 @@ Cada serviço tem um arquivo em `supabase/quiz/<servico>.json`: quantas questõe
 Ao editar, mantenha a alternativa certa com tamanho parecido com o das erradas (nem sempre a mais longa, nem sempre a mais curta), para ninguém acertar pelo tamanho. Depois:
 
 ```bash
-npm run quiz:sql                                         # valida os bancos e gera supabase/quiz.sql
+npm run quiz:sql                                         # valida os bancos e as perguntas das aulas e gera supabase/quiz.sql
 npx supabase db query --linked -f supabase/quiz.sql     # aplica (idempotente; questão removida do arquivo é desativada)
 ```
 
